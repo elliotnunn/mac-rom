@@ -86,7 +86,7 @@ VBLCore 	proc	export
 
 ;_______________________________________________________________________
 ;
-; Trap:			_VINSTALL
+; Trap:			_VINSTALL bb40
 ;
 ; Arguments:	A0 (input) :	address of vertical retrace control block
 ;				D0 (output):	error code -	0  no error
@@ -115,7 +115,18 @@ VBLCore 	proc	export
 ; Registers Used: D0,D1,D2,A0,A1													<30Apr85>
 ;_______________________________________________________________________
 
-VInstall	lea 	VBLQueue,a1 		; get address of queue				<1.4>
+VInstall
+
+			lea 	VBLQueue+2,a1
+@loop		move.l	(a1),d1
+			beq.s	@dontflunk
+			move.l	d1,a1
+			cmp.l	a0,a1
+			bne.s	@loop
+			moveq.l	#0,d0
+			rts
+
+@dontflunk	lea 	VBLQueue,a1 		; get address of queue				<1.4>
 
 VInstallCommon							; common code shared with SlotVInstall
 			cmpi.w 	#vType,VBLType(a0)	; is it the proper type?
@@ -159,7 +170,7 @@ VTypeError	moveq.l	#VTypErr,d0 		; flag the error
 
 ;_______________________________________________________________________
 ;
-; The VREMOVE trap routine removes a vertical retrace control block from the
+; The VREMOVE bba2 trap routine removes a vertical retrace control block from the
 ; VBL queue. On entry, A0 points to the control block.	D0 returns the error
 ; code; all other registers are preserved.
 ;
@@ -177,7 +188,7 @@ AnRTS		rts							; return Dequeue error code
 
 ;_______________________________________________________________________ <1.3>
 ;
-; we put the code for the VBL interrupt handler next
+; we put the code for the VBL interrupt handler next bbb8
 ;
 ; NOTE:	This handler expects that the interrupt is still pending, and clears
 ;		it by clearing the CA1 interrupt flag on VIA 1 (base address passed
@@ -199,6 +210,7 @@ PseudoVBLInt
 VBLInt
 		eieioSTP
 			move.b	#1<<ifCA1,vIFR(a1)	; clear and re-enable vertical retrace interrupts
+			nop
 		eieioSTP
 BumpTicks
 			addq.l	#1,Ticks			; bump tick count
@@ -276,7 +288,7 @@ RunVBLs		lea		qHead-vblink(a1),a0	; setup to fetch head of list
 
 ;_______________________________________________________________________
 ;
-; Routine:		GetSlotVBLQHdr
+; Routine:		GetSlotVBLQHdr bc2e
 ;
 ; Arguments:	D0 (input) :	video card slot ($0..$E possible)
 ;				D0 (output):	error code
@@ -297,18 +309,41 @@ RunVBLs		lea		qHead-vblink(a1),a0	; setup to fetch head of list
 GetSlotVBLQHdr
 			ext.w	d0					; ignore high byte
 			cmpi.w	#sLastSlot,d0		; check for valid slot #
-			bgt.s	@slotTooBig			; return error if too big
+			bhi.s	@slotTooBig			; return error if too big
 			movea.l	([SlotQDT],d0.w*4,slotVBLPtrs),a1	; point to the VBL queue header
+@return
 			rts							; return with success
 
-@slotTooBig	move.w	#smSlotOOBErr,d0	; return with slot # error
+@slotTooBig	
+			move.l	([$2b6],$260),a1
+			move.l	a1,d1
+			beq.s	@skipthis
+
+			move.l	(a1),d1
+			beq.s	@skipthis
+
+			movem.l	d0/d2/a0,-(sp)
+
+			sub.l	a0,a0
+			move.l	d1,a1
+			move.l	#'vbl ',d1
+			jsr		(a1)
+
+			move.l	a0,a1
+			movem.l	(sp)+,d0/d2/a0
+			move.l	a1,d1
+			bne.s	@return
+
+@skipthis
 			addq.w	#4,sp				; pop the return address
+			move.w	#smSlotOOBErr,d0	; return with slot # error
 			rts							; return to callers caller
+
 			endwith
 
 ;_______________________________________________________________________
 ;
-; Trap:			_SlotVINSTALL
+; Trap:			_SlotVINSTALL bc70
 ;
 ; Arguments:	A0 (input) :	address of vertical retrace control block
 ;				D0 (input) :	video card slot ($0..$E possible)				<v1.2>
@@ -332,7 +367,7 @@ SlotVInstall
 
 ;_______________________________________________________________________
 ;
-; Trap:			_SlotVRemove
+; Trap:			_SlotVRemove bc76
 ;
 ; Arguments:	A0 (input) :	address of vertical retrace control block
 ;				D0 (input) :	video card slot ($0..$E possible)				<v1.2>
@@ -353,7 +388,7 @@ SlotVRemove	bsr.s	GetSlotVBLQHdr		; find the VBL Queue for the slot
 
 ;_______________________________________________________________________
 ;
-; Trap:			_AttachVBL
+; Trap:			_AttachVBL bc86
 ;
 ; Arguments:	D0 (input) :	new video card slot for system VBL ($0..$E possible)	<v1.2>
 ;				D0 (output):	error code
@@ -371,7 +406,7 @@ AttachVBL	bsr.s	GetSlotVBLQHdr		; find the VBL Queue for the slot
 
 ;_______________________________________________________________________
 ;
-; Trap:			_DoVBLTask
+; Trap:			_DoVBLTask bc90
 ;
 ; Arguments:	D0 (input) :	video card slot ($0..$E possible)			<v1.2>
 ;				D0 (output):	error code
@@ -406,7 +441,7 @@ DoVBLTask	bsr.s	GetSlotVBLQHdr		; find the VBL Queue for the slot
 
 ;_______________________________________________________________________
 ;
-; Routine:		InitVBLQs
+; Routine:		InitVBLQs bcae
 ;
 ; Arguments:	none
 ;
@@ -415,7 +450,7 @@ DoVBLTask	bsr.s	GetSlotVBLQHdr		; find the VBL Queue for the slot
 ; Registers Used: A0
 ;_______________________________________________________________________
 
-InitVBLQs		LEA		DoVBLTask,A0			; and save hook to  
+InitVBLQs		LEA.L	DoVBLTask,A0			; and save hook to  
 				MOVE.L	A0,JVBLTask				;  VBL task execute routine
 				CLR.L	ScrnVBLPtr				; init main screen ptr save global
 				RTS								; exit to caller

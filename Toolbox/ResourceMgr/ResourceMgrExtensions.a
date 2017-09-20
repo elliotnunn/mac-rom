@@ -922,7 +922,7 @@ ValidateFontResourceIDs	Proc	Export
 				beq.s	@checkForNFNTs					; <mc3> 
 				cmpi.l	#'NFNT',d3						; <mc3> If it is a NFNT, also check for FONT conflicts
 				beq.s	@checkForFONTs					; <mc3> 
-				bra.s	@nextTableEntry					; <mc3> If it is a sfnt or other, go on to the next one.
+				bra		@nextTableEntry					; <mc3> If it is a sfnt or other, go on to the next one.
 
 @checkForFONTs
 				subq	#4,sp							; <mc3>
@@ -930,7 +930,7 @@ ValidateFontResourceIDs	Proc	Export
 				move.w	4(a3),-(sp)						; <mc3> Look for this ID.
 				_GetResource							; <mc3> Does it exist?
 				move.l	(sp)+,d0						; <mc3>
-				bz.s	@nextTableEntry					; <mc3> This number is fine
+				bz		@nextTableEntry					; <mc3> This number is fine
 				bra.s	@conflictOccured
 
 @checkForNFNTs
@@ -939,7 +939,7 @@ ValidateFontResourceIDs	Proc	Export
 				move.w	4(a3),-(sp)						; <mc3> Look for this ID.
 				_GetResource							; <mc3> Does it exist?
 				move.l	(sp)+,d0						; <mc3>
-				bz.s	@nextTableEntry					; <mc3> This number is fine
+				bz		@nextTableEntry					; <mc3> This number is fine
 
 @conflictOccured
 				move.l	d0,a0							; <46>
@@ -965,6 +965,27 @@ ValidateFontResourceIDs	Proc	Export
 ; Make sure this ID is not used in the resource map.
 ;
 
+				cmpi.l	#'FONT',D3
+				beq.s	@isFONT
+				cmpi.l	#'NFNT',D3
+				beq.s	@isNFNT
+				bra.s	@isNeither
+
+@isNFNT			subq	#4,SP
+				move.l	#'FONT',-(SP)
+				move	D2,-(SP)
+				_GetResource
+				move.l	(SP)+,D0
+				beq.s	@isNeither
+				bra.s	@getUniqueID
+@isFONT			subq	#4,SP
+				move.l	#'NFNT',-(SP)
+				move	D2,-(SP)
+				_GetResource
+				move.l	(SP)+,D0
+				bne.s	@getUniqueID
+@isNeither
+
 				move.l	mapToRenumber(a6),TopMapHndl	; <29> Make sure we’re reading out of the right map
 				move.w	refNum(a6),CurMap
 				subq	#4,sp
@@ -973,6 +994,28 @@ ValidateFontResourceIDs	Proc	Export
 				_GetResource							; Try to get a similar resource
 				move.l	(sp)+,d0						; Check it out
 				bnz.s	@getUniqueID					; Try again
+
+				cmpi.l	#'FONT',D3
+				beq.s	@isFONT2
+				cmpi.l	#'NFNT',D3
+				beq.s	@isNFNT2
+				bra.s	@@isNeither
+
+@isNFNT2		subq	#4,SP
+				move.l	#'FONT',-(SP)
+				move	D2,-(SP)
+				_GetResource
+				move.l	(SP)+,D0
+				beq.s	@@isNeither
+				bra		@getUniqueID
+@isFONT2		subq	#4,SP
+				move.l	#'NFNT',-(SP)
+				move	D2,-(SP)
+				_GetResource
+				move.l	(SP)+,D0
+				beq.s	@@isNeither
+				bra		@getUniqueID
+@@isNeither
 
 ; We have a unique ID.  Put it and the original in the from-to list.
 
@@ -1131,26 +1174,6 @@ ReleaseTheFont	Proc	Export
 				jmp		(a0)							; Return to the caller
 				EndProc
 				
-;____________________________________________________________________________________________________
-; <53> SetDeanBitIfResourceWillBeLoaded
-;
-; This routine checks to see if the resource reference entry already contains a handle
-; or not.  If it does, DeanBit is cleared.  If there is no handle (ie, the resource will
-; be loaded this time) set DeanBit.  This allows people to determine whether they loaded
-; a resource, or if someone else did.
-;
-
-SetDeanBitIfResourceWillBeLoaded	PatchProc	jCheckLoad
-				tst.l	RHndl(a2)						; See if a master pointer has already been allocated
-				bz.s	@setDeanBit
-				bclr	#kDeanBit,kBrianBits			; A master pointer has already been allocated
-				bra.s	@goLoadTheResource
-@setDeanBit
-				bset	#kDeanBit,kBrianBits			; We’ll be loading the resource right now
-@goLoadTheResource
-				jmpOld									; Load the resource
-				EndProc
-
 ;____________________________________________________________________________________________________
 ; <48> CloseResFileUnderSystemMap(refNum: Integer);
 ;
@@ -1512,7 +1535,7 @@ IsThisASystemResourceMap	Proc	Export
 				move.l	d1,a0
 				move.l	(a0),a0
 				move.w	mRefNum(a0),d0					; Get the file reference number of this map
-				bsr		GetPSNFromParallelFCB			; <60> Get the parallel FCB info
+				bsr.l	GetPSNFromParallelFCB			; <60> Get the parallel FCB info
 				
 ; I really should use EqualProcess, but the Process Manager might not be around yet…
 
@@ -1540,6 +1563,29 @@ IsThisASystemResourceMap	Proc	Export
 ;	people are picky about how long they can play Tetris on the airplane…
 
 GetPSNFromParallelFCB	Proc	Export
+				movea.l	FSVarsPtr,A0
+				btst.b	#3,FSVars.fsFlags(A0)
+				beq.s	@dontHitFS
+
+				sub		#$32,SP
+				movea.l	SP,A0
+				cmp		#$3,D0
+				bne.s	@L0
+				moveq.l	#$2,D0
+@L0				move	D0,$18(A0)
+				moveq.l	#$50,D0
+				_HFSDispatch
+				cmp		#$0,D0
+				bne.s	@L1
+				movea.l	$1C(A0),A0
+				bra.s	@L2
+@L1				lea.l	0,A0
+
+@L2				dc.w	$defc, $0032
+				;add	#$32,SP ; can't seem to make this look right!
+				rts
+
+@dontHitFS
 				andi.l	#$FFFF, d0						; only the low word is passed.
 				divu.w	FSFCBLen,d0						; convert refnum to an index
 				movea.l	FSVarsPtr,a0					; get address of HFS variable area
@@ -1566,7 +1612,7 @@ MarkFileAsOwnedByTheSystem	Proc	Export
 				Import	GetPSNFromParallelFCB
 				
 				move.l	a0,-(sp)						; Preserve A0
-				bsr		GetPSNFromParallelFCB
+				bsr.l	GetPSNFromParallelFCB
 				clr.l	(a0)+							; Clear high word of PSN
 				move.l	#kSystemProcess,(a0)			; Set the low word
 				move.l	(sp)+,a0						; Restore A0
@@ -1950,7 +1996,7 @@ MakeOverrideMap	Proc	Export
 				
 				exg		a2,a1							; Swap reference entry and 'rovm' pointer
 				move.l	#RESize,d0
-				_BlockMove								; Copy reference data
+				_BlockMoveData							; Copy reference data
 				clr.b	RAttr(a0)						; clear the attributes for the resource (protected, etc.)
 
 ;

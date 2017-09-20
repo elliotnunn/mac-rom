@@ -225,6 +225,7 @@ Dispatcher 	proc	export
 			export	BadTrap
 			import	SysErr1
 			import	BlockMove68020
+			import	FLUSHCRANGE
 	If hasNewHeapMgr Then
 			import	PramIO				; <SM8 BT>
 	endif
@@ -233,7 +234,7 @@ Dispatcher 	proc	export
 
 ;_______________________________________________________________________
 ;
-; Routine:		ATrap68020
+; Routine:		ATrap68020 dfa0
 ;
 ; Function: 	Dispatch A-line emulator traps to Mac system.
 ;
@@ -328,7 +329,7 @@ EMT1010		equ		ATrap68020
 
 ;_______________________________________________________________________
 ;
-; Routine:		FindTableEntry
+; Routine:		FindTableEntry e01c
 ;
 ; Function: 	Return address of trap entry in the dispatch table. (flushes Inst cache on 020).
 ;
@@ -342,13 +343,21 @@ EMT1010		equ		ATrap68020
 FindTableEntry
 			_AssumeEq	OldDisp,ToolDisp-1	; OldDisp is next to, and lower than ToolDisp
 			lsl.w	#16-ToolDisp,d1		; ccr.c <- ToolDisp, ccr.n <- OldDisp
-			bpl.s	@oldTrap			; if OldDisp = 0, it's an old style trap
+			bpl.s	@newOldTrap			; if OldDisp = 0, it's an old style trap
 			bcc.s	@osTrap				; if ToolDisp = 0, it's a new style OS trap
 										; otherwise, it's a new style ToolBox trap
 
 @toolTrap	andi.w	#numTrapMask,d0		; clear all but trap bits
 			lea		(ToolTable,d0.w*4),a1	; index into the Toolbox table
-			bra		CacheFlush			; flush inst cache and return (destroys only reg D1)	<SM14>
+			rts
+
+@newOldTrap	bcc.s	@oldTrap
+			move.l	d0,d1
+			btst.l	#11,d1
+			bsr.s	@toolTrapInstead
+			subi	#$c000,d1
+			cmpi	#$1000,d1
+			rts
 
 @oldTrap	andi.w	#$01FF,d0			; clear irrelevant bits
 			moveq.l	#-$0057,d1			; setup to check for ToolBox range
@@ -358,17 +367,18 @@ FindTableEntry
 			addq.w	#$0057-$004F,d1		; d1 := TrapNum - $004F
 			ble.s	@osTrap				; $0000 … $004F are OS traps
 			subq.w	#$0054-$004F,d1		; d1 := TrapNum - $0054
+@toolTrapInstead
 			bne.s	@toolTrap			; $0054 is an OS trap, $50…$53,$55,$56 are tool box
 @osTrap		andi.w	#$00FF,d0			; only 8 bits for OS trap numbers
 			lea		(OSTable,d0.w*4),a1	; index into the OS table
-			bra.s	CacheFlush			; flush inst cache and return (destroys only reg D1)
+			rts
 
 			Title	'Dispatch - Get / Set Trap Address'
 
 			IMPORT	TrapAddressBits		; <SM4> rb
 ;_______________________________________________________________________
 ;
-; Routine:		GetTrapAddress
+; Routine:		GetTrapAddress e062
 ;
 ; Function: 	Return trap address from dispatch table.
 ;
@@ -383,10 +393,8 @@ kComeFromHeader			equ		(kBranchOverJMPLOpcode << 16) + kJMPLOpcode		;	<SM14>
 
 GetTrapAddressTrap						; <SM3> rb
 
-			bsr		TrapAddressBits			; makes sure trap word is correct		<SM14>begin
-			move	ccr,-(sp)				; save condition register
-			bsr.s	OldGetTrapAddress		; call the old GetTrapAddress
-			move	(sp)+,ccr				; get condition codes back
+			bsr.s	FindTableEntry
+			move.l	(a1),a0
 			bcs.s	@done					; come-from patches bypass our trickery
 @next
 			cmp.l	#kComeFromHeader,(a0)	; does this have the come-from header?
@@ -397,17 +405,10 @@ GetTrapAddressTrap						; <SM3> rb
 			moveq	#0,d0					; must zero the result code again
 			rts
 
-OldGetTrapAddress							;									;	<SM14>end
-
-			bsr.s	FindTableEntry		; locate the dispatch table entry
-			movea.l	(a1),a0				; get the routine address from the table
-			moveq.l	#noErr,d0			; return with success
-			rts							; all done
-
 
 ;_______________________________________________________________________
 ;
-; Routine:		SetTrapAddress
+; Routine:		SetTrapAddress e07a
 ;
 ; Function: 	Load new trap vector into dispatch table.
 ;				On 020 machines, flush the cache as well.
@@ -423,29 +424,28 @@ SetTrapAddressTrap						; <SM3> rb
 
 			move.l	(a0),d2					; get header of trap, and check for bus errors		<5><SM14>begin
 
-			bsr		TrapAddressBits			; makes sure trap word is correct			<SM4> rb
+			bsr.s	FindTableEntry			; locate the dispatch table entry
+
+			exg.l	d0,a0
 			bcs.s	OldSetTrapAddress		; come-from patches bypass our trickery
 
 			cmp.l	#kComeFromHeader,d2		; headers can only be used on come-from patches		<5>
 			beq.s	@illegalHeader			; saw a header, so I must system error				<5>
 
-			movem.l	d0-d1/a0,-(sp)			; save trap address, number, and bits
-			bsr		OldGetTrapAddress		; call the old GetTrapAddress
-			move.l	#0,a1					; no come-froms found yet
-@next
+			movea.l	(a1),a0
+
 			cmp.l	#kComeFromHeader,(a0)+	; does this have the come-from header?
-			bne.s	@done					; no we are done
+			bne.s	OldSetTrapAddress
+@next
 			move.l	a0,a1					; remember this address
 			move.l	(a0),a0					; go on to the next
-			bra.s	@next
-@done
-			movem.l	(sp)+,d0-d1/a0			; restore trap address, number, and bits
+			cmp.l	#kComeFromHeader,(a0)+	; does this have the come-from header?
+			beq.s	@next
+			move.l	d0,(a1)
 
-			cmp.l	#0,a1					; any come-froms found?
-			beq.s	OldSetTrapAddress		; no, go do the real SetTrapAddress
-			move.l	a0,(a1)					; set the trap address
-			move.l	jCacheFlush,-(sp)		; get the cache flush vector						<9>
-			rts								; call it, and then return to the trap dispatcher	<9>
+			lea		-2(a1),a0
+			lea		6,a1
+			bra.l	FLUSHCRANGE
 
 @illegalHeader
 			move.w	#dsBadPatchHeader,d0	; get error code									<5>
@@ -453,16 +453,13 @@ SetTrapAddressTrap						; <SM3> rb
 
 OldSetTrapAddress
 	
-			bsr.s	FindTableEntry			; locate the dispatch table entry
-			move.l	a0,(a1)					; install the new routine address into the table
+			move.l	d0,(a1)					; install the new routine address into the table
 			moveq.l	#noErr,d0				; return with success
-
-			move.l	jCacheFlush,-(sp)		; get the cache flush vector						<9>
-			rts								; call it, and then return to the trap dispatcher	<9><SM14>end
+			rts
 
 ;_______________________________________________________________________
 ;
-; Macros:		CacheFlush, vCacheFlush
+; Macros:		CacheFlush e0c2, vCacheFlush e0c2, DummyCacheFlush e0c6
 ;
 ; Function: 	Flush the 68020 Cache.  For programs that do self modifying code, etc.
 ;
@@ -481,13 +478,6 @@ CacheFlush
 			rts							; jump through the vector
 
 vCacheFlush
-			move.l	d1,-(SP)			; save this f*&%$ng register						<5>
-			movec.l	cacr,d1				; get current cache state of 68020
-			addq.w	#1<<3,d1			; flush the instruction cache				<1.4>
-			movec.l	d1,cacr				; write back to the control register
-			move.l	(SP)+,d1			; restore register									<5>
-			rts							; all done
-
 vCacheFlush68040						; 68040 cache flushing for self-modifying programs	<3>
 
 ;	NOTE - since the 040 I-Cache never gets "dirty", it only needs to be invalidated.		<3>
@@ -502,6 +492,9 @@ vCacheFlush68040						; 68040 cache flushing for self-modifying programs	<3>
 			rts							; return to caller - no registers destroyed			<3>
 
 			MACHINE	MC68020				; reset to previous MACHINE directive				<3>
+
+DummyCacheFlush
+			rts
 			Title	'Dispatch - InitDispatcher'
 
 ;_______________________________________________________________________
@@ -666,18 +659,14 @@ OSLoop		move.l	(a2)+,d1			; get the next entry from the ROM dispatch table
 	EndIf	;	Not NewBuildSystem
 ;	now install the trap dispatcher
 
+			btst.b	#2,$240a
+			beq.s	@noInstallFlusher
+			lea		DummyCacheFlush,a0
+			move.l	a0,jCacheFlush
+@noInstallFlusher
+
 			lea		EMT1010,a0			; point to the dispatcher
 
-			TestFor has68kEmulator		; Are we emulating a 68020?										<SM7> SAM
-			beq.s	@noEmu				; -> Nope.														<SM7>
-			lea		Rts020Disp,A1		; Point A1 to an rts (hopefully near some cache resident code)	<SM7>
-			bra.s	@StuffFlush			; -> Install it													<SM7>
-			
-@noEmu		cmpi.b	#cpu68040,CpuFlag	; check if we need to install 040 Cache Flush routine	<3>
-			bne.s	@notAn040			; NO  ... perform 020/030 cache-flush					<3>
-			lea		vCacheFlush68040,a1	; YES ... get addr. of 040 cache flush routine			<3>
-@StuffFlush	move.l	a1,jCacheFlush		; ... and install it									<3>
-@notAn040								;														<3>
 			move.l	a0,Line1010			; install the Line-A exception handler
 			
 		IF forRomulator THEN			; register the Line-A handler with the nub 				<SM6>
@@ -709,61 +698,6 @@ BadTrap
 
 
 ; <SM4> rb, start 		from PatchProtector.a
-
-
-TrapAddressBits	proc	export
-
-; TrapAddressBits
-;
-;	In:
-;		d0.w	trap number
-;		d1.w	[GS]etTrapAddress trap word
-;
-;	Out:
-;		d1.w	(modified) [GS]etTrapAddress trap word
-;		ccr		CC if it is not a come-from, CS if it is a come-from
-
-; bits in trap numbers and Set/GetTrapAddress opcodes
-
-TrapNumber				record	0
-toolboxBit				equ		11
-						endr
-
-TrapAddressOpcode		record	0
-newBit					equ		9
-toolboxBit				equ		10
-						endr
-
-		btst	#TrapAddressOpcode.newBit,d1		; is this N[GS]etTrapAddress?
-		bnz.s	@notFullWord						; yes, don’t handle it
-		btst	#TrapAddressOpcode.toolboxBit,d1	; is this normal [GS]etTrapAddress?
-		bz.s	@notFullWord						; yes, don’t handle it
-
-@fullWord
-		; adjust the trap bits
-
-		bset	#TrapAddressOpcode.newBit,d1		; is this NGetTrapAddress?
-		btst	#TrapNumber.toolboxBit,d0			; is the trap a Toolbox trap?
-		bnz.s	@toolbox							; yes, leave the bit set
-		bclr	#TrapAddressOpcode.toolboxBit,d1	; clear bit for OS
-@toolbox
-
-		cmp.w	#$C000,d0					; is this a come-from trap word?
-		blo.s	@notComeFrom				; no, it is not
-		cmp.w	#$D000,d0					; is it a come-from trap word?
-		bhs.s	@notComeFrom				; no, it is not
-@comeFrom
-		; oooh... carry is set for us, we can return
-		rts
-
-@notFullWord
-@notComeFrom
-		and		#$FE,ccr					; clear the carry bit
-		rts
-
-				endproc
-
-; <SM4> rb, end
 
 
 			end

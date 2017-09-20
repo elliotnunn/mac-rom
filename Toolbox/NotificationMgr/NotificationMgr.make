@@ -16,8 +16,8 @@ NotificationMgrObjs 	=			"{ObjDir}NotificationMgr.c.o"					¶
 									"{ObjDir}SetProcessorLevel.a.o"
 
 
-"{LibDir}NotificationMgr.lib"	Ä	{NotificationMgrObjs}
-	Lib {StdLibOpts} -o "{Targ}" {NotificationMgrObjs}
+# "{LibDir}NotificationMgr.lib"	Ä	{NotificationMgrObjs}
+# 	Lib {StdLibOpts} -o "{Targ}" {NotificationMgrObjs}
 
 
 

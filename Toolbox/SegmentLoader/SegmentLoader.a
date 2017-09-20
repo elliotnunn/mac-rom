@@ -242,9 +242,7 @@ LoadSeg
 @37											;Aren't we slick and tight?                  <02Nov85>  JTC
 			_HLock							;					<23May85><C169>
 NoMoveHHi
-			MOVE.L	(A0),D0					; handle -> dirty pointer	<C169>
-			_StripAddress					; D0 <- clean ptr			<C169>
-			MOVE.L	D0,A0					;							<C169>				
+			MOVE.L	(A0),A0					; handle -> dirty pointer	<C169>
 			
 			MOVE.L	A5,A1					 ;copy world base address
 			ADD.W 	CurJTOffset,A1			 ;offset by the current offset
@@ -448,7 +446,7 @@ fAVDone 									;									<27Mar85>
 
 ;------------------------------------------------------------------------------
 ;
-;  PROCEDUREs Launch, Chain, ExitToShell:
+;  PROCEDUREs Launch, Chain, ExitToShell 2c22a:
 ;
 ;  Here is the main part of the segment loader that actually launches
 ;  an application.	It opens the resource file specified by the input name,
@@ -530,7 +528,7 @@ LaunchCom
 			move.w	(a3)+,CurPageOption 	;											<28Oct85>
 			LEA		CurApName,A1			;get address to stuff the name
 			MOVEQ 	#32,D0					;move 32 bytes worth
-			_BlockMove						;move it in
+			_BlockMoveData					;move it in
 			
 			MOVEQ	#0,D3					;<A284> assume all flags are zero
 			CMP.W	#'LC',(A3)+				;<A284> extension code around?
@@ -570,7 +568,7 @@ SkipClose
 		  MOVE.L	SP,A1					 ;set up destination for move
 		  MOVE.L	(A0),A0 				 ;set up source for move
 		  MOVE.L	D0,-(SP)				 ;remember the size
-		  _BlockMove						 ;move it!
+		  _BlockMoveData					 ;move it!
 
 ; re-init the application heap zone, destroying the world...
 ; ...but just before, flush any vbl tasks executing out of that doomed land!		 <27Mar85>
@@ -608,7 +606,7 @@ GoInitAZone
 		  MOVE.L	D1,D0					 ;get size for blockMove
 		  MOVE.L	(A0),A1 				 ;get destination pointer
 		  MOVE.L	SP,A0					 ;get source pointer
-		  _BlockMove						 ;move it in!
+		  _BlockMoveData					 ;move it in!
 
 		  ADD.L 	D1,SP					 ;deallocate scrap save buffer
 
@@ -728,7 +726,9 @@ ExitToShell 								 ;									<30Jan85>
 ;			 _CloseResFile
 ;			 CLR.W	 CurApRefNum
 
-			_PMgrExit					; Empty out the palette manager				< 7Jul89>
+			MOVE	#$C, D0				; Empty out the palette manager				< 7Jul89>
+			_PaletteDispatch
+
 			SUB.L	A0,A0				; clear out A0								<30Jan85>
 			_SetGrowZone				; disable application's growZone handler    <30Jan85>
 
@@ -763,7 +763,7 @@ BadOpen
 
 
 ;------------------------------------------------------------------------------
-;	PROCEDURE vLaunchInit;													new	<C681>
+;	PROCEDURE vLaunchInit 2c266;													new	<C681>
 ;
 ; Vectored utility to set up application world just before launching the app.
 ; Historically set $0 to be diag ROM rather than even more historical 'FOBJ'
@@ -812,7 +812,7 @@ vLaunchInit
 
 ;------------------------------------------------------------------------------
 ;
-;	PROCEDURE GetAppParms(VAR apName:	Str255;
+;	PROCEDURE GetAppParms 2c298(VAR apName:	Str255;
 ;						  VAR apRefNum: INTEGER;
 ;						  VAR apParam:	Ptr)
 ;
@@ -836,7 +836,7 @@ GetAppParms
 
 			   LEA		 CurApName,A0	;point to name in low memory
 			   MOVEQ	 #32,D0 		;move 32 bytes
-			   _BlockMove				;move it!
+			   _BlockMoveData			;move it!
 
 			   RTS						;return to caller (params already stripped)
 

@@ -236,57 +236,6 @@ SysErrInit	PROC	EXPORT					;												<C152>
 
 
 ;----------------------------------------------------------------------
-; Routine		Debugger (Arg1, Arg2...ArgN, ParamSize, CmdWord)
-; Arguments 	Highly variable
-; Function		Dispatch debugger call to current installed debugger,
-;				else ignore. (_Debugger trap)
-;----------------------------------------------------------------------
-
-Debugger	PROC	EXPORT					;												<C152>
-			EXPORT	DebugProlog				;												<C152>
-
-			MOVEM.L A0-A7/D0-D7,SEVars		; save all regs
-
-			BSET	#7,MacJmpFlag			; in the debugger 								<v1.2>
-
-			LINK	A6,#0					; no locals
-			LEA 	8(A6),A0				; pt A0 at args
-			MOVE.W	(A0)+,D0				; get command word
-			MOVE.W	(A0)+,SECmdSize 		; stash size of param list
-			BSR.S	DebugProlog 			; set up call for debuggers, set CC=existence
-			BLE.S	DebugErr				; V true, so either Z or (NOT N) means no inited debugger
-
-; Now we know there's a debugger, so call it.
-; A0 = ptr to last command parameter, A1 = ptr to debugger entry pt.
-
-			BSET	#15,D0					; set high bit of word to flag trap call
-			JSR 	(A1)					; call debugger!!!!
-
-DebugAdios	UNLK	A6						; restore A6
-			MOVEM.L SEVars,A0-A7/D0-D7		; restore all regs
-			MOVE.L	(SP)+,A0				; get return address
-			ADD.W	SECmdSize,SP			; pop params
-			ADDQ.L	#4,SP					; pop command word & size word
-			BCLR	#7,MacJmpFlag			; out of the debugger 							<v1.2>
-			JMP 	(A0)					; and return
-
-
-DebugErr	MOVEQ	#SENoDB,D0				; return "no debugger" error
-			BRA.S	DebugAdios
-
-; Utility for setting CC's for existance of debugger, pointing A1 to debugger code entry.
-; Must preserve D0.
-
-DebugProlog
-			MOVE.L	MacJmp,A1				; get ptr in A1									<v1.2>
-			MOVE.B	MacJmpFlag,D3			; get flags										<v1.2>
-			ADD.B	D3,D3					; init flag now high bit, set CC's
-			RTS 							; and return
-
-			ENDP							;												<C152>
-
-
-;----------------------------------------------------------------------
 ; Routine		ToDeepShit
 ; Arguments 	(SP)	(input) 		Return address to exception receiver
 ;				xxxx(SP)				CPU and exception type stack frame					<13Jul85>
@@ -320,23 +269,15 @@ ToDeepShit	PROC	EXPORT					;												<C152>
 ; Now clear stack of exception info, saving SR and PC unless re-entered.  A special case	<13Jul85>
 ; is class 0 exception on the 68000, which has 4 words of info on top of the usual SR/PC.	<13Jul85>
 
-			TST.B	CPUFlag 				; 0-000, 1-010, 2-020, etc. 					<13Jul85>
-			BNE.S	@1						;												<13Jul85>
-
-			CMPI.W	#2,D0					; 1 or 2 means nasty bus error frame			<13Jul85>
-			BGT.S	@1						;												<13Jul85>
-			MOVE.L	(SP)+,SE000BE			; save fcn code, access address, and instruction word	<04Nov85> JTC
-			MOVE.L	(SP)+,SE000BE+4 		; ...the other 4 bytes of the eight 					<04Nov85> JTC
-@1
-			TST.B	MacJmpFlag				; minus means we're re-entering					<13Jul85>
-			BMI.S	@3						;												<13Jul85>
+			TST.B	$BFF
+			BMI.S	@3
 
 			MOVE	(SP)+,SESR				; SR on top for all CPUs						<13Jul85>
 			MOVE.L	(SP)+,SEPC				; next is the saved PC							<13Jul85>
-			BRA.S	SysErr2					; bypass nonsaving pop							<13Jul85><1.4>
+			BRA		SysErr2					; bypass nonsaving pop							<13Jul85><1.4>
 
 @3			ADDQ.W	#6,SP					; kill SR and PC								<13Jul85><1.4>
-			BRA.S	SysErr2
+			BRA		SysErr2
 			NOP								; appease the assembler gods <12> kc
 			ENDP							;							 <C152>
 
@@ -396,8 +337,6 @@ SystemError	PROC	EXPORT					;												<C152>
 
 SysErr1		MOVE.W	SR,SESR 				; save SR										<13Jul85>
 			MOVE.L	(SP)+,SEPC				; clean PC for fall-through to SysErr2			<13Jul85>
-			TST.B	CPUFlag 				; zero for 68000								<02Nov85>  JTC
-			BEQ.S	SysErr2 				; no need for dummy frame on old cpu			<02Nov85>  JTC
 			CLR.W	-(SP)					;												<02Nov85>  JTC
 
 ; entry point for standard system exceptions (address error, etc)
@@ -407,71 +346,9 @@ SysErr2
 			BMI.S	@0						; yes, skip reg saving
 			MOVE.L	SP,SEA7 				; save true PC
 @0											; deleted obsolete stack-cleansing instructions <13Jul85>
-			BSET	#7,MacJmpFlag			; prevent re-entrancy, vote Republican			<v1.2>
+			BSET.B	#7,MacJmpFlag			; prevent re-entrancy, vote Republican			<v1.2>
 
-			cmpi.w	#13,d0					; was it an NMI?								<1.5>
-			bne.w	@continue				; no, proceed									<1.5>
 
-		    TestFor RBVExists				;												<1.5>
-			beq.s	@noRBV					;												<1.5>
-
-			btst.b	#ProductInfo.PGCInstalled,UnivRomFlags+3	; see if we have a PGC chip		<9><4><H5><SM4>
-			beq.s	@continue									; no, handle normal NMI-- there is no parity 	<4><SM5>
-
-			move.l	VIA,A0					; get VIA1 base									<1.5>
-		eieioSTP
-			btst	#vPGCEnb,VBufB(a0)		; is parity enabled?							<1.5>
-		eieioSTP
-			bne.s	@continue				; no, proceed									<1.5>
-		eieioSTP
-			bclr	#vPGCErr,vDirB(a0)		; make parity error bit an input				<1.5>
-		eieioSTP
-			move.b	VBufB(a0),d1			; read parity error flag						<2.1>
-		eieioSTP
-			bset	#vPGCErr,vDirB(a0)		; back to an output								<1.5>
-		eieioSTP
-			btst	#vPGCErr,d1				; was NMI caused by parity error?				<1.5>
-			bne.s	@continue				; no, restore ddr and proceed					<1.5>
-		eieioSTP
-			bset	#vPGCEnb,VBufB(a0)		; yes, disable parity (so we won't get int again<1.5>
-		eieioSTP
-			bra.s	@parityErr				; and blast the warm start flag
-@noRBV
-
-			WITH 	DecoderInfo
-		    TestFor RPUExists				; do we have RPU parity?
-			beq.s	@continue				; no, skip...
-
-			movea.l	OSS,a0					; get OSS address
-		eieioSTP
-			move.w	OSSIntStat(a0),d1
-		eieioSTP
-			btst	#OSSIntRPU,d1			; did the RPU cause the interrupt?
-			beq.s	@continue				; no, handle normal NMI
-		eieioSTP
-			clr.b	OSSMskRPU(a0)			; disable RPU parity interrupts					<2>
-		eieioSTP
-			movea.l	UnivInfoPtr,a0
-			adda.l	ProductInfo.DecoderInfoPtr(a0),a0
-			movea.l	RPUAddr(a0),a0			; get RPU base
-			st.b	rpuReset(a0)			; reset serial ptr
-			move.l	(a0),d1
-			bset.l	#16,d1					; clear the parity error
-			move.l	d1,(a0)
-@parityErr
-		IF Supports24Bit THEN				;												<SM7>
-			moveq	#true32B,d0				; 32 bit mode to look at BootGlobs 				<1.9>
-			_SwapMMUMode					; switch to 32 bit mode							<1.9>
-			move.l	BootGlobPtr,a1			; get ptr to boot globals (near top of RAM) 	<1.6><1.8>
-			clr.l	StartGlobals.sgWarmStart(a1) ; <SM3> CSS clear boot-globs warm start flag
-			_SwapMMUMode					; switch back to previous mode (in d0)			<1.9>
-		ELSE
-			move.l	BootGlobPtr,a1			; get ptr to boot globals (near top of RAM) 	<1.6><1.8>
-			clr.l	StartGlobals.sgWarmStart(a1) ; <SM3> CSS clear boot-globs warm start flag
-		ENDIF
-			clr.l	WarmStart				; clear low memory global warm start flag		<1.6>
-			moveq	#dsParityErr,d0			; yes, set parity error code					<1.5><1.7>
-@continue									;												<1.5>
 			cmpi.w	#dsNoPatch,d0			; is this Error can't find patch ?				<SM6> rb
 			beq.s	@PreCubeE				; change the error message then					<SM6> rb
 			cmpi.w	#dsBadPatch,d0			; is this a can't load patch message ?			<SM6> rb
@@ -482,10 +359,10 @@ SysErr2
 
 			MOVE.W	D0,DSErrCode			; Save the possibly modified ErrCode			<SM7>
 
-; now we've set up all regs, etc.  Time to decide whether to call the debuggers
-; or just call the Deepshit code
+			MOVE.L	MacJmp,A1
+			MOVE.B	MacJmpFlag,D3
+			ADD.B	D3,D3
 
-			BSR 	DebugProlog 			; any debuggers?
 			BPL.S	Call2DS 				; yes, but not initialized (init bit not set)
 			BNE.S	CallDB					; yes, initialized, call 'em
 

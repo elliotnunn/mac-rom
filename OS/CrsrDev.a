@@ -100,7 +100,7 @@ _FixDiv		OPWORD  $A84D
 CrsrDev		PROC
 
 			EXPORT	InitCrsrDev,CrsrDevDispatch
-			IMPORT	CrsrVBLTask
+			IMPORT	CrsrVBLTask,vDrawCursor,vEraseCursor
 
 			WITH	CrsrDevGlobals, CrsrDevRec, CrsrDevSegment, CrsrDataRec
 			WITH	ADBDeviceEntry, ADBVars, ExpandMemRec
@@ -108,7 +108,7 @@ CrsrDev		PROC
 
 _______________________________________________________________________
 ;			
-;	Routine:	CrsrDevDispatch (trap # $AADB)
+;	Routine:	CrsrDevDispatch 82b0 (trap # $AADB)
 ;
 ;	Inputs:		d0.w 	- 	selector
 ;				4(sp)	-	last parameter
@@ -177,7 +177,7 @@ paramBase		equ		*				; ptr to base of parameters
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevMoveTrap
+;	Routine:	CrsrDevMoveTrap 82ec
 ;
 ;	Inputs:		 8(a6).l	- 	delta Y
 ;				12(a6).l	-	delta X
@@ -207,7 +207,7 @@ CrsrDevMoveTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevMoveToTrap
+;	Routine:	CrsrDevMoveToTrap 8306
 ;
 ;	Inputs:		 8(a6).l	-  	V
 ;				12(a6).l	- 	H
@@ -248,7 +248,7 @@ CrsrDevMoveToTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevFlushTrap
+;	Routine:	CrsrDevFlushTrap 8334
 ;
 ;	Inputs:		8(a6).l	- 	pointer to CrsrDevRec for this device
 ;
@@ -282,7 +282,7 @@ CrsrDevFlushTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevButtonsTrap
+;	Routine:	CrsrDevButtonsTrap 8360
 ;
 ;	Inputs:		 8(a6).w	- 	new button states (1 = down, 0 = up)
 ;				10(a6).l	-	pointer to CrsrDevRec for this device
@@ -312,7 +312,7 @@ CrsrDevButtonsTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevButtonDownTrap
+;	Routine:	CrsrDevButtonDownTrap 8376
 ;
 ;	Inputs:		8(a6).l	-	pointer to CrsrDevRec for this device
 ;
@@ -335,7 +335,7 @@ CrsrDevButtonDownTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevButtonUpTrap
+;	Routine:	CrsrDevButtonUpTrap 8388
 ;
 ;	Inputs:		8(a6).l	-	pointer to CrsrDevRec for this device
 ;
@@ -358,7 +358,7 @@ CrsrDevButtonUpTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevButtonOpTrap
+;	Routine:	CrsrDevButtonOpTrap 839a
 ;
 ;	Inputs:		8(a6).l		-	Operation specific data
 ;				12(a6).w	-	Operation code
@@ -388,7 +388,7 @@ CrsrDevButtonOpTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevSetButtonsTrap
+;	Routine:	CrsrDevSetButtonsTrap 83ba
 ;
 ;	Inputs:		8(a6).w		-	# buttons for this device
 ;				10(a6).l	-	pointer to CrsrDevRec for this device
@@ -413,7 +413,7 @@ CrsrDevSetButtonsTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevSetAccelTrap
+;	Routine:	CrsrDevSetAccelTrap 83ce
 ;
 ;	Inputs:		8(a6).l		-	acceleration (Fixed)
 ;				12(a6).l	-	pointer to CrsrDevRec for this device
@@ -440,7 +440,7 @@ CrsrDevSetAccelTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevDoubleTimeTrap
+;	Routine:	CrsrDevDoubleTimeTrap 83e4
 ;
 ;	Inputs:		8(a6).l		-	duration (ticks)
 ;				12(a6).l	-	pointer to CrsrDevRec for this device
@@ -468,7 +468,7 @@ CrsrDevDoubleTimeTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevSetUnitsPerInchTrap
+;	Routine:	CrsrDevSetUnitsPerInchTrap 83f8
 ;
 ;	Inputs:		8(a6).l		-	resolution (fixed)
 ;				12(a6).l	-	pointer to CrsrDevRec for this device
@@ -500,7 +500,7 @@ CrsrDevSetUnitsPerInchTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevNextDeviceTrap
+;	Routine:	CrsrDevNextDeviceTrap 8414
 ;
 ;	Inputs:		8(a6).l	-	VAR ptr to CrsrDevRec
 ;
@@ -539,7 +539,7 @@ CrsrDevNextDeviceTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevNewDeviceTrap
+;	Routine:	CrsrDevNewDeviceTrap 843c
 ;
 ;	Inputs:		8(a6).l	-	VAR pointer to CrsrDevRec
 ;
@@ -566,7 +566,7 @@ CrsrDevNewDeviceTrap
 
 ;====================================================================
 ;			
-;	Routine:	CrsrDevDisposeDevTrap
+;	Routine:	CrsrDevDisposeDevTrap 8450
 ;
 ;	Inputs:		8(a6).l	-	pointer to CrsrDevRec for this device
 ;
@@ -594,7 +594,7 @@ CrsrDevDisposeDevTrap
 
 ;_______________________________________________________________________
 ;			
-;	Routine:	CrsrDevHandleADB
+;	Routine:	CrsrDevHandleADB 8462
 ;
 ;	Inputs:		a0 	- 	pointer to mouse data
 ;				a2 	- 	pointer to CrsrDevRec for this device
@@ -741,7 +741,7 @@ CrsrDevHandleADB
 
 ;_______________________________________________________________________
 ;			
-;	Routine:	CrsrDevMove
+;	Routine:	CrsrDevMove 854e
 ;
 ;	Inputs:		d0.l	-	delta X
 ;				d1.l	-	delta Y
@@ -843,7 +843,7 @@ CrsrDevMove
 
 ;_______________________________________________________________________
 ;			
-;	Routine:	CrsrDevButtons
+;	Routine:	CrsrDevButtons 85ee
 ;
 ;	Inputs:		d0.b	- new button states (1 = down, 0 = up)
 ;				a2 		- pointer to CrsrDevRec for this device
@@ -934,20 +934,20 @@ doDouble
 
 ;---------------------------------------------------------			
 doClickLock
-			tst.b	buttonData(a2,d3.w)		; is this the 1st time?
+			tst.b	buttonData(a2,d2.w)		; is this the 1st time?
 			bne.s	@secondHit				; no, skip
 			btst.b	d3,buttons(a2)			; are we down?
 			beq.s	@firstUp				; no, skip
 			bsr.s	CrsrDevButtonDown		; yes, generate button down event
 			bra.s	@done
 
-@firstUp	st.b	buttonData(a2,d3.w)		; first up, mark it
+@firstUp	st.b	buttonData(a2,d2.w)		; first up, mark it
 			bra.s	@done			
 
 @secondHit	btst.b	d3,buttons(a2)			; are we up (2nd time)?
 			bne.s	@done					; no, do nothing...
 			bsr.s	CrsrDevButtonUp			; yes, post up event
-			clr.b	buttonData(a2,d3.w)		; mark that we're really up
+			clr.b	buttonData(a2,d2.w)		; mark that we're really up
 @done		rts
 
 
@@ -963,13 +963,13 @@ doAppleScript
 
 ;---------------------------------------------------------			
 doCustom	
-			pea		buttonData(a2)			; push our custom routine address
+			move.l	buttonData(a2,d2.w),-(sp)	; push our custom routine address
 			rts								; and call it.
 			
 
 ;_______________________________________________________________________
 ;			
-;	Routine:	CrsrDevButtonDown
+;	Routine:	CrsrDevButtonDown 86a4
 ;
 ;	Inputs:		a2 	- 	pointer to CrsrDevRec for this device
 ;
@@ -1009,7 +1009,7 @@ CrsrDevButtonDown
 
 ;_______________________________________________________________________
 ;			
-;	Routine:	CrsrDevButtonUp
+;	Routine:	CrsrDevButtonUp 86e4
 ;
 ;	Inputs:		a2 	- 	pointer to CrsrDevRec for this device
 ;
@@ -1051,7 +1051,7 @@ CrsrDevButtonUp
 
 ;_______________________________________________________________________
 ;			
-;	Routine:	CrsrDevSetAccel
+;	Routine:	CrsrDevSetAccel 8720
 ;
 ;	Inputs:		a2 	- 	pointer to CrsrDevRec for device we want to set
 ;				d0	-	acceleration to set (0-1, fixed point)
@@ -1102,7 +1102,21 @@ CrsrDevSetAccel
 ; first find the two tables which enclose the desired acceleration
 ;----------------------------------------------
 
-@foundIt	move.l	acceleration(a2),d3		; get new acceleration in d3
+@foundIt	Move.B    $85(A2), D3
+			BEQ.B     @endofthing
+			Clr       -(SP)
+			Move.L    #'accl', -(A7)
+			Move      #$FFFF, (ROMMapInsert)
+			_CountResources
+			Move      (SP)+, D3
+			Move.L    #'USB*', D4
+			Bsr       FindResource
+			BEQ.B     @endofthing
+			MoveQ.L   #$0, D4
+			Bsr       FindResource
+@endofthing
+
+			move.l	acceleration(a2),d3		; get new acceleration in d3
 			move.w	(a0)+,d2				; get # of  acceleration tables in resource
 			move.l	a0,a1					; keep ptr to 'low' accel table in a1
 			
@@ -1316,7 +1330,7 @@ CrsrDevSetAccel
 
 ;------------------------------------------------
 ;			
-;	Routine:	FindResource
+;	Routine:	FindResource 8906
 ;
 ;	Inputs:		d3		-	# of 'accl' resources to search
 ;				d4		-	'accl' resource tag we're looking for
@@ -1353,7 +1367,7 @@ FindResource
 
 ;------------------------------------------------
 ;			
-;	Routine:	Interpolate
+;	Routine:	Interpolate 892e
 ;
 ;	Inputs:		18(sp)	-	x1
 ;				14(sp)	-	y1
@@ -1437,7 +1451,7 @@ Interpolate
 
 ;_______________________________________________________________________
 ;			
-;	Routine:	CrsrDevHandleVBL
+;	Routine:	CrsrDevHandleVBL 8992
 ;
 ;	Inputs:		-
 ;
@@ -1456,6 +1470,9 @@ CrsrDevHandleVBL
 		
 			movea.l	ExpandMem,a3				; get ptr to expandmem rec
 			movea.l	emCursorGlobals(a3),a3		; get cursory global ptr
+			tst.l	a3
+			beq		@exit
+
 			move.l	firstCrsrDev(a3),d0			; get ptr to 1st CrsrDevRec
 			beq		@exit						; if not even 1 device, just exit
 			move.l	d0,a2						;     ptr in a2
@@ -1664,7 +1681,7 @@ CrsrDevHandleVBL
 			
 ;_______________________________________________________________________				<H15>
 ;			
-;	Routine:	DrawCursor
+;	Routine:	DrawCursor 8b38
 ;
 ;	Inputs:		a3 	-	ptr to CrsrDevGlobals
 ;
@@ -1691,6 +1708,7 @@ DrawCursor	movea.l	firstCrsrData(a3),a4		; get ptr to main CrsrDataRec			<H15>
 			bne.s	@exit						; yes… exit
 			
 			lea		CrsrPin,a0					; it's ok to update cursor, get bounding rect
+			move.l	d0,-(sp)
 			BSR.L	CrsrVBLTask					; pin and draw the cursor
 			
 			move.l	Mouse,d0					; has cursor been pinned?
@@ -1730,7 +1748,7 @@ DrawCursor	movea.l	firstCrsrData(a3),a4		; get ptr to main CrsrDataRec			<H15>
 		
 ;_______________________________________________________________________
 ;			
-;	Routine:	CrsrDevNewDevice
+;	Routine:	CrsrDevNewDevice 8bb8
 ;
 ;	Inputs:		...
 ;
@@ -1827,7 +1845,7 @@ CrsrDevNewDevice
 
 ;_______________________________________________________________________
 ;			
-;	Routine:	CrsrDevDisposeDev
+;	Routine:	CrsrDevDisposeDev 8c6e
 ;
 ;	Inputs:		a2 	- 	pointer to CrsrDevRec for device we want to remove
 ;
@@ -1850,6 +1868,7 @@ CrsrDevDisposeDev
 @loop		cmpa.l	a1,a2					; is this the linked list element we want?
 			beq.s	@gotIt					; yes, handle it
 			move.l	a1,d1					; no, prev := next
+			beq.s	@exit
 			move.l	nextCrsrDev(a1),d0		; get next->nextCrsrDev
 			beq.s	@exit					; exit if NIL (we never found it)
 			move.l	d0,a1					; next := next->nextCrsrDev
@@ -1859,8 +1878,10 @@ CrsrDevDisposeDev
 			tst.l	d1						; was it the first one?
 			beq.s	@firstOne				; yes, handle special case
 			
+			move.l	a2,d0
 			move.l	d1,a2
 			move.l	a1,nextCrsrDev(a2)		; else, delete our element from middle of list
+			move.l	d0,a2
 			bra.s	@dispose
 
 @firstOne	move.l	a1,firstCrsrDev(a0)
@@ -1879,7 +1900,7 @@ CrsrDevDisposeDev
 
 ;_______________________________________________________________________
 ;			
-;	Routine:	CrsrDevReInit
+;	Routine:	CrsrDevReInit 8cae
 ;
 ;	Inputs:		d0	-	0 = pre-init, 1=post-init
 ;
@@ -1912,6 +1933,7 @@ CrsrDevReInit								;													<H14>
 	
 			movem.l	d0-d3/a0-a3,-(sp)
 			link	a6,#adbPBSize			; Make a stack frame for our param block
+			tst		d0
 			bne.s	@PostInit				; Skip if post-processing
 
 ;---------------------
@@ -2106,7 +2128,7 @@ CrsrDevReInit								;													<H14>
 
 ;_______________________________________________________________________
 ;			
-;	Routine:	syncADBTalk
+;	Routine:	syncADBTalk 8e7c
 ;
 ;	Inputs:		d0	-	address/command byte
 ;				a0	-	ptr to receive buffer
@@ -2120,7 +2142,9 @@ CrsrDevReInit								;													<H14>
 ;_______________________________________________________________________
 
 syncADBTalk	
+@restart
 			move.l	a0,-(sp)				; save ptr to our buffer
+			move.l	d0,-(sp)
 			clr.w	-(sp)					; our 'sync' flag
 
 			move.l	sp,a1					; keep pointer to globals for later
@@ -2129,18 +2153,23 @@ syncADBTalk
 			move.l	a0,-(sp)				; push pointer to our reply buffer
 			move.l	sp,a0
 			_ADBOp
+			bmi.s	@weird
 			
 @spin		tst.b	(a1)					; have we completed?
 			beq.s	@spin					; no, keep waiting
 			
-			lea		14(sp),sp				; dump locals
+			lea		18(sp),sp				; dump locals
 			move.l	(sp)+,a0				; restore a0
 			rts
 
+@weird		lea.l	$e(sp),sp
+			move.l	(sp)+,d0
+			move.l	(sp)+,a0
+			bra.s	@restart
 
 ;_______________________________________________________________________
 ;			
-;	Routine:	syncADBListen
+;	Routine:	syncADBListen 8ea8
 ;
 ;	Inputs:		d0	-	address/command byte
 ;				a0	-	ptr to transmit buffer
@@ -2154,6 +2183,8 @@ syncADBTalk
 ;_______________________________________________________________________
 
 syncADBListen	
+@restart
+			movem.l	d0/a0,-(sp)
 			clr.w	-(sp)					; our 'sync' flag
 			move.l	sp,a1					; keep pointer to data area for later
 			move.l	sp,-(sp)				; push pointer to data area
@@ -2161,17 +2192,21 @@ syncADBListen
 			move.l	a0,-(sp)				; push ptr to data to send
 			move.l	sp,a0
 			_ADBOp
+			bmi.s	@weird
 			
 @spin		tst.b	(a1)					; have we completed?
 			beq.s	@spin					; no, keep waiting
 			
-			lea		14(sp),sp				; dump locals
+			lea		22(sp),sp				; dump locals
 			rts
-			
+
+@weird		lea.l	$e(sp),sp
+			movem.l	(sp)+,d0/a0
+			bra.s	@restart
 			
 ;_______________________________________________________________________
 ;			
-;	Routine:	syncComp
+;	Routine:	syncComp 8ed2
 ;
 ;	Inputs:		d0	-	ADB command byte
 ;				a0	-	ptr to data (pascal string)
@@ -2192,7 +2227,7 @@ syncComp	st.b	(a2)					; set our complete flag
 			
 ;_______________________________________________________________________
 ;			
-;	Routine:	InitCrsrDev
+;	Routine:	InitCrsrDev 8ed6
 ;
 ;	Inputs:		-
 ;
@@ -2246,7 +2281,7 @@ InitCrsrDev
 
 ;______________________________________________________________________________ 			<H15>
 ;			
-;	Routine:	SetCrsrDelay
+;	Routine:	SetCrsrDelay 8f22
 ;
 ;	Inputs:		a1 contains the ptr to the cursor gDevice being setup
 ;
@@ -2278,7 +2313,7 @@ SetCrsrDelay
 
 ;______________________________________________________________________________ 			<H15>
 ;
-;	Routine:	SetCrsrDelCore
+;	Routine:	SetCrsrDelCore 8f3c
 ;
 ;	Inputs:		a1 contains the ptr to the cursor gDevice being setup
 ;
@@ -2296,6 +2331,22 @@ SetCrsrDelCore
 			rts											; just a hook for now
 
 
+NewCrsrFunction
+; 8f3e
+			Move.L    (DeviceList), D0
+@loop		BEQ.B     @done
+			MoveA.L   D0, A0
+			CmpA.L    D1, A0
+			BNE.B     @moredone
+			MoveA.L   (A0), A0
+			Move.L    $1E(A0), D0
+			Bra.B     @loop
+@done		SubA.L    A0, A0
+@moredone	Move.L    A0, D1
+			Rts
+
+
+
 ;_____________________________________________________________________________________________	<H15>
 ;	VDrawCursor  -  default DrawCursor routine
 ;
@@ -2304,23 +2355,10 @@ SetCrsrDelCore
 ;	the routine InitCrsrVects.
 ;
 
-			EXPORT	VDrawCursor
-			IMPORT	BLITCURSOR						;from ccrsrcore.a
-VDrawCursor
-			MOVE.B	#1,CRSRBUSY 					;MARK CHANGE IN PROGRESS
-		
-			TST		CRSRSTATE
-			BMI.S	DoneSho							;QUIT IF STILL HIDDEN
-			CLR 	CRSRSTATE						;DON'T LET CRSRSTATE GET > 0
-			TST.B	CRSRVIS 						;IS CURSOR ALREADY VISIBLE?
-			BNE.S	DoneSho							;YES, DON'T TRY TO REDRAW
-			TST.B	CrsrObscure						;Skip if obscured
-			BNE.S	DoneSho
+VDrawCursor	PROC	EXPORT	
 
-			BSR.L	BLITCURSOR						;Do the real work: put pixels up
-
-DoneSho		CLR.B	CRSRBUSY						;CHANGE COMPLETE
-			RTS
+			IMPORT	QD_DRAWCURSOR
+			BRA.L	QD_DRAWCURSOR
 
 
 ;______________________________________________________________________________________________	<H15>
@@ -2331,16 +2369,9 @@ DoneSho		CLR.B	CRSRBUSY						;CHANGE COMPLETE
 ;	the routine InitCrsrVects.
 ;
 
-			EXPORT	VEraseCursor
-			IMPORT	UNBLITCURSOR					;from ccrsrcore.a
-VEraseCursor
-			MOVE.B	#1,CRSRBUSY 					;MARK CHANGE IN PROGRESS
-			TST.B	CRSRVIS 						;IS CURSOR VISIBLE?
-			BEQ.S	DoneHid							;NO, DON'T TRY TO REMOVE IT
-			
-			BSR.L	UNBLITCURSOR					;Zap Pixels
+VEraseCursor	PROC	EXPORT
 
-DoneHid		CLR.B	CRSRBUSY						;CHANGE COMPLETE
-			RTS
+			IMPORT	QD_ERASECURSOR
+			BRA.L	QD_ERASECURSOR
 
 		END

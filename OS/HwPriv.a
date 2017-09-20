@@ -329,18 +329,22 @@ Vects												;table of offsets to selector routines
 			HwPrivSelector	DisableExtCache			; 5		DisableExtCache
 			HwPrivSelector	FlushExtCache			; 6		FlushExtCache
 			HwPrivSelector	SwapSerialClock			; 7		SwapSerialClock
-			HwPrivSelector	ProtectEDisk			; 8		Protect/Unprotect EDisk
+;			HwPrivSelector	ProtectEDisk			; 8		Protect/Unprotect EDisk
+			dc.w $d8b8								; HARDCODED due to unhappy linker, must remove
 			HwPrivSelector	FlushCRange				; 9		FlushCRange
-			HwPrivSelector	WaitForSCSIDevs			; 10	WaitForSCSIDevs
+			HwPrivSelector	ReturnErr				; 10	WaitForSCSIDevs
 			HwPrivSelector	ReturnErr				; 11	Unused
 			HwPrivSelector	SlotBlockXferCtl		; 12 - enable block xfers to a slot
-			HwPrivSelector	GetENetID				; 13 - Get Ethernet ID from serial ROM
+			HwPrivSelector	ReturnErr				; 13 - Get Ethernet ID from serial ROM
+			HwPrivSelector	ReturnErr				; 14
+			HwPrivSelector	ReturnErr				; 15
+			HwPrivSelector	MakeSomethingWriteThrough	; 16
 LastVec
 
 			ALIGN	8
 HWPrivSwitch
 			cmpi.w	#(LastVec-Vects)/HwVecSize,d0	; check if selector in range
-			bhs		ReturnErr						; abort if it’s not a valid selector
+			bcc.s	ReturnErr						; abort if it’s not a valid selector
 			move.w	Vects(d0*HwVecSize),d0			; get offset to selector’s routine
 			jmp		Vects(d0)						; go to the routine
 
@@ -353,7 +357,6 @@ ReturnErr	PROC	ENTRY
 			rts
 
 			ENDPROC
-
 
 ;----------
 ;
@@ -375,37 +378,6 @@ ReturnErr	PROC	ENTRY
 ;----------
 
 SwapICache	PROC	EXPORT
-
-			TestFor	has68kEmulator				;	are we on a PPC-based machine?
-			bnz.b	@EmuFake
-
-			cmp.b	#cpu68040,CpuFlag			;	are we on an 040-based machine?
-			bhs.s	@handle040
-
-@handle030
-			movec	CACR,d0						;	get current cache state
-			bfextu	d0{31:1},d1					;	get cache enable bit into LSbit of d1
-			bclr	#CACR_EI_020_030,d0			;	assume we're disabling (clear enable flag)
-			move.l	a0,d2						;	see what we want to do
-			beq.s	@SetCACR					;	if we want to turn it on
-			ori.b	#((1<<CACR_EI_020_030)|\	;		set enable,
-					(1<<CACR_CI_020_030)),d0	;		flush I-Cache flags
-			bra.s	@SetCACR					;   	go set the desired cache state
-
-@handle040
-			movec	CACR,d0						;	get current cache state
-			bfextu	d0{16:1},d1					;	get cache enable bit into LSbit of d1
-			bclr	#CACR_IE_040,d0				;	assume we're disabling
-			move.l	a0,d2						;	are we enabling the I-Cache?
-			beq.s	@SetCACR					;	NO  ... go turn in OFF
-			jsr		([jCacheFlush])				;		invalidate both caches
-			bset	#CACR_IE_040,d0				;		set IE=1 to enable I-Cache
-
-@SetCACR
-			move.l	d1,a0						;	save the previous I-Cache state
-			movec	d0,CACR						;	set the Cache to desired state
-			moveq	#noErr,d0					;	signal all's well
-			rts
 
 @EmuFake	lea		1,a0						;	do nothing and report that caches were enabled
 			moveq	#noErr,d0
@@ -430,7 +402,7 @@ SwapICache	PROC	EXPORT
 
 FlushICache	PROC	EXPORT
 
-			TestFor	has68kEmulator
+			btst.b	#2,$240a
 			bnz.b	@Coherent
 
 			jsr		([jCacheFlush])			; invalidate both caches
@@ -463,40 +435,6 @@ FlushICache	PROC	EXPORT
 
 SwapDCache	PROC	EXPORT
 
-			TestFor	has68kEmulator				;	are we on a PPC-based machine?
-			bnz.b	@EmuFake
-
-			cmp.b	#cpu68040,CpuFlag			;	are we on an 040-based machine?
-			bhs.s	@handle040
-
-@handle030
-			movec	CACR,d0						;	get current cache state
-			bfextu	d0{23:1},d1					;	get cache enable bit into LSbit of d1.l
-			bclr	#CACR_ED_030,d0				;	assume we're disabling (clear enable flag)
-			move.l	a0,d2						;	see what we want to do
-			beq.s	@SetCACR					;	if we want to turn it on
-			ori.w	#((1<<CACR_ED_030)|\		;		set enable,
-					(1<<CACR_CD_030)),d0		;		flush D-Cache flags
-			bra.s	@SetCACR					;   	set cache to the desired state
-
-@handle040
-			movec	CACR,d0						;	get current D-Cache state
-			bfextu	d0{0:1},d1					;	put cache enable bit into LSbit of d1.l
-			bset	#CACR_DE_040,d0				;	assume we're enabling
-			move.l	a0,d2						;	check what we are really doing
-			bne.s	@SetCACR					;	if we are disabling the caches
-			MACHINE	MC68040						;
-			nop									;     required by D43B CPUSHA DC errata item
-			cpusha	dc							;	  push dirty D-Cache data items to memory
-			MACHINE	MC68030						;
-			bclr	#CACR_DE_040,d0				;	  set DE=0 to disable D-Cache
-
-@SetCACR
-			move.l	d1,a0						;	save the previous D-Cache state
-			movec	d0,CACR						;	update D-Cache status value
-			moveq	#noErr,d0					;	signal all's well
-			rts
-
 @EmuFake	lea		1,a0						;	do nothing and report that caches were enabled
 			moveq	#noErr,d0
 			rts
@@ -516,25 +454,6 @@ SwapDCache	PROC	EXPORT
 
 FlushDCache	PROC	EXPORT
 
-			TestFor	has68kEmulator				;	are we on a PPC-based machine?
-			bnz.b	@flushDCacheExit
-
-			cmp.b	#cpu68040,CpuFlag			;	are we on an 040-based machine?
-			bhs.s	@handle040
-
-@handle030
-			movec	CACR,d0						;	get current cache state
-			bset	#CACR_CD_030,d0				;	set 'clear data cache' flag
-			movec	d0,CACR						;	set cache state
-			bra.s	@flushDCacheExit
-
-@handle040
-			MACHINE	MC68040
-			nop									;   required by DD43B CPUSHA DC errata item
-			cpusha	dc							;	flush the D-Cache
-			MACHINE	MC68030
-
-@flushDCacheExit
 			moveq	#noErr,d0					;	signal all's well
 			rts
 
@@ -553,57 +472,6 @@ FlushDCache	PROC	EXPORT
 
 EnableExtCache	PROC	EXPORT
 
-			tst.l	DockingGlobals				; have traps been initialized yet?
-			beq.s	@noDockMgr					;  -> nope, just blow it all off
-			subq	#4,sp						; make room for result
-			move.l	#dockCacheControl,-(sp)		; cache control selector
-			move.l	#dockCacheOn,-(sp)			; indicate the cache should be turned on
-			_DockingDispatch
-			addq	#4,sp						; remove the result (assume success)
-
-		IF hasMDU THEN
-			bra.s	@extCacheDone
-@noDockMgr
-
-			movea.l	UnivInfoPtr,a0				; point to the product info
-			cmpi.b	#DecoderKinds.MDUDecoder,\
-					ProductInfo.DecoderKind(a0)	; see if we have an MDU
-			bne.s	@noMDU						; if not, nothing to enable
-
-; enable the external MDU cache as follows:
-; Toggle the RvCFlush bit 1 - 0 - 1, to flush the cache
-; set the RvCDis bit to 0, to enable the cache (special restriction, can't access cacheable
-; memory for some amount of time after enableing the cache.  By executing this code in
-; a loop, it will be executing out of the instruction cache, and not accessing memory)
-
-			movea.l	VIA2RBV,a0					; get the VIA2 or RBV base address
-			lea		vBufB|RvDataB(a0),a0		; point to the cache register
-
-			move.w	sr,-(sp)					; save int mask
-			ori.w	#HiIntMask,sr				; disable all interrupts
-
-			moveq.l	#~(1<<RvCFlush),d0			; mask to clear flush bit (active low)
-			and.b	(a0),d0						; get the register, clear flush
-			btst.l	#RvCDis,d0					; test the cache disable bit (active high)
-			beq.s	@flushDone					; if already enabled, nothing to do
-			move.b	d0,(a0)						; flush the cache
-			bset.l	#RvCFlush,d0				; setup to un-flush the cache
-
-@loop		move.b	d0,(a0)						; 1st time, un-flush, 2nd time, enable cache
-			move.b	(a0),(a0)					; kill time accessing the RBV/VIA2
-			move.b	(a0),(a0)					; kill some more time
-			bclr.l	#RvCDis,d0					; enable the cache (active high)
-			bne.s	@loop						; loop if first time through
-
-@flushDone	move.w	(sp)+,sr					; restore int mask
-@noMDU
-
-		ELSE
-@noDockMgr
-
-		ENDIF
-
-@extCacheDone
 			moveq	#noErr,d0					; signal all's well
 			rts
 
@@ -622,34 +490,6 @@ EnableExtCache	PROC	EXPORT
 
 DisableExtCache	PROC	EXPORT
 
-			tst.l	DockingGlobals				; have traps been initialized yet?
-			beq.s	@noDockMgr					;  -> nope, just blow it all off
-			subq	#4, sp						; make room for result
-			move.l	#dockCacheControl, -(sp)	; cache control selector
-			move.l	#dockCacheOff, -(sp)		; indicate the cache should be turned on
-			_DockingDispatch
-			addq	#4,sp						; remove the result (assume success)
-
-		IF hasMDU THEN
-			bra.s	@extCacheDone
-@noDockMgr
-
-			movea.l	UnivInfoPtr,a0				; point to the product info
-			cmpi.b	#DecoderKinds.MDUDecoder,\
-					ProductInfo.DecoderKind(a0)	; see if we have an MDU
-			bne.s	@noMDU						; if not, nothing to enable
-
-			movea.l	VIA2RBV,a0					; get the VIA2 or RBV base address
-			lea		vBufB|RvDataB(a0),a0		; point to the cache register
-			ori.b	#(1<<RvCDis),(a0)			; disable cache
-@noMDU
-
-		ELSE
-@noDockMgr
-
-		ENDIF
-
-@extCacheDone
 			moveq	#noErr,d0					; signal all's well
 			rts
 
@@ -711,60 +551,6 @@ SwapSerialClock	PROC	EXPORT
 			tst.w	d2								; check SCC and port number
 			bne		ReturnErr						; only port A supported
 
-			TestFor	SCCIOPExists
-			beq.w	@BuiltinSCC						; no IOP hardware
-			btst.b	#0,SCCIOPFlag					; are we in bypass mode ?
-			beq		@Done							; no, so can't make the call, so exit
-
-;	Call SCC IOP kernel to set the external clock mode.
-
-			WITH	IOPRequestInfo, SCCCtlMsg, SCCCtlReply
-
-@IOPSCC
-			suba.w	#irReqInfoSize+SCCCtlMsgSize,sp	; SP = ptr to request msg
-
-			lea		irIOPNumber(sp),a0
-			move.b	#SCCIOPNum,(a0)+				; set iop number
-			assert	irRequestKind=(irIOPNumber+1)
-			move.b	#irSendXmtMessage,(a0)+			; a send xmit message kind
-			assert	irMsgNumber=(irRequestKind+1)
-			assert	irMessageLen=(irMsgNumber+1)
-			assert	irReplyLen=(irMessageLen+1)
-			assert	irReqActive=(irReplyLen+1)
-			move.l	#(1<<24)+\						; irMsgNumber = 1
-					(SCCCtlMsgSize<<16)+\			; irMessageLen = SCCCtlMsgSize
-					(SCCCtlMsgSize<<8)+\			; irReplyLen = SCCCtlMsgSize
-					(0),(a0)+						; irReqActive = 0
-
-			movea.l	sp,a1
-			adda.w	#irReqInfoSize,a1				; point to SCCCtlMsg
-			assert	irMessagePtr=(irReqActive+1)
-			move.l	a1,(a0)+						; irMessagePtr = SCCCtlMsg
-			assert	irReplyPtr=(irMessagePtr+4)
-			move.l	a1,(a0)+						; irReplyPtr = SCCCtlMsg
-			assert	irHandler=(irReplyPtr+4)
-			clr.l	(a0)							; irHandler = nil (no completion routine)
-			move.b	#6,msgNum(a1)					; message to change external clocking
-			move.b	d2,Driver(a1)					; set port to change
-			swap	d2								; get ext clk state in low word
-			move.b	d2,GPI(a1)						; set state of external clocking
-
-			movea.l	sp,a0							; a0 = ptr IOPRequestInfo
-			_IOPMsgRequest
-			bne.s	@1								; error in request
-
-@waitloop	tst.b	irReqActive(a0)					; wait for request to complete
-			bne.s	@waitloop
-
-			movea.l	irReplyPtr(a0),a0				; get reply
-			move.b	errNum(a0),d0					; error code from reply
-@1			adda.w	#irReqInfoSize+SCCCtlMsgSize,sp
-			bra.s	@Done
-
-			ENDWITH
-
-;	Bang on the VIA vSync bit directly.
-
 @BuiltinSCC
 			TestFor	VIA1Exists
 			beq.s	@Done							; no via - nothing to do now
@@ -796,31 +582,6 @@ SwapSerialClock	PROC	EXPORT
 
 ;----------
 ;
-;   ProtectEDisk (_HWPriv Selector 8)
-;
-;	This stub merely selects what version of the primitive routine to use.
-;	EDisk protection is handled differently on 68K Macs than it is on PPC Macs.
-;
-;----------
-
-ProtectEDisk	PROC	EXPORT
-
-			IMPORT	EDiskProtect, EDiskProtectPPC
-
-			TestFor	has68kEmulator				; are we on a PPC-based machine?
-			bnz.b	@UsePPCVersion
-
-@Use68KVersion
-			bra		EDiskProtect
-
-@UsePPCVersion
-			bra		EDiskProtectPPC
-
-			ENDPROC
-
-
-;----------
-;
 ;   FlushCRange (_HWPriv Selector 9)
 ;
 ;   This routine flushes a range of addresses from the 040 caches
@@ -841,187 +602,12 @@ ProtectEDisk	PROC	EXPORT
 
 FlushCRangeForBM	PROC	EXPORT
 			EXPORT	FlushCRange
-
-			Move.l	(Sp)+,A0					; Address.
-			Move.l	(Sp)+,A1					; Count.
-
 FlushCRange
-			TestFor	has68kEmulator				; are we on a PPC-based machine?
-			bnz		@EmuFake
 
-			Cmpi.b	#cpu68040,CPUFlag			; Are we less than an 040?
-			Blo		@Non040						; Yes? Then do an 030 style flush.
-
-			MACHINE	MC68040
-			Adda.w	#15,A1						; Round length.
-			Move.l	A1,D1						; Length in D1
-			And.w	#$FFF0,D1					; Round to nearest cache line.
-
-			Move	SR,D0						; Get and save the SR.
-			Btst	#13,D0						; Are we in Supervisor mode?
-			Bne.s	@CheckCnt					; Yes? Then don't call _EnterSupervisorMode.
-			Moveq	#8,D0						; Selector for "EnterSupervisorMode".
-			_DebugUtil							; Must be in supervisor mode (SR returned in D0).
-
-@CheckCnt	Cmpi.l	#$0C00,D1					; Less than 3/4 the size of the cache?  ***Tune***
-			Blo.s	@KillInterrupts				; Yes? Then flush line by line.
-@0			Nop									; Sync up pipeline.  ***TEMP***
-			Cpusha	BC							; No? Then flush everything and be done with it.
-			Bra.s	@Exit1						; Outta here.
-
-@KillInterrupts
-			Movem.l	D3-D5/A0-A1,-(Sp)			; Save registers.
-			Ori.w	#$0700,SR					; Disable interrupts till we exit.
-			Moveq	#5,D2						; Set the DFC value.
-			Movec	D2,DFC						; Set the Destination Function Code to 5.
-
-			Move.w	#$D000,D4					; Build a mask based on the page size from bit #14 of TC.
-			Movec	TC,D2						; Get Translation Control (Bit 14 set:8K, clear:4K).
-			Lsr.w	#2,D2						; Move the TC bits (enable/page size) over 2
-			Eor.w	D2,D4						; Eor in the bits to make the mask ($F000 for 4K, $E000 for 8K).
-			Move.w	D4,D5						; Copy physical mask.
-			Not.w	D5							; Make 1's complement mask for logical address.
-
-@LetsGetPhysical
-			Move.l	A0,A1						; Set scratch register (A1) with logical address.
-			Ptestr	(A1)						; Get translated physical address.
-			Movec	MMUSR,D3					; Address is in high 19 or 20 bits of MMUSR.
-
-			And.w	D4,D3						; Clear off bottom n bits.
-			Move.w	A1,D2						; Logical address in D2.
-			And.w	D5,D2						; Grab low n bits of original address.
-			Or.w	D2,D3						; Build complete physical address.
-			Move.l	D3,A1						; Physical address.
-
-			Eor.w	D5,D2						; Calculate number of bytes left in this page.
-			Addq.w	#1,D2
-			Sub.w	D2,D1						; Subtract from total buffer size.
-			Bpl.s	@FlushIt					; Still pos? Then D2 has correct byte count.
-			Add.w	D1,D2						; No? Then almost done…correct the count.
-
-@FlushIt	Adda.w	D2,A0						; Logical address of next page.
-			Asr.w	#4,D2						; Lines to flush.
-			Cmp.w	#16,D2						; More than 16 lines?  ***TUNE***
-			Blt.s	@LineByLine					; No? Then do it line by line.
-
-			Nop									; Sync up pipeline.  ***TEMP***
-			Cpushp	BC,(A1)						; Invalidate the whole page.
-			Bra.s	@NextPage					; Do next page.
-
-@LineByLine	Cpushl	BC,(A1)						; Invalidate the cache line.
-			Add.w	#$10,A1						; Bump logical address to the next cache line.
-			Dbra	D2,@LineByLine				; Loop till page is done.
-
-@NextPage	Tst.w	D1							; Are we done?
-			Bgt.s	@LetsGetPhysical			; No? Then do next page.
-
-@Exit		Movem.l	(Sp)+,D3-D5/A0-A1			; Restore registers.
-@Exit1		Move	D0,SR						; Restore status register (interrupts and user/supervisor mode).
-			Moveq	#noErr,D0					; No Error.
-			Rts									; Adios.
-			MACHINE	MC68030
-
-@Non040		Movec	CACR,D0						; Cache control register.
-			Bset	#3,D0						; Set flag to flush instruction cache.
-			Movec	D0,CACR						; Flush it.
-			Moveq	#noErr,D0					; No Error.
-			Rts									; Adios.
+			move.l	a1,d0
+			dc.w	$FC16
 
 @EmuFake	moveq	#noErr,d0
-			rts
-
-			ENDPROC
-
-
-;----------
-;
-;   WaitForSCSIDevs (_HWPriv Selector 10)
-;
-;	On Entry:
-;	-> A0[7-0]		= bit map of SCSI IDs to wait for
-;	-> A0[23-16]	= bit map of SCSI IDs to search for
-;
-;	On Exit:
-;	<- A0			= result (0=found wait_for drives, -1=didn't find them)
-;
-;	Register Usage:
-;	D0 = temp
-;	D1 = bitmap of devices to wait for
-;	D2 = bitmap of devices to search for
-;	D3 = OS Type (for SCSILoad)
-;	D4 = Ticks at timeout
-;
-;----------
-
-WaitForSCSIDevs	PROC	EXPORT
-
-				IMPORT	SCSILoad
-
-trashedRegs		REG		D2-D4/D6
-
-DefaultTimeOut	EQU		20					; Number of seconds timeout if PRAM is pristine
-PollDelay		EQU		15					; Delay (in ticks) between SCSILoads
-
-			movem.l	trashedRegs, -(sp)		; save registers that we're going to trash
-
-; Get bitmap parameters into D1 and D2
-			move.l	A0, D1					; D1 = bitmap of devices to wait for
-			move.l	D1, D2					;
-			swap	D2						; D2 = bitmap of devices to search for
-			or.b	D1, D2					; make sure that we search for the drive(s)
-											; that we are waiting for
-
-; SCSILoad expects OS type in high word of D3
-			subq.w	#2, sp					; Make room for parameters.
-			move.l	sp, A0					; Point to the parameter block.
-			_GetOSDefault					; Get info about the default device.
-											; leave OS results on stack for a second
-
-; Get PRAM time out value and convert it to ticks and keep in D4
-			_GetTimeOut						; Get the timeout parameter.
-			bne.s	@UseGivenTime			; Branch if not using default.
-			moveq.l	#DefaultTimeOut, D0		; Use default timeout.
-@UseGivenTime
-			mulu	#60, D0					; Convert timeout to ticks.
-			move.l	D0, D4					; Save timeout in our final reg.
-
-			move.w	(sp)+, D3				; Get OS type off of stack
-			swap	D3						; put in high word (where SCSILoad expects it)
-
-			moveq.l	#0, D6
-			bset	#31, D6					; tell drivers not to munge the blasted heap
-
-; SCSILoad polling loop -------
-
-@TopO_TheLoop
-			move.l	D2, D0					; Try to load drivers for the "search" disks
-			bsr.l	SCSILoad
-
-			move.b	SCSIDrvrs, D0
-			and.b	D1, D0					; look only at bits we are waiting for
-			cmp.b	D1, D0					; if all are 1 then
-			beq.s	@goodexit				; we got what we were waiting for - exit
-
-; Check for timeout, wait for PollDelay more ticks, check timeout again, then do the SCSILoad again
-			move.l	Ticks, D0
-			cmp.l	D4, D0					; is current ticks higher than our time_out ticks?
-			bhi		@fldexit				; yes - timed out, exit
-
-			add.l	#PollDelay, D0			; wait till Ticks+PollDelay before polling
-@1			cmp.l	Ticks, D0				; if polldelay timeout is higher than current ticks,
-			bhi		@1						; then loop
-
-			cmp.l	D4, D0					; is current ticks higher than our time_out ticks?
-			blo		@TopO_TheLoop			; no - repeat SCSILoad
-											; yes - timed out, exit
-@fldexit
-			move.w	#-1, A0
-			bra.s	@exit
-
-@goodexit
-			move.w	#0, A0
-@exit
-			movem.l	(sp)+, trashedRegs		; restore registers that we trashed
 			rts
 
 			ENDPROC
@@ -1051,117 +637,38 @@ PollDelay		EQU		15					; Delay (in ticks) between SCSILoads
 
 SlotBlockXferCtl	PROC	EXPORT
 
-			MoveQ.l	#paramErr, D0			; assume don't have MUNI or bad slot value passed
-			Testfor	BARTExists				; are we on a ColdFusion or PDM
-			bne.s	@bart
-			TestFor MUNIExists				; Do we have the MUNI Nubus controller
-			Beq.s	@exit					; No, we're done.
-
-			MoveA.l	UnivInfoPtr, A1			; point to the product info
-			Add.l	ProductInfo.DecoderInfoPtr(A1), A1 ; get decoder info ptr
-			MoveA.l	DecoderInfo.MUNIAddr(A1), A1 ; get MUNI base address
-
-			Move.l	A0, D1					; get user parm
-			MoveQ	#0, D2
-			Move.l	MUNI_BlkAttmpt(A1), D2	; get previous state of slots 1-14
-			Lsl.w	#1, D2					; make bit x match slot x, bit 1 = slot 1
-			MoveA.l	D2, A0					; return previous state bit mask in A0
-
-			MoveQ	#0, D2
-			Move.b	D1, D2					; Get slot #
-			SubQ.b	#1, D2					; adjust slot # for bit offset
-			Bmi.s	@exit					; bad slot value, < 1
-			Cmp.b	#14, D2
-			Bhs.s	@exit					; bad slot value, > 14
-			Move.l	MUNI_BlkAttmpt(A1), D0	; get current state of slots 1-14
-			BTst 	#8, D1					; Turn blk xfer on or off?
-			Bne.s	@on
-			BClr	D2, D0					; turn if off
-			Bra.s	@doit
-@on			BSet	D2, D0					; turn if on
-@doit		Move.l	D0, MUNI_BlkAttmpt(A1)	; setup block xfers for slot # in D2
-			bra.s	@done
-
-@bart
-			MoveA.l	UnivInfoPtr, A1						; point to the product info
-			Add.l	ProductInfo.DecoderInfoPtr(A1),A1	; get decoder info ptr
-			MoveA.l	DecoderInfo.BARTAddr(A1),A1 		; get Bart base address
-
-			Move.l	A0, D1					; get user parm
-			MoveQ	#0, D2
-			Move.b	D1, D2					; Get slot #
-			SubQ.b	#1, D2					; adjust slot # for bit offset
-			Bmi.s	@exit					; bad slot value, < 1
-			Cmp.b	#14, D2
-			Bhs.s	@exit					; bad slot value, > 14
-			BTst 	#8, D1					; Turn blk xfer on or off?
-			Bne.s	@Bon
-
-			moveq	#BARTBurstRegOff, d0
-			mulu.l	d2, d0
-			adda.l	#BARTBurstReg,a1
-			suba.l	d0, a1
-			bclr.b	#BARTBurstBit, (A1)		; turn off block xfers for slot # in D2
-			Bra.s	@done
-
-@Bon		moveq	#BARTBurstRegOff, d0
-			mulu.l	d2, d0
-			adda.l	#BARTBurstReg,a1
-			suba.l	d0, a1
-			bset.b	#BARTBurstBit, (A1)		; turn on block xfers for slot # in D2
-
-@done		MoveQ	#noErr,D0				; signal all's well
-
-@exit		Rts
+			moveq	#paramErr,D0
+			rts
 
 			ENDPROC
 
 
 ;----------
 ;
-;   GetENetID (_HWPriv Selector 13)
-;
-;   This routine gets the EtherNet ID from a serial-interface EtherNet ID ROM.
-;	On all machines except Blackbird (so far), the Ethernet ID is in a memory-mapped
-;	parallel ROM. When this routine runs on those machines, a0 should already
-;	contain a valid address at which to read the ethernet ID, so this routine
-;	will just exit for those machines. If there is no address in a0, we double check
-;	here to make sure we are on a Blackbird (by checking for Pratt), and then
-;	go ahead and try to get the Ethernet ID from the serial ROM.
-;
-;   Entry:
-;
-;      A0.l - ENetPROM field of the EtherNet Driver (address of ID ROM, or
-;			  zero for an ID ROM that is not memory-mapped).
-;
-;   Exit:
-;
-;      A0.l - non-zero pointer to EtherNet ID
-;			- ID = 0 if we can't get address from ID ROM
-;
-;   Destroys: D1, D2, A1
+;   MakeSomethingWriteThrough
 ;
 ;----------
 
-GetENetID	PROC	EXPORT
+MakeSomethingWriteThrough	PROC	EXPORT
 
-			IMPORT	X24c01aGetID
+			Move.L	([$1FF4],$8), D2
+			Move.L	A0, D0
+			LsR.L	D2, D0
+			MoveA.L	D0, A0
+			Move.L	A1, D0
+			SubQ.L	#$1, D0
+			LsR.L	D2, D0
+			Move.L	D0, D2
+@loop
+			_nkMakePageWriteThrough
+			Tst.L	D0
+			BMI.B	@exit
+			AddQ	#$1, A0
+			DBF		D2, @loop
+			MoveQ.L	#$0, D0
+@exit
+			Rts
 
-			WITH 	PMgrRec, PmgrPrimitivesRec
-
-		IF hasPratt THEN
-			TestFor	PrattExists				; 	do we have a Pratt?
-			beq.s	@exit					; 	no, so exit
-
-			move.l	a4, -(sp)				; 	save our macro register
-			bigjsr	X24c01aGetID,a4			;	get the ID from the serial ROM
-			move.l	(sp)+, a4				; 	restore our macro register
-		ENDIF
-
-@exit		moveq	#noErr,d0				;	everything always fine
-			rts
-
-			ENDWITH
 			ENDPROC
 
 
@@ -1210,7 +717,7 @@ MdVecSize			EQU	4
 
 ;---------------
 ;
-;		MemoryDispatch
+;		MemoryDispatch a590
 ;
 ;				Provides services for Virtual Memory access to the hardware
 ;
@@ -1228,24 +735,28 @@ Vects														;table of offset to selector routines
 				MemDispSelector	LockMemoryContiguousProc	; 4
 				MemDispSelector	GetPhysicalProc				; 5
 				MemDispSelector	WriteProtectProc			; 6		<T6>
-LastVec			MemDispSelector	UnWriteProtectProc			; 7		<T6>
+				MemDispSelector	UnWriteProtectProc			; 7		<T6>
+				dc.w			badSelect-Vects				; 8		<T6>
+				dc.w			badSelect-Vects				; 9		<T6>
+LastVec			MemDispSelector	LockMemoryProc				; 10	<T6>
 
 
 MemoryDispatchCode
 				cmp.w	#(LastVec-Vects)/MdVecSize,d0	; check if selector in range
-				bhi.s	@badSelect						; abort if its not a valid selector
+				bhi.s	badSelect						; abort if its not a valid selector
 				move.w	Vects(d0.w*MdVecSize),d0		; get offset to selector's routine
 				jmp		Vects(d0)						; go to the routine
 
-@badSelect		move.l	#hwParamErr,d0					; abort: return error code
+badSelect2
+badSelect3
+badSelect		move.l	#hwParamErr,d0					; abort: return error code
 				rts
 
 				EndProc
 
-
 ;-----
 ;
-;   HoldMemoryProc (_MemoryDispatch Selector 0)
+;   HoldMemoryProc a5c0 (_MemoryDispatch Selector 0)
 ;
 ;   This routine makes the address space resident in real memory and ineligible for paging.
 ;
@@ -1260,7 +771,7 @@ HoldMemoryProc		PROC	Export
 				EndProc
 ;-----
 ;
-;   UnHoldMemoryProc (_MemoryDispatch Selector 1)
+;   UnHoldMemoryProc a5d0 (_MemoryDispatch Selector 1)
 ;
 ;   This routine makes the address space eligible for paging.
 ;
@@ -1276,7 +787,7 @@ UnHoldMemoryProc	 PROC	Export
 
 ;-----
 ;
-;   LockMemoryProc (_MemoryDispatch Selector 2)
+;   LockMemoryProc a5e0 (_MemoryDispatch Selector 2)
 ;
 ;   This routine makes the address space immovable in real memory and ineligible for paging.
 ;	It also marks the corresponding page frames as non-cacheable, and increments the	<T2>
@@ -1301,7 +812,7 @@ LockMemoryProc		PROC	Export
 				movea.l	LockMemCt,a2			; point to MemoryDispatch globals
 				bsr		GetPageRange			; check input arguments
 				bne.s	@error					; get out
-				lea.l	mdLockTable(a2,d1*2),a1	; point to lock counter for first page
+				lea.l	mdLockTable(a2,d1.l*2),a1	; point to lock counter for first page
 				moveq.l	#1,d0					; flag to MMUSetCacheInhibit to inhibit caching
 @loop
 				addq.w	#1,(a1)+				; bump the lock count
@@ -1310,10 +821,6 @@ LockMemoryProc		PROC	Export
 				subq.l	#1,d2					; one less page to go						<T4>
 				bhi.s	@loop					; keep looping								<T4>
 
-				cmpi.b	#EMMU1,MMUType			; is this an Emulated MMU?					<SM17>
-				beq.s	@done					; -> Yes, no need to flush anything			<SM17>
-				bsr		MMUFlushATC				; flush ATC's
-				_FlushDataCache					; flush data cache
 @done			moveq.l	#noErr,d0				; no error
 @error
 				movem.l	(sp)+,@saveRegs			; restore registers
@@ -1323,7 +830,7 @@ LockMemoryProc		PROC	Export
 
 ;-----
 ;
-;   UnLockMemoryProc (_MemoryDispatch Selector 3)
+;   UnLockMemoryProc a610 (_MemoryDispatch Selector 3)
 ;
 ;   This routine makes the address space movable in real memory and eligible for paging again.
 ;	It also decrements the lock count for the corresponding page frames, and if the		<T2>
@@ -1342,7 +849,7 @@ UnLockMemoryProc	PROC	Export
 				movea.l	LockMemCt,a2			; point to MemoryDispatch globals
 				bsr		GetPageRange			; check input arguments
 				bne.s	@error					; get out
-				lea.l	mdLockTable(a2,d1*2),a1	; point to lock counter for first page
+				lea.l	mdLockTable(a2,d1.l*2),a1	; point to lock counter for first page
 				move.l	d2,d3					; copy of the count
 				move.w	#notLockedErr,d0		; assume a nonlocked page
 @lockCheckLoop
@@ -1351,7 +858,7 @@ UnLockMemoryProc	PROC	Export
 				subq.l	#1,d3					; one less page to go						<T4>
 				bhi.s	@lockCheckLoop			; keep looping								<T4>
 
-				lea.l	mdLockTable(a2,d1*2),a1	; point to lock counter for first page
+				lea.l	mdLockTable(a2,d1.l*2),a1	; point to lock counter for first page
 				move.l	d2,d3					; copy of the count
 				moveq.l	#0,d0					; flag to MMUSetCacheInhibit to enable caching
 				moveq.l	#0,d4					; assume ATC will not need to be cleared
@@ -1380,7 +887,7 @@ UnLockMemoryProc	PROC	Export
 
 ;-------------------------------------------------------------------
 ;
-;   LockMemoryContiguousProc (_MemoryDispatch Selector 4)
+;   LockMemoryContiguousProc a660 (_MemoryDispatch Selector 4)
 ;
 ;   This routine provides the service of making a virtual address range contiguous in
 ;	physical address space.
@@ -1423,7 +930,7 @@ LockMemoryContiguousProc PROC	Export
 				cmpa.l	a1,a0					; compare the results
 				bne.s	@notContigError			; range crosses a non-contiguous bank boundary
 
-				lea.l	mdLockTable(a2,d1*2),a1	; point to lock counter for first page
+				lea.l	mdLockTable(a2,d1.l*2),a1	; point to lock counter for first page
 				moveq.l	#1,d0					; flag to MMUSetCacheInhibit to inhibit caching
 @loop
 				addq.w	#1,(a1)+				; bump the lock count
@@ -1432,10 +939,6 @@ LockMemoryContiguousProc PROC	Export
 				subq.l	#1,d2					; one less page to go						<T4>
 				bhi.s	@loop					; keep looping								<T4>
 
-				cmpi.b	#EMMU1,MMUType			; is this an Emulated MMU?					<SM17>			<SM17>
-				beq.s	@done					; -> Yes, no ATC or Data cache to flush		<SM17>
-				bsr		MMUFlushATC				; flush ATC's
-				_FlushDataCache					; flush data cache
 @done			moveq.l	#noErr,d0				; no error
 @error
 				movem.l	(sp)+,@saveRegs			; restore registers
@@ -1449,7 +952,7 @@ LockMemoryContiguousProc PROC	Export
 
 ;-------------------------------------------------------------------
 ;
-;   GetPhysicalProc (_MemoryDispatch Selector 5)
+;   GetPhysicalProc a6c0 (_MemoryDispatch Selector 5)
 ;
 ;   This routine translates virtual addressess to corresponding physical addresses.
 ;
@@ -1678,7 +1181,7 @@ ChkContig		PROC	Export
 
 ;-----
 ;
-;   WriteProtectProc (_MemoryDispatch Selector 6)										<T4>
+;   WriteProtectProc a850 (_MemoryDispatch Selector 6)										<T4>
 ;																					<start>
 ;   This routine protects the address space from write accesses.
 ;	It also sets the high bit in the lock counter for each page in the range.
@@ -1722,12 +1225,7 @@ WriteProtectProc	Proc	Export
 
 			bsr		GetPageRange			; check input arguments
 			bne.s	@error					; get out
-			cmpi.b	#EMMU1,MMUType			; do we have an EMMU?			<SM17>
-			beq.s	@NoFlush				; -> Yes, no need for this crap
-			_FlushDataCache					; flush data cache (flush data before write protecting)
-			_FlushInstructionCache			; flush instruction cache (just for grins)
-			bsr		MMUFlushATC				; flush ATC's
-@NoFlush	lea.l	mdLockTable(a2,d1*2),a1	; point to lock counter for first page
+@NoFlush	lea.l	mdLockTable(a2,d1.l*2),a1	; point to lock counter for first page
 			moveq.l	#@setW,d0				; flag to MMUSetWriteProtect to write-protect
 @loop
 			ori.w	#@setWMask,(a1)+		; set the write-protect flag
@@ -1745,7 +1243,7 @@ WriteProtectProc	Proc	Export
 
 ;-----
 ;
-;   UnWriteProtectProc (_MemoryDispatch Selector 7)												<T4>
+;   UnWriteProtectProc a88c (_MemoryDispatch Selector 7)												<T4>
 ;																							<start>
 ;   This routine allows write accesses to the address space.
 ;	It also clears the high bit in the lock counter for each page in the range.
@@ -1789,7 +1287,7 @@ UnWriteProtectProc	Proc	Export
 
 			bsr		GetPageRange			; check input arguments
 			bne.s	@error					; get out
-			lea.l	mdLockTable(a2,d1*2),a1	; point to lock counter for first page
+			lea.l	mdLockTable(a2,d1.l*2),a1	; point to lock counter for first page
 			moveq.l	#@clearW,d0				; flag to MMUSetWriteProtect to clear write-protect
 @loop
 			andi.w	#@clearWMask,(a1)+		; clear the write-protect flag
@@ -1809,7 +1307,7 @@ UnWriteProtectProc	Proc	Export
 
 ;-------------------------------------------------------------------
 ;
-;   InitMemoryDispatch
+;   InitMemoryDispatch a8e0
 ;
 ;   This routine allocates and initializes the MemoryDispatch globals.
 ;
@@ -1826,15 +1324,6 @@ InitMemoryDispatch	Proc	Export
 			movem.l	@saveRegs,-(sp)				; save registers
 
 			clr.l	LockMemCt					; clear ptr to globals (assume failure)
-
-			cmpi.b	#HMMU,MMUType				; Do we have an MMU?								<SM17>
-			bhi.s	@hasMMU						; -> Yes, do the init!
-
-			MOVE.W	#@UnimplementedTrap,d0		; _Unimplemented									<SM17>
-			_GetTrapAddress ,newTool			; Get its address
-			MOVE.W	#@MemoryDispatchTrap,d0		; Select MemoryDispatch trap
-			_SetTrapAddress ,newOS				; Set it to point to Unimplemented
-			bra		@NoPages					; -> All done
 
 @hasMMU		move.b	CPUFlag,d1					; get the CPU type
 			moveq.l	#0,d2						; assume no page size
@@ -1856,8 +1345,6 @@ InitMemoryDispatch	Proc	Export
 			blo.w	@noPages					; bail without allocating globals ??? (Use old code ?)
 			cmpi.b	#PMMU851,MMUType			; do we have a real MMU ?
 			blo.w	@noPages					; bail without allocating globals ??? (Use old code ?)
-			cmpi.b	#EMMU1,MMUType				; do we have an emulated MMU?
-			bne.s	@mustbe030					; -> No, must be an 030								<SM17>
 
 			moveq	#0,D1						; clear D1
 			move.l	([ProcessorInfoPtr],ProcessorInfo.PageSize),D0	; Get the Page size from the nano-k
@@ -1867,8 +1354,6 @@ InitMemoryDispatch	Proc	Export
 			addq	#1,d1
 			bra.s	@countBits					; Keep shifting till we find one					<SM17>
 
-@mustbe030	pmove.l	TC,-4(a6)					; get the '030 TC register contents
-			bfextu	-4(a6){8,4},d1				; get log2 of page size
 @gotPageSize
 			bset.l	d1,d2						; get the page size
 			lsr.l	d1,d3						; get number of page frames
@@ -1901,7 +1386,7 @@ InitMemoryDispatch	Proc	Export
 
 
 ;-------------------------------------------------------------------
-;	GetPageRange - Sanity check on the logical address and count
+;	GetPageRange a980 - Sanity check on the logical address and count
 ;
 ;	Destroys:	a0/d1/d2
 ;
@@ -1959,7 +1444,7 @@ GetPageRange Proc	Export
 			EndProc
 
 ;-------------------------------------------------------------------
-;	MMUSetWriteProtect - Set W (Write Protect) bit for a page							<T4>
+;	MMUSetWriteProtect a9c0 - Set W (Write Protect) bit for a page							<T4>
 ;																						<start>
 ;	Destroys:	none.
 ;
@@ -1978,14 +1463,8 @@ MMUSetWriteProtect	Proc	Export
 @moreRegs	REG		d1/a1/a2
 @wBit		EQU		2						; write protect bit in all page descriptors
 
-			cmp.b	#PMMU851,MMUType		; do we have at least a 68851 PMMU ?
-			blo.w	@noPages				; if not, no pages to write protect (020 or less)
-@hasPages
 			movem.l	@saveRegs,-(sp)			; save registers
 			move.l	d0,d4					; remember write-protect mask
-
-			CMPI.B	#EMMU1,MMUType			; Do we have an EMMU?						<SM17>
-			BNE.S	@RealMMU				; -> Nope, sorry
 
 			MOVE.L	D1,A0					; Put the page number in A0
 			_nkGetPTEntryGivenPage			; Get the 030+ PTE from the nk
@@ -1997,47 +1476,6 @@ MMUSetWriteProtect	Proc	Export
 			MOVE.L	D1,A1					; Put the page number in A1
 			_nkSetPTEntryGivenPage			; Set the 030+ PTE
 
-			BRA.S	@RegDone				 ; -> Exit
-
-@RealMMU	move.l	mdLog2PageSize(a2),d0	; get the log2 of the page size
-			asl.l	d0,d1					; turn logical page number into a logical address
-
-	IF Supports24Bit THEN					; <SM17>
-			cmp.l	mdPages24(a2),d1		; check if page is in the 24-bit address space
-			slo		d3						; if it is, be sure to whack the 24-bit table
-
-			moveq.l	#false32b,d0			; first go to 24-bit mode
-			_SwapMMUMode					; go to 24-bit mode
-			move.l	d0,d2					; remember the caller's MMU mode
-
-			movea.l	d1,a0					; set up logical address to get page descriptor
-			movem.l	@moreRegs,-(sp)			; save registers that GetPageDesc destroys
-			bsr		GetPageDescProc			; ptr to page descriptor given logical address
-			movem.l	(sp)+,@moreRegs			; restore registers that GetPageDesc destroys
-			movea.l	a0,a1					; save ptr to 24-bit page descriptor
-
-			moveq.l	#true32b,d0				; go to 32-bit mode
-			_SwapMMUMode					; go to 32-bit, return caller's MMU mode
-	ENDIF
-
-			movea.l	d1,a0					; set up logical address to get page descriptor
-			movem.l	@moreRegs,-(sp)			; save registers that GetPageDesc destroys
-			bsr		GetPageDescProc			; ptr to page descriptor given logical address
-			movem.l	(sp)+,@moreRegs			; restore registers that GetPageDesc destroys
-
-			bclr.b	#@wBit,3(a0)			; clear the W bit
-			or.l	d4,(a0)					; clear/set the write-protect flag
-
-	IF Supports24Bit THEN					; <SM17>
-			tst.b	d3						; should we whack the 24-bit table ?
-			beq.s	@exit					; if not, we're done
-
-			bclr.b	#@wBit,3(a1)			; clear the W bit
-			or.l	d4,(a1)					; clear/set the write-protect flag
-@exit
-			move.l	d2,d0					; caller's MMU mode
-			_SwapMMUMode					; restore the MMU mode						<end>
-	ENDIF
 @regDone	movem.l	(sp)+,@saveRegs			; restore registers							<T4>
 @noPages
 			rts
@@ -2045,7 +1483,7 @@ MMUSetWriteProtect	Proc	Export
 			EndProc
 
 ;-------------------------------------------------------------------
-;	MMUSetCacheInhibit - Set CI (Cache Inhibit) bit for a page
+;	MMUSetCacheInhibit a9e0 - Set CI (Cache Inhibit) bit for a page
 ;
 ;	NOTE:	On the 040, it is assumed that bit 5 of the page descriptor (CM[0]) is
 ;			meaningful, since it is used to select write-through/copyback when
@@ -2072,57 +1510,15 @@ MMUSetCacheInhibit	Proc	Export
 @saveRegs	REG		d0-d4/a0/a1
 @moreRegs	REG		d1/a1/a2
 
-			cmp.b	#PMMU851,MMUType		; do we have at least a 68851 PMMU ?
-			blo.w	@noPages				; if not, we can't control data caching (020 or less)
-@hasPages
 			movem.l	@saveRegs,-(sp)			; save registers
 
-			cmpi.b	#EMMU1,MMUType			; Do we have an EMMU?
-			bne.s	@RealMMU				; -> Nope, sorry
+			btst.b	#7,$240A
+			bne.s	@RegDone
 
 			MOVE.L	D1,A0					 ; Put the page number in A0
 			ADDI.W	#mmuMakePageCacheable,D0 ; Turn the cache mode flag into a nKernel selector
 			_KernelVMDispatch				 ; Set the cache status & flush the ATC
-			BRA.S	@RegDone				 ; -> Exit
 
-@RealMMU	move.l	d0,d4					; remember inhibit flag
-
-			move.l	mdLog2PageSize(a2),d0	; get the log2 of the page size
-			asl.l	d0,d1					; turn logical page number into a logical address
-
-	IF Supports24Bit THEN					; <SM17>
-			cmp.l	mdPages24(a2),d1		; check if page is in the 24-bit address space
-			slo		d3						; if it is, be sure to whack the 24-bit table
-
-			moveq.l	#false32b,d0			; first go to 24-bit mode						<T4>
-			_SwapMMUMode					; go to 24-bit mode
-			move.l	d0,d2					; remember the caller's MMU mode
-
-			movea.l	d1,a0					; set up logical address to get page descriptor
-			movem.l	@moreRegs,-(sp)			; save registers that GetPageDesc destroys
-			bsr		GetPageDescProc			; ptr to page descriptor given logical address
-			movem.l	(sp)+,@moreRegs			; restore registers that GetPageDesc destroys
-			movea.l	a0,a1					; save ptr to 24-bit page descriptor			<T4>
-
-			moveq.l	#true32b,d0				; go to 32-bit mode								<T4>
-			_SwapMMUMode
-	ENDIF
-			movea.l	d1,a0					; set up logical address to get page descriptor
-			movem.l	@moreRegs,-(sp)			; save registers that GetPageDesc destroys
-			bsr		GetPageDescProc			; ptr to page descriptor given logical address
-			movem.l	(sp)+,@moreRegs			; restore registers that GetPageDesc destroys
-			bsr.s	MMUSetCacheMode			; go whack the page descriptor					<T3>
-
-	IF Supports24Bit THEN					; <SM17>
-			tst.b	d3						; should we whack the 24-bit table ?
-			beq.s	@exit					; if not, we're done
-
-			movea.l	a1,a0					; point to the 24-bit page descriptor			<T4>
-			bsr.s	MMUSetCacheMode			; go whack the page descriptor					<T3>
-@exit
-			move.l	d2,d0					; caller's MMU mode
-			_SwapMMUMode					; restore the MMU mode
-	ENDIF
 @RegDone	movem.l	(sp)+,@saveRegs			; restore registers
 @noPages
 			rts
@@ -2130,60 +1526,11 @@ MMUSetCacheInhibit	Proc	Export
 			EndProc
 
 ;-------------------------------------------------------------------
-;	MMUSetCacheMode - code to actually whack the page table entry (Called in 32-bit mode)	<T4>
-;																							<T3>
-;	Destroys:	None.																		<start>
 ;
-;	On entry:	d4.l = cache inhibit flag:	0=clear cache inhibit bit(s)
-;											1=set cache inhibit bit(s)
-;				a0.l = logical address of page descriptor
-;				a2.l = ptr to MemoryDispatch globals
-;-------------------------------------------------------------------
-MMUSetCacheMode		Proc	Export
-@saveRegs	REG		d0/d1
-@cacheBit	EQU		6						; C bit for 851/030, CM[1] for 040 (CM[0] untouched)
-@cm0bit		EQU		5						; CM[0] bit in 040 page descriptor
-
-			movem.l	@saveRegs,-(sp)			; save registers
-			tst.b	d4						; check the cache inhibit flag
-			beq.s	@enableCaching			; if clear, enable caching for the page
-			move.l	(a0),d1					; get page desc (forces serialization on 040)	<T7>
-			bset.l	#@cacheBit,d1			; inhibit caching
-			bclr.l	#@cm0bit,d1				; make it non-serialized						<T7>
-			move.l	d1,(a0)					; update page descriptor
-			bra.s	@exit
-@enableCaching
-			clr.l	d1						; clear 68040 mask								<T7>
-			bfextu	CacheFlags{31-bCopybackMode:1},d1	; get current cache mode			<T7>
-			lsl.l	#@cm0bit,d1				; make a mask for a 68040 page descriptor		<T7>
-			or.l	(a0),d1					; get page descriptor (forces copyback on 040)
-			bclr.l	#@cacheBit,d1			; enable caching
-			move.l	d1,(a0)					; update page descriptor
-@exit
-			movem.l	(sp)+,@saveRegs			; restore registers								<T3>
-			rts
-			EndProc
-
-
-;-------------------------------------------------------------------
-;
-;	MMUFlushATC - Flush all entries in the MMU's Address Translation Cache
+;	MMUFlushATC aa00 - Flush all entries in the MMU's Address Translation Cache
 ;
 ;-------------------------------------------------------------------
 MMUFlushATC	Proc	Export
-			cmpi.b	#EMMU1,MMUType			; do we have an Emulated MMU?
-			beq.s	@exit					; -> Yes, do nothing							<SM17>
-			cmp.b	#PMMU851,MMUType		; do we have at least a 68851 PMMU ?
-			blo.s	@exit					; if not, we're done
-			cmp.b	#PMMU040,MMUType		; do we have an 040 PMMU?
-			beq.s	@handle040				; if so, use 040 PFLUSHA
-			pflusha							; use 851 & 030 PFLUSHA
-@exit
-			rts								; done
-@handle040
-			MACHINE	MC68040
-			pflusha							; flush the ATC
-			MACHINE	MC68030
 			rts
 			EndProc
 

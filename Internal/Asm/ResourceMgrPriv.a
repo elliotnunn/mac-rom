@@ -104,7 +104,7 @@ kPreventFileFromBeingClosedMask	equ	16
 kAllOverrideAttributesMask		equ	kOverrideNextMapMask +				\
 									kDontCountOrIndexDuplicatesMask +	\
 									kTwoDeepMask +						\
-									kPreventFileFromBeingClosedMask
+									kPreventFileFromBeingClosedMask + 32 + 64 + 128
 kAllButOverrideAttributesMask	equ	255 - kAllOverrideAttributesMask 
 
 selectMakeOverrideMap			equ	4

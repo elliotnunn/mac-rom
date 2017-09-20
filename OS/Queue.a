@@ -87,49 +87,6 @@ ENQDONE 		SUBQ	#2,A1					;restore A1
 				ENDP
 
 
-;-----------------------------------------------------------------------
-; EnqueueHead -- add a queue element to the head of a queue.  
-;-----------------------------------------------------------------------
-;
-;	Entry:
-;		A0 - points to the queue element
-;		A1 - points to the queue header
-;		All registers are preserved; there are no error conditions.
-;
-; The element is inserted at the beginning of the list.
-;
-;-----------------------------------------------------------------------
-;
-ENQUEUEHEAD		PROC	EXPORT
-				
-				MOVE	SR, -(SP)				;preserve status
-				ADDQ	#2, A1					;point to qHead
-				ORI 	#$0700, SR				;disable interrupts for exclusion
-
-				TST.L	(A1)+					;anything in the queue? (qHead)
-				BNE.S	@doQinsert				;if so, skip ahead
-;
-; the queue is empty so make the head and tail point to the new element
-;
-				MOVE.L	A0, (A1) 				;qTail
-				MOVE.L	A0, -(A1)				;qHead
-				CLR.L	qLink(A0)				;clear the link of the element
-				BRA.S	@enQdone
-;
-; insert the element at the head of the list
-;
-@doQinsert		MOVE.L	A2, -(SP)				;preserve A2
-				MOVE.L	-(A1), A2 				;get ptr to old qHead
-				MOVE.L	A2, qLink(A0)			;update new link to old head
-				MOVE.L	A0, (A1) 				;update qHead
-				MOVE.L	(SP)+, A2				;restore A2
-;
-@enQdone 		SUBQ	#2, A1					;restore A1
-				MOVE	(SP)+, SR				;restore status and go home
-				RTS
-		
-				ENDP
-
 ;
 ;-----------------------------------------------------------------------
 ;

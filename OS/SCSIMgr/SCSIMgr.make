@@ -38,8 +38,8 @@ SCSIObjects =		"{ObjDir}scsiboot.a.o"											¶
 					"{ObjDir}SCSIMgrInitDB.a.o"										¶
 					"{ObjDir}SCSIMgrDB.a.o"											¶
 					
-"{LibDir}SCSI.lib"	Ä	{SCSIObjects}
-	Lib {StdLibOpts} -o "{Targ}" {SCSIObjects}
+# "{LibDir}SCSI.lib"	Ä	{SCSIObjects}
+# 	Lib {StdLibOpts} -o "{Targ}" {SCSIObjects}
 
 
 "{ObjDir}SCSIBoot.a.o"			Ä	"{ObjDir}StandardEqu.d"							¶

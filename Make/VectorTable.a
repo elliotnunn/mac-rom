@@ -221,6 +221,7 @@
 ;	$2080	-	Time Manager
 ; 	$2084	-	Window Mananger
 ; 	$2088	-	Figment Memory Manager
+; 	$208c	-	Expansion Bus Manager
 
 ;Global							Vector		Table	Code	Dispatch	Source
 ;Identifier						Macro		Vector	Vector	Register	File
@@ -330,21 +331,21 @@ SETRESPONSEPARAMS				vIndirect	$2010,	$0040,	A7		; {sources}OS:EgretMgr.a
 TICKHANDLER 					vIndirect	$2010,	$0044,	A7		; {sources}OS:EgretMgr.a
 PSEUDOCNTTABLE					vDataTable							; {sources}OS:EgretMgr.a
 ADBCNTTABLE 					vDataTable							; {sources}OS:EgretMgr.a
-EGRETINIT						vIndirect	$2010,	$0048,	A7		; {sources}OS:EgretMgr.a
+;EGRETINIT						vIndirect	$2010,	$0048,	A7		; {sources}OS:EgretMgr.a
 SENDEGRETCMD					vNoVector							; {sources}OS:EgretMgr.a
-ECLIPSEPDMPATCH 				vIndirect	$2010,	$004c,	A7		; {sources}OS:EgretMgr.a
-KEYSWITCHHANDLER				vIndirect	$2010,	$0050,	A7		; {sources}OS:EgretMgr.a
-ECLIPSEDFACPATCH				vIndirect	$2010,	$0054,	A7		; {sources}OS:EgretMgr.a
-DEBUGUTILRUNKBDPATCH			vIndirect	$2010,	$0058,	A7		; {sources}OS:EgretMgr.a
+;ECLIPSEPDMPATCH 				vIndirect	$2010,	$004c,	A7		; {sources}OS:EgretMgr.a
+;KEYSWITCHHANDLER				vIndirect	$2010,	$0050,	A7		; {sources}OS:EgretMgr.a
+;ECLIPSEDFACPATCH				vIndirect	$2010,	$0054,	A7		; {sources}OS:EgretMgr.a
+;DEBUGUTILRUNKBDPATCH			vIndirect	$2010,	$0058,	A7		; {sources}OS:EgretMgr.a
 CUDAEGRETCODE					vDataTable							; {sources}OS:EgretMgr.a
-EGRETDFACANDPDM 				vIndirect	$2010,	$005c,	A7		; {sources}OS:EgretMgr.a
-CACHEINSTALL 					vIndirect	$2010,	$0060,	A7		; {sources}OS:HFS:Cache:DiskCache.a
+;EGRETDFACANDPDM 				vIndirect	$2010,	$005c,	A7		; {sources}OS:EgretMgr.a
+;CACHEINSTALL 					vIndirect	$2010,	$0060,	A7		; {sources}OS:HFS:Cache:DiskCache.a
 CHKFIRMWARE 					vIndirect	$2010,	$0064,	A7		; {sources}OS:EgretMgr.a
-INSTALLFPSP 					vIndirect	$2010,	$0068,	A7, has040MMU		; {sources}OS:FPUEmulation:FPEmulation.a
-NEWGESTALTSELECTORS 			vIndirect	$2010,	$006c,	A7		; {sources}OS:Gestalt:GestaltExtensions.a
+;INSTALLFPSP 					vIndirect	$2010,	$0068,	A7, has040MMU		; {sources}OS:FPUEmulation:FPEmulation.a
+;NEWGESTALTSELECTORS 			vIndirect	$2010,	$006c,	A7		; {sources}OS:Gestalt:GestaltExtensions.a
 GESTALTTRAP 					vATrap		A???					; {sources}OS:Gestalt:GestaltFunction.a
-newGestalt						vIndirect	$2010,	$0070,	A7		; {sources}OS:Gestalt:GestaltLookup.c
-findLong						vIndirect	$2010,	$0074,	A7		; {sources}OS:Gestalt:GestaltLookup.c
+;newGestalt						vIndirect	$2010,	$0070,	A7		; {sources}OS:Gestalt:GestaltLookup.c
+;findLong						vIndirect	$2010,	$0074,	A7		; {sources}OS:Gestalt:GestaltLookup.c
 HWPRIV							vATrap		A???					; {sources}OS:HwPriv.a
 SWAPICACHE						vIndirect	$2010,	$0078,	A7		; {sources}OS:HwPriv.a
 FLUSHICACHE 					vIndirect	$2010,	$007c,	A7		; {sources}OS:HwPriv.a
@@ -355,7 +356,7 @@ FLUSHEXTCACHE					vIndirect	$2010,	$008c,	A7		; {sources}OS:HwPriv.a
 SWAPSERIALCLOCK 				vIndirect	$2010,	$0090,	A7		; {sources}OS:HwPriv.a
 FLUSHCRANGEFORBM				vNoVector							; {sources}OS:HwPriv.a
 FLUSHCRANGE 					vIndirect	$2010,	$0094,	A7		; {sources}OS:HwPriv.a
-WAITFORSCSIDEVS 				vIndirect	$2010,	$0098,	A7		; {sources}OS:HwPriv.a
+;WAITFORSCSIDEVS 				vIndirect	$2010,	$0098,	A7		; {sources}OS:HwPriv.a
 MEMORYDISPATCH					vNoVector							; {sources}OS:HwPriv.a
 HOLDMEMORYPROC					vNoVector							; {sources}OS:HwPriv.a
 UNHOLDMEMORYPROC				vNoVector							; {sources}OS:HwPriv.a
@@ -372,13 +373,13 @@ MMUSETWRITEPROTECT				vNoVector							; {sources}OS:HwPriv.a
 MMUSETCACHEINHIBIT				vNoVector							; {sources}OS:HwPriv.a
 MMUSETCACHEMODE 				vNoVector							; {sources}OS:HwPriv.a
 MMUFLUSHATC 					vNoVector							; {sources}OS:HwPriv.a
-;					UNUSED		vIndirect	$2010,	$009C			;
+MAKESOMETHINGWRITETHROUGH		vIndirect	$2010,	$009C,	A7		; {sources}OS:HwPriv.a
 IOPMGR							vNoVector							; {sources}OS:IOPMgr.a
-IOPINFOACCESS					vIndirect	$2010,	$00a0,	A7		; {sources}OS:IOPMgr.a
-IOPMSGREQUEST					vIndirect	$2010,	$00a4,	A7		; {sources}OS:IOPMgr.a
-IOPMOVEDATA 					vIndirect	$2010,	$00a8,	A7		; {sources}OS:IOPMgr.a
+;IOPINFOACCESS					vIndirect	$2010,	$00a0,	A7		; {sources}OS:IOPMgr.a
+;IOPMSGREQUEST					vIndirect	$2010,	$00a4,	A7		; {sources}OS:IOPMgr.a
+;IOPMOVEDATA 					vIndirect	$2010,	$00a8,	A7		; {sources}OS:IOPMgr.a
 IOPINTERRUPT					vDirect		????					; {sources}OS:IOPMgr.a
-MOVEREQHANDLER					vIndirect	$2010,	$00ac,	A7		; {sources}OS:IOPMgr.a
+;MOVEREQHANDLER					vIndirect	$2010,	$00ac,	A7		; {sources}OS:IOPMgr.a
 INITIOPMGR						vNoVector							; {sources}OS:IOPMgr.a
 SCCIOPBYPASS					vNoVector							; {sources}OS:IOPMgr.a
 SCCIOPHWINIT					vNoVector							; {sources}OS:IOPMgr.a
@@ -422,7 +423,7 @@ PMGROP							vATrap		A???					; {sources}OS:PowerMgr:PowerMgr.a
 IDLEMIND						vNoVector							; {sources}OS:PowerMgr:PowerMgr.a
 GOTOSLEEP						vATrap		A???					; {sources}OS:PowerMgr:PowerMgr.a
 WAKEUP							vNoVector							; {sources}OS:PowerMgr:PowerMgr.a
-SETSUPERVISORMODE				vIndirect	$2010,	$00b8,	A7, hasPwrControls		; {sources}OS:PowerMgr:PowerMgr.a
+;SETSUPERVISORMODE				vIndirect	$2010,	$00b8,	A7, hasPwrControls		; {sources}OS:PowerMgr:PowerMgr.a
 DISPATCHER						vNoVector							; {sources}OS:TrapDispatcher:Dispatch.a
 GETTRAPADDRESSTRAP				vATrap	 	A???					; {sources}OS:TrapDispatcher:Dispatch.a
 SETTRAPADDRESSTRAP				vATrap	 	A???					; {sources}OS:TrapDispatcher:Dispatch.a
@@ -430,7 +431,7 @@ CACHEFLUSH						vDirect		????					; {sources}OS:TrapDispatcher:Dispatch.a
 VCACHEFLUSH 					vDirect		????					; {sources}OS:TrapDispatcher:Dispatch.a
 INITDISPATCHER					vNoVector							; {sources}OS:TrapDispatcher:Dispatch.a
 BADTRAP 						vIndirect	$2010,	$00bc,	A7		; {sources}OS:TrapDispatcher:Dispatch.a
-TRAPADDRESSBITS 				vIndirect	$2010,	$00c0,	A7		; {sources}OS:TrapDispatcher:Dispatch.a
+;TRAPADDRESSBITS 				vIndirect	$2010,	$00c0,	A7		; {sources}OS:TrapDispatcher:Dispatch.a
 UNIVERSAL						vNoVector							; {sources}OS:Universal.a
 JUMPINTOROM 					vNoVector							; {sources}OS:Universal.a
 INITVIAS						vNoVector							; {sources}OS:Universal.a
@@ -483,7 +484,7 @@ RELTIMETASK 					vNoVector							; {sources}OS:sysUtil.a
 ;					UNUSED		vATrap	 	A???					; {sources}Patches:MiscPatches.a
 INITAPP 						vIndirect	$2010,	$00c8,	A7		; {sources}Patches:MiscPatches.a
 CLEANUPAPP						vATrap	 	A???					; {sources}Patches:MiscPatches.a
-MISCPATCHESINSTALL				vIndirect	$2010,	$00cc,	A7		; {sources}Patches:MiscPatches.a
+;MISCPATCHESINSTALL				vIndirect	$2010,	$00cc,	A7		; {sources}Patches:MiscPatches.a
 
 PACK8							vATrap	 	A???					; {sources}Toolbox:AppleEventMgr:AEPackEntry.a
 
@@ -509,9 +510,9 @@ GETNEWCONTROL					vATrap	 	A???					; {sources}Toolbox:GetMgr:GetMgr.a
 GETMENU 						vATrap		A???					; {sources}Toolbox:GetMgr:GetMgr.a
 GETNEWMBAR						vATrap	 	A???					; {sources}Toolbox:GetMgr:GetMgr.a
 GETMGREND						vNoVector							; {sources}Toolbox:GetMgr:GetMgr.a
-INSTALLPRIVTRAP 				vIndirect	$2010,	$00d8,	A7, has040MMU		; {sources}Toolbox:InSANE:FPPrivTrap.a
-PRIVTRAP881 					vIndirect	$2010,	$00dc,	A7, has040MMU		; {sources}Toolbox:InSANE:FPPrivTrap.a
-PRIVTRAP040 					vIndirect	$2010,	$00e0,	A7, has040MMU		; {sources}Toolbox:InSANE:FPPrivTrap.a
+;INSTALLPRIVTRAP 				vIndirect	$2010,	$00d8,	A7, has040MMU		; {sources}Toolbox:InSANE:FPPrivTrap.a
+;PRIVTRAP881 					vIndirect	$2010,	$00dc,	A7, has040MMU		; {sources}Toolbox:InSANE:FPPrivTrap.a
+;PRIVTRAP040 					vIndirect	$2010,	$00e0,	A7, has040MMU		; {sources}Toolbox:InSANE:FPPrivTrap.a
 PACKDISPATCHER					vIndirect	$2010,	$00e4,	A7		; {sources}Toolbox:PackageMgr.a
 INITPACK						vATrap	 	A???					; {sources}Toolbox:PackageMgr.a
 INITALLPACKS					vATrap	 	A???					; {sources}Toolbox:PackageMgr.a
@@ -540,6 +541,19 @@ EMT1010 						vDirect		????					; {sources}Objects:ROM:Dispatch.a.o
 BASEOFROM						vDataTable							; {sources}Objects:ROM:StartTop.a.o
 ;					UNUSED		vIndirect	$2010,	$00ec,	A7		; {sources}
 
+MISCELLANEOUS_VEC00F0			vIndirect	$2010,	$00f0,	A7
+MISCELLANEOUS_VEC00F4			vIndirect	$2010,	$00f4,	A7
+MISCELLANEOUS_VEC00F8			vIndirect	$2010,	$00f8,	A7
+MISCELLANEOUS_VEC00FC			vIndirect	$2010,	$00fc,	A7
+MISCELLANEOUS_VEC0100			vIndirect	$2010,	$0100,	A7
+MISCELLANEOUS_VEC0104			vIndirect	$2010,	$0104,	A7
+MISCELLANEOUS_VEC0108			vIndirect	$2010,	$0108,	A7
+MISCELLANEOUS_VEC010C			vIndirect	$2010,	$010c,	A7
+MISCELLANEOUS_VEC0110			vIndirect	$2010,	$0110,	A7
+MISCELLANEOUS_VEC0114			vIndirect	$2010,	$0114,	A7
+MISCELLANEOUS_VEC0118			vIndirect	$2010,	$0118,	A7
+MISCELLANEOUS_VEC011C			vIndirect	$2010,	$011c,	A7
+
 ;============================== End Misc. Vectors
 
 ;============================== Public Vectors
@@ -552,13 +566,13 @@ PICKWDCB						vIndirect	$2014,	$002C,	A7		; {sources}OS:HFS:TFSVol.a ### PC Exch
 
 ALIASMGRINSTALL 				vIndirect	$2018,	$0004,	A7		; {sources}Toolbox:AliasMgr:AliasMgr.a
 ALIAS							vATrap	 	A???					; {sources}Toolbox:AliasMgr:AliasMgr.a
-gestaltAliasMgr 				vIndirect	$2018,	$0008,	A7		; {sources}Toolbox:AliasMgr:AliasMgr.a
+;gestaltAliasMgr 				vIndirect	$2018,	$0008,	A7		; {sources}Toolbox:AliasMgr:AliasMgr.a
 GETEXPORTEDFOLDERINFO			vIndirect	$2018,	$000c,	A7		; {sources}Toolbox:AliasMgr:AliasMgr.a
-GETVOLMOUNTINFOSIZE 			vIndirect	$2018,	$0010,	A7		; {sources}Toolbox:AliasMgr:AliasMgr.a
-GETVOLMOUNTINFO 				vIndirect	$2018,	$0014,	A7		; {sources}Toolbox:AliasMgr:AliasMgr.a
-VOLUMEMOUNT 					vIndirect	$2018,	$0018,	A7		; {sources}Toolbox:AliasMgr:AliasMgr.a
+;GETVOLMOUNTINFOSIZE 			vIndirect	$2018,	$0010,	A7		; {sources}Toolbox:AliasMgr:AliasMgr.a
+;GETVOLMOUNTINFO 				vIndirect	$2018,	$0014,	A7		; {sources}Toolbox:AliasMgr:AliasMgr.a
+;VOLUMEMOUNT 					vIndirect	$2018,	$0018,	A7		; {sources}Toolbox:AliasMgr:AliasMgr.a
 InitFolderManager				vIndirect	$2018,	$001c,	A7		; {sources}Toolbox:AliasMgr:FolderMgr.a
-gestaltFolderMgr				vIndirect	$2018,	$0020,	A7		; {sources}Toolbox:AliasMgr:FolderMgr.a
+;gestaltFolderMgr				vIndirect	$2018,	$0020,	A7		; {sources}Toolbox:AliasMgr:FolderMgr.a
 FindFolder						vIndirect	$2018,	$0024,	A7		; {sources}Toolbox:AliasMgr:FolderMgr.a
 GetFolderName					vIndirect	$2018,	$0028,	A7		; {sources}Toolbox:AliasMgr:FolderMgr.a
 FindFolderInternal				vIndirect	$2018,	$002c,	A7		; {sources}Toolbox:AliasMgr:FolderMgr.a
@@ -631,29 +645,6 @@ AL_mountVolume					vIndirect	$2018,	$0134,	A1		; {sources}Toolbox:AliasMgr:alUti
 
 ;============================== End Alias Manager Vectors
 
-;============================== Commtoolbox Vectors
-
-MyGetString 					vIndirect	$201C,	$0004,	A1		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CRMBuiltInSerial.c
-REGISTERBUILTINPORTS			vIndirect	$201C,	$0008,	A1		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CRMBuiltInSerial.c
-COMMTOOLBOXDISPATCHER			vATrap	 	A???					; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxDispatcher.a
-SETUPGLOBALS					vIndirect	$201C,	$000c,	A7		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.a
-SETUPGESTALT					vIndirect	$201C,	$0010,	A7		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.a
-GETCTBVERSION					vIndirect	$201C,	$0014,	A7		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.a
-GETCMATTR						vIndirect	$201C,	$0018,	A7		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.a
-GETFTATTR						vIndirect	$201C,	$001c,	A7		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.a
-GETTMATTR						vIndirect	$201C,	$0020,	A7		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.a
-GETCRMATTR						vIndirect	$201C,	$0024,	A7		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.a
-GETDITLATTR 					vIndirect	$201C,	$0028,	A7		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.a
-GETPOPUPATTR					vIndirect	$201C,	$002c,	A7		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.a
-GETSTDNBPATTR					vIndirect	$201C,	$0030,	A7		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.a
-CLEANUPCOMMTOOLBOX				vIndirect	$201C,	$0034,	A1		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.c
-TRACKMANAGERS					vIndirect	$201C,	$0038,	A1		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.c
-FindApp 						vIndirect	$201C,	$003c,	A1		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.c
-AddApp							vIndirect	$201C,	$0040,	A1		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.c
-RemoveApp						vIndirect	$201C,	$0044,	A1		; {sources}Toolbox:CommToolbox:CommToolboxStartup:CommToolboxPatches.c
-
-;============================== End Commtoolbox Vectors
-
 ;============================== Component Manager Vectors
 
 ;COMPONENTMGRINSTALL 			vIndirect	$2020,	$0004,	A7		; {sources}Toolbox:ComponentMgr:ComponentExtensions.a
@@ -712,7 +703,7 @@ __OPENCOMPONENT					vIndirect	$2020,	$00d4,	A1		; {sources}Toolbox:ComponentMgr:
 __CLOSECOMPONENT				vIndirect	$2020,	$00d8,	A1		; {sources}Toolbox:ComponentMgr:ThingManager.c
 __OPENDEFAULTCOMPONENT			vIndirect	$2020,	$00dc,	A1		; {sources}Toolbox:ComponentMgr:ThingManager.c
 __CALLCOMPONENT					vIndirect	$2020,	$00e0,	A1		; {sources}Toolbox:ComponentMgr:ThingManager.c
-REGISTERCOMPONENTROMRESOURCE	vIndirect	$2020,	$00e4,	A1		; {sources}Toolbox:ComponentMgr:ThingManager.c
+;REGISTERCOMPONENTROMRESOURCE	vIndirect	$2020,	$00e4,	A1		; {sources}Toolbox:ComponentMgr:ThingManager.c
 __REGISTERROMCOMPONENTS			vIndirect	$2020,	$00e8,	A1		; {sources}Toolbox:ComponentMgr:ThingManager.c
 __MAINCOMPONENT					vATrap	 	A???					; {sources}Toolbox:ComponentMgr:ThingManagerDisp.a
 COMPONENTBUMMER 				vIndirect	$2020,	$00ec,	A7		; {sources}Toolbox:ComponentMgr:ThingManagerDisp.a
@@ -1432,232 +1423,10 @@ BLKCHK							vIndirect	$2030,	$0370,	A7		; {sources}OS:HFS:vsm.a
 UPDATEFREE						vIndirect	$2030,	$0374,	A7		; {sources}OS:HFS:vsm.a
 VREADBM 						vDirect		????					; {sources}OS:HFS:vsm.a
 
+HFS_VEC0378						vIndirect	$2030,	$0378,	A7
+HFS_VEC037C						vIndirect	$2030,	$037c,	A7
+
 ;============================== End HFS Vectors
-
-;============================== Help Manager Vectors
-
-HELPMGRINSTALL					vIndirect	$2034,	$0004,	A7		; {sources}Toolbox:HelpMgr:BalloonExtensions.a
-PACK14ENTRY 					vATrap	 	A???					; {sources}Toolbox:HelpMgr:BalloonExtensions.a
-PTCHHMUPDATEHELPMENU			vIndirect	$2034,	$0008,	A7		; {sources}Toolbox:HelpMgr:BalloonExtensions.a
-PTCHHMGETHELPGLOBAL 			vIndirect	$2034,	$000c,	A7		; {sources}Toolbox:HelpMgr:BalloonExtensions.a
-PTCHHMGETBALLOONS				vIndirect	$2034,	$0010,	A7		; {sources}Toolbox:HelpMgr:BalloonExtensions.a
-PTCHHMSETHELPGLOBAL 			vIndirect	$2034,	$0014,	A7		; {sources}Toolbox:HelpMgr:BalloonExtensions.a
-PTCHHMPASCALGETBALLOONS 		vIndirect	$2034,	$0018,	A1		; {sources}Toolbox:HelpMgr:Balloonptch28.p
-PTCHHMGESTALTISTHEREHELP		vIndirect	$2034,	$001c,	A1		; {sources}Toolbox:HelpMgr:Balloonptch28.p
-PTCHHMBOOTINITHELPMANAGER		vIndirect	$2034,	$0020,	A1		; {sources}Toolbox:HelpMgr:Balloonptch28.p
-PTCHHMTOGGLEWHATIS				vIndirect	$2034,	$0024,	A1		; {sources}Toolbox:HelpMgr:Balloonptch28.p
-PTCHHMCALLTRACKERINCONTEXT		vIndirect	$2034,	$0028,	A1		; {sources}Toolbox:HelpMgr:Balloonptch28.p
-PTCHHMSHOWHELPABOUTDIALOG		vIndirect	$2034,	$002c,	A1		; {sources}Toolbox:HelpMgr:Balloonptch28.p
-
-;============================== End Help Manager Vectors
-
-;============================== Icon Utils Vectors
-
-ICONDISPATCH					vATrap	 	A???					; {sources}Toolbox:IconUtils:IconUtils.a
-typeTable						vDataTable							; {sources}Toolbox:IconUtils:IconUtils.a
-GetGlobalPtr					vIndirect	$2038,	$0004,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-GetGlobalHandle 				vIndirect	$2038,	$0008,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-FromResource					vIndirect	$2038,	$000c,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__PLOTICONID					vIndirect	$2038,	$0010,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__LOADICONCACHE 				vIndirect	$2038,	$0014,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__PLOTICONSUITE 				vIndirect	$2038,	$0018,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__ICONIDTORGN					vIndirect	$2038,	$001c,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__ICONSUITETORGN				vIndirect	$2038,	$0020,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__RECTINICONID					vIndirect	$2038,	$0024,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__PTINICONID					vIndirect	$2038,	$0028,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__RECTINICONSUITE				vIndirect	$2038,	$002c,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__PTINICONSUITE 				vIndirect	$2038,	$0030,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-FromMethod						vIndirect	$2038,	$0034,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__PLOTICONMETHOD				vIndirect	$2038,	$0038,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__ICONMETHODTORGN				vIndirect	$2038,	$003c,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__RECTINICONMETHOD				vIndirect	$2038,	$0040,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__PTINICONMETHOD				vIndirect	$2038,	$0044,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__ADDICONTOSUITE				vIndirect	$2038,	$0048,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__GETICONFROMSUITE				vIndirect	$2038,	$004c,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-ADJUSTRGN						vIndirect	$2038,	$0050,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__GETICONCACHEDATA				vIndirect	$2038,	$0054,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__SETICONCACHEDATA				vIndirect	$2038,	$0058,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__GETICONCACHEPROC				vIndirect	$2038,	$005c,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__SETICONCACHEPROC				vIndirect	$2038,	$0060,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__GETICONDEVICE 				vIndirect	$2038,	$0064,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-__SETICONDEVICE 				vIndirect	$2038,	$0068,	A7		; {sources}Toolbox:IconUtils:IconUtils.a
-PERFORMALIGNMENT				vIndirect	$2038,	$006c,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-ADDBUFFERTORGN					vIndirect	$2038,	$0070,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-MASKRGN 						vIndirect	$2038,	$0074,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-GETBESTDATA 					vIndirect	$2038,	$0078,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-ChooseBestSize					vIndirect	$2038,	$007c,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-SETUPPIXMAP 					vIndirect	$2038,	$0080,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-__NEWICONSUITE					vIndirect	$2038,	$0084,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-__MAKEICONCACHE 				vIndirect	$2038,	$0088,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-EDITICONSUITE					vIndirect	$2038,	$008c,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-__FOREACHICONDO 				vIndirect	$2038,	$0090,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-GETICONFROMRESOURCE 			vIndirect	$2038,	$0094,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-__GETICONSUITE					vIndirect	$2038,	$0098,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-__SETSUITELABEL 				vIndirect	$2038,	$009c,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-__GETSUITELABEL 				vIndirect	$2038,	$00a0,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-DISPOSER						vIndirect	$2038,	$00a4,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-__DISPOSEICONSUITE				vIndirect	$2038,	$00a8,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-FromSuite						vIndirect	$2038,	$00ac,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-DOREGIONTRANSFORM				vIndirect	$2038,	$00b0,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-DoOutline						vIndirect	$2038,	$00b4,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-APPLYPATTERN					vIndirect	$2038,	$00b8,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-DOBITMAPTRANSFORM				vIndirect	$2038,	$00bc,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-RENDER							vIndirect	$2038,	$00c0,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-PLOTDEEP						vIndirect	$2038,	$00c4,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-PLOTSHALLOWBLACKANDWHITE		vIndirect	$2038,	$00c8,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-PLOTSHALLOWCOLOR				vIndirect	$2038,	$00cc,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-PLOTSHALLOW 					vIndirect	$2038,	$00d0,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-PLOTTHEICON 					vIndirect	$2038,	$00d4,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-MakeBoundary					vIndirect	$2038,	$00d8,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-CreateMask						vIndirect	$2038,	$00dc,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-SetupParamBlock 				vIndirect	$2038,	$00e0,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-PRESCALEMASK					vIndirect	$2038,	$00e4,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-PLOTICONGENERIC 				vIndirect	$2038,	$00e8,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-ICONTORGNGENERIC				vIndirect	$2038,	$00ec,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-HITTESTICONMASKGENERIC			vIndirect	$2038,	$00f0,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-HITTESTICONGENERIC				vIndirect	$2038,	$00f4,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-MAKEICONDATA					vIndirect	$2038,	$00f8,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-CompareComponent				vIndirect	$2038,	$00fc,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-Darken							vIndirect	$2038,	$0100,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-Luminance						vIndirect	$2038,	$0104,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-Brighten						vIndirect	$2038,	$0108,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-FindBlack						vIndirect	$2038,	$010c,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-MakeClut						vIndirect	$2038,	$0110,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-GetDeviceCheck					vIndirect	$2038,	$0114,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-CheckClut						vIndirect	$2038,	$0118,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-IconGetClut 					vIndirect	$2038,	$011c,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-__GETLABEL						vIndirect	$2038,	$0120,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-INVALLABELCLUTS 				vIndirect	$2038,	$0124,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-__SETLABEL						vIndirect	$2038,	$0128,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-FromICON						vIndirect	$2038,	$012c,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-FromSICN						vIndirect	$2038,	$0130,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-__PLOTICONHANDLE				vIndirect	$2038,	$0134,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-__PLOTSICNHANDLE				vIndirect	$2038,	$0138,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-SetupParamBlockForCIcon 		vIndirect	$2038,	$013c,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-CopyClut						vIndirect	$2038,	$0140,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-GETCICONCLUT					vIndirect	$2038,	$0144,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-PLOTTHECICON					vIndirect	$2038,	$0148,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-__PLOTCICONHANDLE				vIndirect	$2038,	$014c,	A1		; {sources}Toolbox:IconUtils:IconUtils.c
-
-;============================== End Icon Utils Vectors
-
-;============================== MMU Vectors
-
-GETREALPROC 					vNoVector							; {sources}OS:MMU:GetReal.a
-GETPAGEDESCPROC 				vNoVector							; {sources}OS:MMU:GetReal.a
-GETMMUINFO						vNoVector							; {sources}OS:MMU:GetReal.a
-CHECKTTREGS 					vNoVector							; {sources}OS:MMU:GetReal.a
-EDISKPROTECT					vNoVector							; {sources}OS:MMU:GetReal.a
-INITMMUTRAP 					vNoVector							; {sources}OS:MMU:MMU.a
-INITMMUGLOBALS					vNoVector							; {sources}OS:MMU:MMU.a
-MMUCLEANUPFOR8MB				vNoVector							; {sources}OS:MMU:MMU.a
-INITMMU 						vNoVector							; {sources}OS:MMU:MMUTables.a
-TRANS							vNoVector							; {sources}OS:MMU:MMUTables.a
-
-;============================== End MMU Vectors
-
-;============================== Memory Manager Vectors
-
-__BLOCKMOVE 					vATrap		A???					; {sources}OS:MemoryMgr:BlockMove.a
-BLOCKMOVE68020					vNoVector							; {sources}OS:MemoryMgr:BlockMove.a
-BLOCKMOVE68040					vNoVector							; {sources}OS:MemoryMgr:BlockMove.a
-HEAP							vNoVector							; {sources}OS:MemoryMgr:MemoryMgr.a
-INITMEMVECT 					vNoVector							; {sources}OS:MemoryMgr:MemoryMgr.a
-SETAPPLBASE 					vATrap		A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-INITAPPLZONE					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-VIAZINIT						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-VIAZPOSTINIT					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-INITZONETRAP					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-GETZONE 						vATrap		A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-SETZONE 						vATrap		A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-MAXBLOCKTRAP					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-COMPACTMEMTRAP					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-PURGEMEM						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-PURGESPACETRAP					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-FREEMEM 						vATrap		A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-RESRVMEM						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-MAXMEMTRAP						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-SETGROWZONE 					vATrap		A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-SETAPPLLIMIT					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-STACKSPACETRAP					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-MAXAPPLZONE 					vATrap		A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-NEWPTRTRAP						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-DISPOSEPTR						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-GETPTRSIZETRAP					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-SETPTRSIZETRAP					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-PTRZONETRAP 					vATrap		A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-NEWEMPTYHANDLETRAP				vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-NWHANDLE						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-DSPOSEHANDLE					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-__GETHANDLESIZE 				vATrap		A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-SETHANDLESIZETRAP				vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-HANDLEZONETRAP					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-RECOVERHANDLETRAP				vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-EMPTYHANDLE 					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-REALLOCHANDLETRAP				vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-HLOCK							vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-HUNLOCK 						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-HPURGE							vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-HNOPURGE						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-HRSRC							vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-HNORSRC 						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-HGETFLAGS						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-HSETFLAGS						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-MOREMASTERS 					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-__STRIPADDRESS					vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-MOVEHHI 						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgr.a
-MOVEHLOW						vATrap	 	A???					; {sources}OS:MemoryMgr:MemoryMgrExtensions.a
-HEAPGUTS						vNoVector							; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-MMPPROLOGUE 					vDirect		????					; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-MMHPROLOGUE 					vDirect		????					; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-MMNOPROLOGUE					vDirect		????					; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-MMMMPROLOGUE					vDirect		????					; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-MMPROLOGUE						vDirect		????					; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-MMRHPROLOGUE					vDirect		????					; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-MMEPILOGUE						vDirect		????					; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-MMNOERREPILOGUE 				vDirect		????					; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24MAKEBKF						vIndirect	$2040,	$0004,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32MAKEBKF						vIndirect	$2040,	$0008,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24EH							vIndirect	$2040,	$000c,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32EH							vIndirect	$2040,	$0010,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24PURGEHEAP					vIndirect	$2040,	$0014,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32PURGEHEAP					vIndirect	$2040,	$0018,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24TOTEPURGEABLES				vIndirect	$2040,	$001c,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32TOTEPURGEABLES				vIndirect	$2040,	$0020,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24BKCOMPACTS					vIndirect	$2040,	$0024,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32BKCOMPACTS					vIndirect	$2040,	$0028,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24ALLOCBK						vIndirect	$2040,	$002c,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32ALLOCBK						vIndirect	$2040,	$0030,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24COMPACTHP					vIndirect	$2040,	$0034,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32COMPACTHP					vIndirect	$2040,	$0038,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-TOMAXLIMIT						vIndirect	$2040,	$003c,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24MAXLIMIT 					vIndirect	$2040,	$0040,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32MAXLIMIT 					vIndirect	$2040,	$0044,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24ZONEADJUSTEND				vIndirect	$2040,	$0048,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32ZONEADJUSTEND				vIndirect	$2040,	$004c,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24ACTUALS						vIndirect	$2040,	$0050,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32ACTUALS						vIndirect	$2040,	$0054,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24GETSIZE						vNoVector							; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32GETSIZE						vNoVector							; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-CLEARGZSTUFF					vIndirect	$2040,	$0058,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24SETSIZE						vNoVector							; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32SETSIZE						vNoVector							; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-ADJUSTFREE						vIndirect	$2040,	$005c,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24NEXTMASTER					vIndirect	$2040,	$0060,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32NEXTMASTER					vIndirect	$2040,	$0064,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24HMAKEMOREMASTERS 			vIndirect	$2040,	$0068,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32HMAKEMOREMASTERS 			vIndirect	$2040,	$006c,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-RELEASEMP						vIndirect	$2040,	$0070,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24MAKEPTRSPC					vIndirect	$2040,	$0074,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32MAKEPTRSPC					vIndirect	$2040,	$0078,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A24FREEBK						vIndirect	$2040,	$007c,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-A32FREEBK						vIndirect	$2040,	$0080,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-STDGZ							vIndirect	$2040,	$0084,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-MEMMGREND						vNoVector							; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-INITMEMMGR 						vNoVector							; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-IAZ 							vIndirect	$2040,	$0088,	A7		; {sources}OS:MemoryMgr:MemoryMgrInternal.a
-
-;============================== End Memory Manager Vectors
 
 ;============================== Menu Manager Vectors
 
@@ -1744,41 +1513,6 @@ FIND6BOFROMID					vIndirect	$2044,	$007c,	A7		; {sources}Toolbox:MenuMgr:SystemM
 
 ;============================== End Menu Manager Vectors
 
-;============================== Munger Vectors
-
-BYTES							vIndirect	$2048,	$0004,	A7		; {sources}Toolbox:Munger:Munger.a
-MUNGER							vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-XMUNGER 						vATrap		A???					; {sources}Toolbox:Munger:Munger.a
-HANDTOHANDTRAP					vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-PTRTOXHANDTRAP					vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-PTRTOHANDTRAP					vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-HANDANDHANDTRAP 				vATrap		A???					; {sources}Toolbox:Munger:Munger.a
-PTRANDHANDTRAP					vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-METHODDISPATCH					vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-LONGMUL 						vATrap		A???					; {sources}Toolbox:Munger:Munger.a
-FRACMUL 						vATrap		A???					; {sources}Toolbox:Munger:Munger.a
-FIXMUL							vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FRACDIV 						vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FIXDIV							vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FRACSQRT						vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FIXRATIO						vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-LOWORD							vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-HIWORD							vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FIXROUND						vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FRACCOS 						vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FRACSIN 						vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FIXATAN2						vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FIX2X							vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FRAC2X							vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-X2FIX							vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-X2FRAC							vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FIX2LONG						vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FRAC2FIX						vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-LONG2FIX						vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-FIX2FRAC						vATrap	 	A???					; {sources}Toolbox:Munger:Munger.a
-
-;============================== End Munger Vectors
-
 ;============================== Notification Manager Vectors
 
 __NMINSTALL 					vATrap		A???					; {sources}Toolbox:NotificationMgr:NotificationMgr.a
@@ -1799,10 +1533,10 @@ ValidIconRec					vIndirect	$204C,	$0034,	A1		; {sources}Toolbox:NotificationMgr:
 NMINIT							vIndirect	$204C,	$0038,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
 _NMInstall						vIndirect	$204C,	$003c,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
 _NMRemove						vIndirect	$204C,	$0040,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
-COPYSTRING						vIndirect	$204C,	$0044,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
+;COPYSTRING						vIndirect	$204C,	$0044,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
 FLUSHAPPLNM 					vIndirect	$204C,	$0048,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
 NMFILTER						vIndirect	$204C,	$004c,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
-DEFBUTPROC						vIndirect	$204C,	$0050,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
+;DEFBUTPROC						vIndirect	$204C,	$0050,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
 NMCallMBarProc					vIndirect	$204C,	$0054,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
 SWAPITEMMARKS					vIndirect	$204C,	$0058,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
 ClearMarks						vIndirect	$204C,	$005c,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
@@ -1812,222 +1546,12 @@ RotateIcon						vIndirect	$204C,	$0068,	A1		; {sources}Toolbox:NotificationMgr:N
 DoSound 						vIndirect	$204C,	$006c,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
 DoDialog						vIndirect	$204C,	$0070,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
 DoRespProc						vIndirect	$204C,	$0074,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
-NMGNEFILTER 					vIndirect	$204C,	$0078,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
+;NMGNEFILTER 					vIndirect	$204C,	$0078,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
 NMTASK							vIndirect	$204C,	$007c,	A1		; {sources}Toolbox:NotificationMgr:NotificationMgr.c
 disable 						vIndirect	$204C,	$0080,	A7		; {sources}Toolbox:NotificationMgr:SetProcessorLevel.a
 spl 							vIndirect	$204C,	$0084,	A7		; {sources}Toolbox:NotificationMgr:SetProcessorLevel.a
 
 ;============================== End Notification Manager Vectors
-
-;============================== PPC Vectors
-
-OPENUGBT						vIndirect	$2050,	$0004,	A7		; {sources}OS:PPC:BTIntf.a
-BLDFSKEY						vIndirect	$2050,	$0008,	A7		; {sources}OS:PPC:BTIntf.a
-BTINIT							vIndirect	$2050,	$000c,	A7		; {sources}OS:PPC:BTreeCGlue.a
-MYBTOPEN						vIndirect	$2050,	$0010,	A7		; {sources}OS:PPC:BTreeCGlue.a
-MYBTCLOSE						vIndirect	$2050,	$0014,	A7		; {sources}OS:PPC:BTreeCGlue.a
-BTINSREC						vIndirect	$2050,	$0018,	A7		; {sources}OS:PPC:BTreeCGlue.a
-BTSETREC						vIndirect	$2050,	$001c,	A7		; {sources}OS:PPC:BTreeCGlue.a
-BTREPLREC						vIndirect	$2050,	$0020,	A7		; {sources}OS:PPC:BTreeCGlue.a
-MYBTSEARCH						vIndirect	$2050,	$0024,	A7		; {sources}OS:PPC:BTreeCGlue.a
-BTSEARCHPPC 					vIndirect	$2050,	$0028,	A7		; {sources}OS:PPC:BTreeCGlue.a
-BTGETREC						vIndirect	$2050,	$002c,	A7		; {sources}OS:PPC:BTreeCGlue.a
-MYBTDELETE						vIndirect	$2050,	$0030,	A7		; {sources}OS:PPC:BTreeCGlue.a
-BTGETINFO						vIndirect	$2050,	$0034,	A7		; {sources}OS:PPC:BTreeCGlue.a
-MYBTFLUSH						vIndirect	$2050,	$0038,	A7		; {sources}OS:PPC:BTreeCGlue.a
-mixupPswd						vIndirect	$2050,	$003c,	A1		; {sources}OS:PPC:PPCAuth.c
-getUserRec						vIndirect	$2050,	$0040,	A1		; {sources}OS:PPC:PPCAuth.c
-GetUserCompletion				vIndirect	$2050,	$0044,	A1		; {sources}OS:PPC:PPCAuth.c
-GetAuthInfo 					vIndirect	$2050,	$0048,	A1		; {sources}OS:PPC:PPCAuth.c
-random							vATrap	 	A???					; {sources}OS:PPC:PPCAuth.c
-checkInit						vIndirect	$2050,	$004c,	A1		; {sources}OS:PPC:PPCAuth.c
-ppcStartSecure					vIndirect	$2050,	$0050,	A1		; {sources}OS:PPC:PPCAuth.c
-promptCallBack					vIndirect	$2050,	$0054,	A1		; {sources}OS:PPC:PPCAuth.c
-UserRefNumCompare				vIndirect	$2050,	$0058,	A1		; {sources}OS:PPC:PPCAuth.c
-ppcDeleteUser					vIndirect	$2050,	$005c,	A1		; {sources}OS:PPC:PPCAuth.c
-ppcGetDefaultUser				vIndirect	$2050,	$0060,	A1		; {sources}OS:PPC:PPCAuth.c
-FindUserByNameAndPassword		vIndirect	$2050,	$0064,	A1		; {sources}OS:PPC:PPCAuth.c
-findUserByRef					vIndirect	$2050,	$0068,	A1		; {sources}OS:PPC:PPCAuth.c
-GetFreeEntry					vIndirect	$2050,	$006c,	A1		; {sources}OS:PPC:PPCAuth.c
-scramble						vIndirect	$2050,	$0070,	A1		; {sources}OS:PPC:PPCAuth.c
-PACK9							vATrap	 	A???					; {sources}OS:PPC:PPCBrowserPackEntry.a
-ppcDispatcher					vIndirect	$2050,	$0074,	A7		; {sources}OS:PPC:PPCDispatcher.a
-VPPCDISPATCHER					vATrap	 	A???					; {sources}OS:PPC:PPCDispatcher.a
-ppcBadSelector					vIndirect	$2050,	$0078,	A7		; {sources}OS:PPC:PPCDispatcher.a
-OpenADSPDriver					vIndirect	$2050,	$007c,	A1		; {sources}OS:PPC:PPCDsp.c
-CreateConnectionListener		vIndirect	$2050,	$0080,	A1		; {sources}OS:PPC:PPCDsp.c
-ListenConnectionRequest 		vIndirect	$2050,	$0084,	A1		; {sources}OS:PPC:PPCDsp.c
-RejectConnectionRequest 		vIndirect	$2050,	$0088,	A1		; {sources}OS:PPC:PPCDsp.c
-RemoveConnectionListener		vIndirect	$2050,	$008c,	A1		; {sources}OS:PPC:PPCDsp.c
-CreateConnectionEnd 			vIndirect	$2050,	$0090,	A1		; {sources}OS:PPC:PPCDsp.c
-OpenConnectionEnd				vIndirect	$2050,	$0094,	A1		; {sources}OS:PPC:PPCDsp.c
-RemoveConnectionEnd 			vIndirect	$2050,	$0098,	A1		; {sources}OS:PPC:PPCDsp.c
-WriteToConnection				vIndirect	$2050,	$009c,	A1		; {sources}OS:PPC:PPCDsp.c
-ReadFromConnection				vIndirect	$2050,	$00a0,	A1		; {sources}OS:PPC:PPCDsp.c
-ppcOpen 						vIndirect	$2050,	$00a4,	A1		; {sources}OS:PPC:PPCEntry.c
-ppcStart						vIndirect	$2050,	$00a8,	A1		; {sources}OS:PPC:PPCEntry.c
-ppcInform						vIndirect	$2050,	$00ac,	A1		; {sources}OS:PPC:PPCEntry.c
-ppcAccept						vIndirect	$2050,	$00b0,	A1		; {sources}OS:PPC:PPCEntry.c
-ppcReject						vIndirect	$2050,	$00b4,	A1		; {sources}OS:PPC:PPCEntry.c
-ppcWrite						vIndirect	$2050,	$00b8,	A1		; {sources}OS:PPC:PPCEntry.c
-ppcRead 						vIndirect	$2050,	$00bc,	A1		; {sources}OS:PPC:PPCEntry.c
-ppcEnd							vIndirect	$2050,	$00c0,	A1		; {sources}OS:PPC:PPCEntry.c
-ppcClose						vIndirect	$2050,	$00c4,	A1		; {sources}OS:PPC:PPCEntry.c
-ipcListPorts					vIndirect	$2050,	$00c8,	A1		; {sources}OS:PPC:PPCEntry.c
-PPCCommonPBEntry				vIndirect	$2050,	$00cc,	A1		; {sources}OS:PPC:PPCEntry.c
-PPCCommonPBExit 				vIndirect	$2050,	$00d0,	A1		; {sources}OS:PPC:PPCEntry.c
-NetOpenCompletion				vIndirect	$2050,	$00d4,	A1		; {sources}OS:PPC:PPCEntry.c
-CallCompletionRoutine			vIndirect	$2050,	$00d8,	A1		; {sources}OS:PPC:PPCEntry.c
-CompleteWithResult				vIndirect	$2050,	$00dc,	A1		; {sources}OS:PPC:PPCEntry.c
-VerifyLocNameFormat 			vIndirect	$2050,	$00e0,	A1		; {sources}OS:PPC:PPCEntry.c
-LocationNameLocal				vIndirect	$2050,	$00e4,	A1		; {sources}OS:PPC:PPCEntry.c
-LocNameTaken					vIndirect	$2050,	$00e8,	A1		; {sources}OS:PPC:PPCEntry.c
-BeginLocalOrRemote				vIndirect	$2050,	$00ec,	A1		; {sources}OS:PPC:PPCEntry.c
-LocalOrNot						vIndirect	$2050,	$00f0,	A1		; {sources}OS:PPC:PPCEntry.c
-DoGetMyZone 					vIndirect	$2050,	$00f4,	A1		; {sources}OS:PPC:PPCEntry.c
-DMFix							vIndirect	$2050,	$00f8,	A1		; {sources}OS:PPC:PPCEntry.c
-PPCSetUp						vIndirect	$2050,	$00fc,	A1		; {sources}OS:PPC:PPCInit.c
-AtalkEvent						vIndirect	$2050,	$0100,	A1		; {sources}OS:PPC:PPCInit.c
-EnableIncoming					vIndirect	$2050,	$0104,	A1		; {sources}OS:PPC:PPCInit.c
-DisableIncoming 				vIndirect	$2050,	$0108,	A1		; {sources}OS:PPC:PPCInit.c
-initUserGroupFile				vIndirect	$2050,	$010c,	A1		; {sources}OS:PPC:PPCInit.c
-RemoveConnectionListeners		vIndirect	$2050,	$0110,	A1		; {sources}OS:PPC:PPCInit.c
-SetUpToolBoxName				vIndirect	$2050,	$0114,	A1		; {sources}OS:PPC:PPCInit.c
-RemoveToolBoxName				vIndirect	$2050,	$0118,	A1		; {sources}OS:PPC:PPCInit.c
-SetUpConnectionListeners		vIndirect	$2050,	$011c,	A1		; {sources}OS:PPC:PPCInit.c
-PPCSleepEvent					vIndirect	$2050,	$0120,	A1		; {sources}OS:PPC:PPCInit.c
-EndAllNetworkSessions			vIndirect	$2050,	$0124,	A1		; {sources}OS:PPC:PPCInit.c
-KillUserSession 				vIndirect	$2050,	$0128,	A1		; {sources}OS:PPC:PPCInit.c
-PPCCloseUserSessions			vIndirect	$2050,	$012c,	A1		; {sources}OS:PPC:PPCInit.c
-PPCCountAcceptedNetworkSessions vIndirect	$2050,	$0130,	A1		; {sources}OS:PPC:PPCInit.c
-PPCCheckDupNBPName				vIndirect	$2050,	$0134,	A1		; {sources}OS:PPC:PPCInit.c
-PPCGESTALTFUNCTION				vIndirect	$2050,	$0138,	A1		; {sources}OS:PPC:PPCInit.c
-GetPPCGlobalFlag				vIndirect	$2050,	$013c,	A1		; {sources}OS:PPC:PPCInit.c
-PPCSHUTDOWN 					vIndirect	$2050,	$0140,	A1		; {sources}OS:PPC:PPCInit.c
-PPCSystemTask					vNoVector							; {sources}OS:PPC:PPCInit.c
-UnRegisterAllNBPNames			vIndirect	$2050,	$0144,	A1		; {sources}OS:PPC:PPCInit.c
-ReRegisterAllNBPNames			vIndirect	$2050,	$0148,	A1		; {sources}OS:PPC:PPCInit.c
-PPCDEADGESTAULT 				vIndirect	$2050,	$014c,	A1		; {sources}OS:PPC:PPCInit.c
-KillPPC 						vIndirect	$2050,	$0150,	A1		; {sources}OS:PPC:PPCInit.c
-PPCINSTALL						vIndirect	$2050,	$0154,	A1		; {sources}OS:PPC:PPCInstall.a
-setupGlobal 					vIndirect	$2050,	$0158,	A1		; {sources}OS:PPC:PPCInstall.a
-ppcLoader						vIndirect	$2050,	$015c,	A1		; {sources}OS:PPC:PPCLoader.c
-initAuth						vIndirect	$2050,	$0160,	A1		; {sources}OS:PPC:PPCLoader.c
-GetLocSess						vIndirect	$2050,	$0164,	A1		; {sources}OS:PPC:PPCLocal.c
-FreeLocSess 					vIndirect	$2050,	$0168,	A1		; {sources}OS:PPC:PPCLocal.c
-StartLocalSession				vIndirect	$2050,	$016c,	A1		; {sources}OS:PPC:PPCLocal.c
-AcceptLocalSession				vIndirect	$2050,	$0170,	A1		; {sources}OS:PPC:PPCLocal.c
-RejectLocalSession				vIndirect	$2050,	$0174,	A1		; {sources}OS:PPC:PPCLocal.c
-WriteLocalData					vIndirect	$2050,	$0178,	A1		; {sources}OS:PPC:PPCLocal.c
-ReadLocalData					vIndirect	$2050,	$017c,	A1		; {sources}OS:PPC:PPCLocal.c
-EndLocalSession 				vIndirect	$2050,	$0180,	A1		; {sources}OS:PPC:PPCLocal.c
-ListLocalPorts					vIndirect	$2050,	$0184,	A1		; {sources}OS:PPC:PPCLocal.c
-LocalTransfer					vIndirect	$2050,	$0188,	A1		; {sources}OS:PPC:PPCLocal.c
-RegisterName					vIndirect	$2050,	$018c,	A1		; {sources}OS:PPC:PPCNbp.c
-LookupName						vIndirect	$2050,	$0190,	A1		; {sources}OS:PPC:PPCNbp.c
-RemoveName						vIndirect	$2050,	$0194,	A1		; {sources}OS:PPC:PPCNbp.c
-GetRemSess						vIndirect	$2050,	$0198,	A1		; {sources}OS:PPC:PPCNetwork.c
-FreeRemSess 					vIndirect	$2050,	$019c,	A1		; {sources}OS:PPC:PPCNetwork.c
-RemoveNetworkConnection 		vIndirect	$2050,	$01a0,	A1		; {sources}OS:PPC:PPCNetwork.c
-RemoveCompletion				vIndirect	$2050,	$01a4,	A1		; {sources}OS:PPC:PPCNetwork.c
-StartNetworkSession 			vIndirect	$2050,	$01a8,	A1		; {sources}OS:PPC:PPCNetwork.c
-AcceptNetworkSession			vIndirect	$2050,	$01ac,	A1		; {sources}OS:PPC:PPCNetwork.c
-RejectNetworkSession			vIndirect	$2050,	$01b0,	A1		; {sources}OS:PPC:PPCNetwork.c
-WriteNetworkData				vIndirect	$2050,	$01b4,	A1		; {sources}OS:PPC:PPCNetwork.c
-ReadNetworkData 				vIndirect	$2050,	$01b8,	A1		; {sources}OS:PPC:PPCNetwork.c
-EndNetworkSession				vIndirect	$2050,	$01bc,	A1		; {sources}OS:PPC:PPCNetwork.c
-ListNetworkPorts				vIndirect	$2050,	$01c0,	A1		; {sources}OS:PPC:PPCNetwork.c
-BeginNetworkConnection			vIndirect	$2050,	$01c4,	A1		; {sources}OS:PPC:PPCNetwork.c
-AcceptNetworkConnection 		vIndirect	$2050,	$01c8,	A1		; {sources}OS:PPC:PPCNetwork.c
-NetLookUpCompletion 			vIndirect	$2050,	$01cc,	A1		; {sources}OS:PPC:PPCNetwork.c
-ConnectionEndCompletion 		vIndirect	$2050,	$01d0,	A1		; {sources}OS:PPC:PPCNetwork.c
-OpenCompletion					vIndirect	$2050,	$01d4,	A1		; {sources}OS:PPC:PPCNetwork.c
-StartSendCompletion 			vIndirect	$2050,	$01d8,	A1		; {sources}OS:PPC:PPCNetwork.c
-StartCommandCompletion			vIndirect	$2050,	$01dc,	A1		; {sources}OS:PPC:PPCNetwork.c
-ListSendCompletion				vIndirect	$2050,	$01e0,	A1		; {sources}OS:PPC:PPCNetwork.c
-ListReadCompletion				vIndirect	$2050,	$01e4,	A1		; {sources}OS:PPC:PPCNetwork.c
-ListCommandCompletion			vIndirect	$2050,	$01e8,	A1		; {sources}OS:PPC:PPCNetwork.c
-ConnectionRequestCompletion 	vIndirect	$2050,	$01ec,	A1		; {sources}OS:PPC:PPCNetwork.c
-RespConnectionEndCompletion 	vIndirect	$2050,	$01f0,	A1		; {sources}OS:PPC:PPCNetwork.c
-RespOpenCompletion				vIndirect	$2050,	$01f4,	A1		; {sources}OS:PPC:PPCNetwork.c
-RecvSessReqCompletion			vIndirect	$2050,	$01f8,	A1		; {sources}OS:PPC:PPCNetwork.c
-GuestRecCompletion				vIndirect	$2050,	$01fc,	A1		; {sources}OS:PPC:PPCNetwork.c
-UserRecCompletion				vIndirect	$2050,	$0200,	A1		; {sources}OS:PPC:PPCNetwork.c
-AuthSendCompletion				vIndirect	$2050,	$0204,	A1		; {sources}OS:PPC:PPCNetwork.c
-AuthRespCompletion				vIndirect	$2050,	$0208,	A1		; {sources}OS:PPC:PPCNetwork.c
-ProcessInform					vIndirect	$2050,	$020c,	A1		; {sources}OS:PPC:PPCNetwork.c
-RespSendCompletion				vIndirect	$2050,	$0210,	A1		; {sources}OS:PPC:PPCNetwork.c
-ARepostConnectionListener		vIndirect	$2050,	$0214,	A1		; {sources}OS:PPC:PPCNetwork.c
-RepostConnectionListener		vIndirect	$2050,	$0218,	A1		; {sources}OS:PPC:PPCNetwork.c
-ListWrite						vIndirect	$2050,	$021c,	A1		; {sources}OS:PPC:PPCNetwork.c
-ListWriteCompletion 			vIndirect	$2050,	$0220,	A1		; {sources}OS:PPC:PPCNetwork.c
-ListRespCompletion				vIndirect	$2050,	$0224,	A1		; {sources}OS:PPC:PPCNetwork.c
-BeginWriteBlock 				vIndirect	$2050,	$0228,	A1		; {sources}OS:PPC:PPCNetwork.c
-WriteHdrCompletion				vIndirect	$2050,	$022c,	A1		; {sources}OS:PPC:PPCNetwork.c
-WriteBlockData					vIndirect	$2050,	$0230,	A1		; {sources}OS:PPC:PPCNetwork.c
-WriteBlockDataCompletion		vIndirect	$2050,	$0234,	A1		; {sources}OS:PPC:PPCNetwork.c
-CompleteWriteRequest			vIndirect	$2050,	$0238,	A1		; {sources}OS:PPC:PPCNetwork.c
-BeginReadBlock					vIndirect	$2050,	$023c,	A1		; {sources}OS:PPC:PPCNetwork.c
-ReadHdrCompletion				vIndirect	$2050,	$0240,	A1		; {sources}OS:PPC:PPCNetwork.c
-ReadBlockData					vIndirect	$2050,	$0244,	A1		; {sources}OS:PPC:PPCNetwork.c
-ReadDataCompletion				vIndirect	$2050,	$0248,	A1		; {sources}OS:PPC:PPCNetwork.c
-CompleteReadRequest 			vIndirect	$2050,	$024c,	A1		; {sources}OS:PPC:PPCNetwork.c
-CopyReadBlk 					vIndirect	$2050,	$0250,	A1		; {sources}OS:PPC:PPCNetwork.c
-ClosePortTable					vIndirect	$2050,	$0254,	A1		; {sources}OS:PPC:PPCPort.c
-NBPRemoveCompletion 			vIndirect	$2050,	$0258,	A1		; {sources}OS:PPC:PPCPort.c
-CompleteClosePort				vIndirect	$2050,	$025c,	A1		; {sources}OS:PPC:PPCPort.c
-CheckPortName					vIndirect	$2050,	$0260,	A1		; {sources}OS:PPC:PPCPort.c
-ValidPortName					vIndirect	$2050,	$0264,	A1		; {sources}OS:PPC:PPCPort.c
-ComparePortName 				vIndirect	$2050,	$0268,	A1		; {sources}OS:PPC:PPCPort.c
-GetLocationName 				vIndirect	$2050,	$026c,	A1		; {sources}OS:PPC:PPCPort.c
-PortRefNumCompare				vIndirect	$2050,	$0270,	A1		; {sources}OS:PPC:PPCPort.c
-DeletePortByRefNum				vIndirect	$2050,	$0274,	A1		; {sources}OS:PPC:PPCPort.c
-PortRefNumtoPtr 				vIndirect	$2050,	$0278,	A1		; {sources}OS:PPC:PPCPort.c
-GetUniquePortRefNum 			vIndirect	$2050,	$027c,	A1		; {sources}OS:PPC:PPCPort.c
-GetPortTable					vIndirect	$2050,	$0280,	A1		; {sources}OS:PPC:PPCPort.c
-FreePortTable					vIndirect	$2050,	$0284,	A1		; {sources}OS:PPC:PPCPort.c
-SetPortInformQue				vIndirect	$2050,	$0288,	A1		; {sources}OS:PPC:PPCPort.c
-GetPortNames					vIndirect	$2050,	$028c,	A1		; {sources}OS:PPC:PPCPort.c
-WildPortMatch					vIndirect	$2050,	$0290,	A1		; {sources}OS:PPC:PPCPort.c
-QueueFromSessRefNum 			vIndirect	$2050,	$0294,	A1		; {sources}OS:PPC:PPCSession.c
-SessRefNumCompare				vIndirect	$2050,	$0298,	A1		; {sources}OS:PPC:PPCSession.c
-SessRefNumtoPtr 				vIndirect	$2050,	$029c,	A1		; {sources}OS:PPC:PPCSession.c
-DeleteSessByRefNum				vIndirect	$2050,	$02a0,	A1		; {sources}OS:PPC:PPCSession.c
-GetSessionRefNum				vIndirect	$2050,	$02a4,	A1		; {sources}OS:PPC:PPCSession.c
-SetSessionTable 				vIndirect	$2050,	$02a8,	A1		; {sources}OS:PPC:PPCSession.c
-PortSessCompare 				vIndirect	$2050,	$02ac,	A1		; {sources}OS:PPC:PPCSession.c
-CleanSessions					vIndirect	$2050,	$02b0,	A1		; {sources}OS:PPC:PPCSession.c
-KillReadAndWrite				vIndirect	$2050,	$02b4,	A1		; {sources}OS:PPC:PPCSession.c
-getGlobal						vNoVector							; {sources}OS:PPC:PPCUtil.a
-callCompletion					vIndirect	$2050,	$02b8,	A1		; {sources}OS:PPC:PPCUtil.a
-AddtoAtalkQ 					vIndirect	$2050,	$02bc,	A1		; {sources}OS:PPC:PPCUtil.a
-RmvfromAtalkQ					vIndirect	$2050,	$02c0,	A1		; {sources}OS:PPC:PPCUtil.a
-FakeCompletion					vIndirect	$2050,	$02c4,	A1		; {sources}OS:PPC:PPCUtil.a
-PointerCompare					vIndirect	$2050,	$02c8,	A1		; {sources}OS:PPC:PPCUtilities.c
-EnQueue 						vIndirect	$2050,	$02cc,	A1		; {sources}OS:PPC:PPCUtilities.c
-ServeQueue						vIndirect	$2050,	$02d0,	A1		; {sources}OS:PPC:PPCUtilities.c
-SearchQueue 					vIndirect	$2050,	$02d4,	A1		; {sources}OS:PPC:PPCUtilities.c
-DeleteFromQueue 				vIndirect	$2050,	$02d8,	A1		; {sources}OS:PPC:PPCUtilities.c
-DeleteMultiple					vIndirect	$2050,	$02dc,	A1		; {sources}OS:PPC:PPCUtilities.c
-NewMem							vIndirect	$2050,	$02e0,	A1		; {sources}OS:PPC:PPCUtilities.c
-DisposeMem						vIndirect	$2050,	$02e4,	A1		; {sources}OS:PPC:PPCUtilities.c
-AddNew							vIndirect	$2050,	$02e8,	A1		; {sources}OS:PPC:PPCUtilities.c
-RemOld							vIndirect	$2050,	$02ec,	A1		; {sources}OS:PPC:PPCUtilities.c
-Replenish						vNoVector							; {sources}OS:PPC:PPCUtilities.c
-Excess							vNoVector							; {sources}OS:PPC:PPCUtilities.c
-PRMTFUSER						vIndirect	$2050,	$02f0,	A7		; {sources}OS:PPC:PromptForUser.a
-PROMPTFORUSER					vIndirect	$2050,	$02f4,	A7		; {sources}OS:PPC:PromptForUser.a
-GETPASSWORDBULLET				vIndirect	$2050,	$02f8,	A1		; {sources}OS:PPC:PromptForUser.c
-GetIntlTokenChar				vIndirect	$2050,	$02fc,	A1		; {sources}OS:PPC:PromptForUser.c
-FRK 							vDataTable							; {sources}Objects:ROM:PPC.lib
-PERMUTE 						vDataTable							; {sources}Objects:ROM:PPC.lib
-PTBL							vDataTable							; {sources}Objects:ROM:PPC.lib
-IPINVTBL						vDataTable							; {sources}Objects:ROM:PPC.lib
-IP								vDataTable							; {sources}Objects:ROM:PPC.lib
-KEYSCHED						vIndirect	$2050,	$0300,	A1		; {sources}Objects:ROM:PPC.lib
-ENCODE							vIndirect	$2050,	$0304,	A1		; {sources}Objects:ROM:PPC.lib
-
-;============================== End PPC Vectors
 
 ;============================== Quickdraw Vectors
 
@@ -2699,8 +2223,8 @@ INITCRTABLE 					vDataTable							; {sources}QuickDraw:cCrsrCore.a
 CRSRVBLTASK 					vIndirect	$2054,	$0390,	A7		; {sources}QuickDraw:cCrsrCore.a
 PINRECT 						vATrap	 	A???					; {sources}QuickDraw:cCrsrCore.a
 CURSORSECT						vIndirect	$2054,	$0394,	A7		; {sources}QuickDraw:cCrsrCore.a
-ERASECURSOR 					vIndirect	$2054,	$0398,	A7		; {sources}QuickDraw:cCrsrCore.a
-DRAWCURSOR						vIndirect	$2054,	$039c,	A7		; {sources}QuickDraw:cCrsrCore.a
+;ERASECURSOR 					vIndirect	$2054,	$0398,	A7		; {sources}QuickDraw:cCrsrCore.a
+;DRAWCURSOR						vIndirect	$2054,	$039c,	A7		; {sources}QuickDraw:cCrsrCore.a
 GETMAINCRSR 					vIndirect	$2054,	$03a0,	A7		; {sources}QuickDraw:cCrsrCore.a
 SETCRSRDATA 					vIndirect	$2054,	$03a4,	A7		; {sources}QuickDraw:cCrsrCore.a
 ALLOCCRSR						vATrap	 	A???					; {sources}QuickDraw:cCrsrCore.a
@@ -2842,513 +2366,6 @@ GETNEXTFOND 					vIndirect	$2058,	$0090,	A7		; {sources}Toolbox:ResourceMgr:Reso
 
 ;============================== End Resource Manager Vectors
 
-;============================== SCSI Manager Vectors
-
-;ÑÑÑÑÑ Old SCSI Manager
-SCSIDISPATCHCOMMON				vATrap	 	A???					; {sources}OS:SCSIMgr:SCSILinkPatch.a
-SCSIBUSYPLUS					vIndirect	$205C,	$0004,	A7		; {sources}OS:SCSIMgr:SCSILinkPatch.a
-SCSIBUSYOTHERS					vIndirect	$205C,	$0008,	A7		; {sources}OS:SCSIMgr:SCSILinkPatch.a
-SCSIBOOTS						vIndirect	$205C,	$000c,	A7		; {sources}OS:SCSIMgr:scsiboot.a
-SCSILOAD						vIndirect	$205C,	$0010,	A7		; {sources}OS:SCSIMgr:scsiboot.a
-SCSI96							vNoVector							; {sources}OS:SCSIMgr:scsimgr96.a
-SCSIMGR_96						vIndirect	$205C,	$0014,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-UNIMPLEMENTED_96				vIndirect	$205C,	$0018,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-DOSCSISTAT_96					vIndirect	$205C,	$001c,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-DOSCSIRESET_96					vIndirect	$205C,	$0020,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-DOSCSIGET_96					vIndirect	$205C,	$0024,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-DOSCSISELECT_D96				vIndirect	$205C,	$0028,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-DOSCSISELATN_D96				vIndirect	$205C,	$002c,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-DOSCSISELECT_S96				vIndirect	$205C,	$0030,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-DOSCSISELATN_S96				vIndirect	$205C,	$0034,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-DOSCSICMD_96					vIndirect	$205C,	$0038,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-NEWSCSIWBLIND_96				vIndirect	$205C,	$003c,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-NEWSCSIWRITE_96 				vIndirect	$205C,	$0040,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-NEWSCSIRBLIND_96				vIndirect	$205C,	$0044,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-NEWSCSIREAD_96					vIndirect	$205C,	$0048,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-DOSCSICOMPLETE_96				vIndirect	$205C,	$004c,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-DOSCSIMSGIN_96					vIndirect	$205C,	$0050,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-DOSCSIMSGOUT_96 				vIndirect	$205C,	$0054,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-CYCLEPHASE_96					vIndirect	$205C,	$0058,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-SCSIPCTO32BIT					vIndirect	$205C,	$005c,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-ERROR							vIndirect	$205C,	$0060,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-SCSIERR_96						vIndirect	$205C,	$0064,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-SWAPMMU 						vIndirect	$205C,	$0068,	A7		; {sources}OS:SCSIMgr:scsimgr96.a
-SCSIHW							vNoVector							; {sources}OS:SCSIMgr:scsimgrhw.a
-DOSPINDOWN						vNoVector							; {sources}OS:SCSIMgr:scsimgrhw.a
-SLEEPTASK						vNoVector							; {sources}OS:SCSIMgr:scsimgrhw.a
-CLEARIRQ						vIndirect	$205C,	$006c,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-DISENABLE						vIndirect	$205C,	$0070,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-BUSERRHANDLER					vIndirect	$205C,	$0074,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-ARB 							vIndirect	$205C,	$0078,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-SEL 							vIndirect	$205C,	$007c,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-DELAY22 						vIndirect	$205C,	$0080,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-SCSIINTHND						vIndirect	$205C,	$0084,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-TRANSFER						vIndirect	$205C,	$0088,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-SLOWREAD						vIndirect	$205C,	$008c,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-SLOWWRITE						vIndirect	$205C,	$0090,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-VFASTWRITEOSS					vIndirect	$205C,	$0094,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-PFASTWRITEOSS					vIndirect	$205C,	$0098,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-PFASTWRITE						vIndirect	$205C,	$009c,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-VFASTWRITE						vIndirect	$205C,	$00a0,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-FASTWRITE						vIndirect	$205C,	$00a4,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-FASTWRITEOSS					vIndirect	$205C,	$00a8,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-VFASTREADOSS					vIndirect	$205C,	$00ac,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-PFASTREADOSS					vIndirect	$205C,	$00b0,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-PFASTREAD						vIndirect	$205C,	$00b4,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-VFASTREAD						vIndirect	$205C,	$00b8,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-FASTREAD						vIndirect	$205C,	$00bc,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-FASTREADOSS 					vIndirect	$205C,	$00c0,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-SLOWCOMP						vIndirect	$205C,	$00c4,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-FASTCOMP						vIndirect	$205C,	$00c8,	A7		; {sources}OS:SCSIMgr:scsimgrhw.a
-SCSIHW96						vNoVector							; {sources}OS:SCSIMgr:scsimgrhw96.a
-INITHW_SCSI96					vNoVector							; {sources}OS:SCSIMgr:scsimgrhw96.a
-INTHND_SCSI96					vIndirect	$205C,	$00cc,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-TRANSFER_96 					vIndirect	$205C,	$00d0,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-XFER1BYTE						vIndirect	$205C,	$00d4,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-SLOWREAD_96 					vIndirect	$205C,	$00d8,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-SLOWWRITE_96					vIndirect	$205C,	$00dc,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-FASTWRITE_96					vIndirect	$205C,	$00e0,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-FASTREAD_96 					vIndirect	$205C,	$00e4,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-RESETBUS_96 					vIndirect	$205C,	$00e8,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-WAITFORINTNOTIME				vIndirect	$205C,	$00ec,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-HANDLESELINPROG 				vIndirect	$205C,	$00f0,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-WT4DREQORINT					vIndirect	$205C,	$00f4,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-WAITFORSCSIINTRP				vIndirect	$205C,	$00f8,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-FASTCOMP_96 					vIndirect	$205C,	$00fc,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-SLOWCOMP_96 					vIndirect	$205C,	$0100,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-BUSERRHANDLER_96				vIndirect	$205C,	$0104,	A7		; {sources}OS:SCSIMgr:scsimgrhw96.a
-SCSIINIT						vNoVector							; {sources}OS:SCSIMgr:scsimgrinit.a
-INITSCSIMGR 					vNoVector							; {sources}OS:SCSIMgr:scsimgrinit.a
-INITSCSIHW						vNoVector							; {sources}OS:SCSIMgr:scsimgrinit.a
-SCSIINIT96						vNoVector							; {sources}OS:SCSIMgr:scsimgrinit96.a
-INITMGR_SCSI96					vNoVector							; {sources}OS:SCSIMgr:scsimgrinit96.a
-SCSISETFLAGS					vIndirect	$205C,	$0108,	A7		; {sources}OS:SCSIMgr:scsimgrinitflags.a
-SCSINEW 						vNoVector							; {sources}OS:SCSIMgr:scsimgrnew.a
-NEWSCSITRAP 					vATrap		A???					; {sources}OS:SCSIMgr:scsimgrnew.a
-ALTBUSCALL						vIndirect	$205C,	$010c,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-DOREQUESTIO 					vIndirect	$205C,	$0110,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-DOKILLIO						vIndirect	$205C,	$0114,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-DOBUSINFO						vIndirect	$205C,	$0118,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-RESETBUS						vIndirect	$205C,	$011c,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-ENDEQUEUE						vIndirect	$205C,	$0120,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-LOGERROR						vIndirect	$205C,	$0124,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-CLEARSTATE						vIndirect	$205C,	$0128,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-CLEARBUS						vIndirect	$205C,	$012c,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MESSAGE 						vIndirect	$205C,	$0130,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-PREFLIGHT						vIndirect	$205C,	$0134,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-SETUP							vIndirect	$205C,	$0138,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-FIND							vIndirect	$205C,	$013c,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-SETTIMER						vIndirect	$205C,	$0140,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-TIMETASK						vIndirect	$205C,	$0144,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-SCSIDT							vIndirect	$205C,	$0148,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-COMMAND 						vIndirect	$205C,	$014c,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-STATUSPHASE 					vIndirect	$205C,	$0150,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGIN							vIndirect	$205C,	$0154,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGINVALIDIN					vIndirect	$205C,	$0158,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGIDENTIFYIN					vIndirect	$205C,	$015c,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGCMDCOMPLETE					vIndirect	$205C,	$0160,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGSAVEDATAPTR					vIndirect	$205C,	$0164,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGRESTOREPTRS					vIndirect	$205C,	$0168,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGDISCONNECT					vIndirect	$205C,	$016c,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGMSGREJIN 					vIndirect	$205C,	$0170,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGLCCF 						vIndirect	$205C,	$0174,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGOUT							vIndirect	$205C,	$0178,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGIDENTIFYOUT					vIndirect	$205C,	$017c,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGBUSDEVRST					vIndirect	$205C,	$0180,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGMSGREJOUT					vIndirect	$205C,	$0184,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGINVALIDOUT					vIndirect	$205C,	$0188,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGKILLIO						vIndirect	$205C,	$018c,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-MSGNOOP 						vIndirect	$205C,	$0190,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-DATAIO							vIndirect	$205C,	$0194,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-DATADMA 						vIndirect	$205C,	$0198,	A7		; {sources}OS:SCSIMgr:scsimgrnew.a
-SCSIOLD 						vNoVector							; {sources}OS:SCSIMgr:scsimgrold.a
-SCSIMGR 						vATrap		A???					; {sources}OS:SCSIMgr:scsimgrold.a
-UNIMPLEMENTED					vIndirect	$205C,	$019c,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-DOSCSISTAT						vIndirect	$205C,	$01a0,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-DOSCSIRESET 					vIndirect	$205C,	$01a4,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-DOSCSIGET						vIndirect	$205C,	$01a8,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-DOSCSISELECT					vIndirect	$205C,	$01ac,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-DOSCSISELATN					vIndirect	$205C,	$01b0,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-DOSCSICMD						vIndirect	$205C,	$01b4,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-NEWSCSIWBLIND					vIndirect	$205C,	$01b8,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-NEWSCSIWRITE					vIndirect	$205C,	$01bc,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-NEWSCSIRBLIND					vIndirect	$205C,	$01c0,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-NEWSCSIREAD 					vIndirect	$205C,	$01c4,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-DOSCSICOMPLETE					vIndirect	$205C,	$01c8,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-DOSCSIMSGIN 					vIndirect	$205C,	$01cc,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-DOSCSIMSGOUT					vIndirect	$205C,	$01d0,	A7		; {sources}OS:SCSIMgr:scsimgrold.a
-LATELOAD						vIndirect	$205C,	$01d4,	A7		; {sources}OS:SCSIMgr:scsiLateLoad.a
-
-SCSIDISKMODE vNoVector
-SCSIDISKWAKEALERT vNoVector
-TESTFORDISKMODE vNoVector
-SCSICYC96 vNoVector
-SCSIERR_PSC vNoVector
-NEWSCSIRBLIND_PSC vNoVector
-NEWSCSIWBLIND_PSC vNoVector
-NEWSCSIWRITE_PSC vNoVector
-NEWSCSIREAD_PSC vNoVector
-DOSCSIMSGIN_PSC vNoVector
-DOSCSIGET_PSC vNoVector
-DOSCSIRESET_PSC vNoVector
-UNIMPLEMENTED_PSC vNoVector
-ERROR_PSC vNoVector
-SCSIPCTO32BIT_PSC vNoVector
-DOSCSIMSGOUT_PSC vNoVector
-DOSCSISTAT_PSC vNoVector
-CYCLEPHASE_PSC vNoVector
-DOSCSISELATN_DPSC vNoVector
-DOSCSISELATN_SPSC vNoVector
-DOSCSISELECT_DPSC vNoVector
-DOSCSISELECT_SPSC vNoVector
-DOSCSICOMPLETE_PSC vNoVector
-DOSCSICMD_PSC vNoVector
-SCSIMGR_PSC vNoVector
-SCSICYCHW96 vNoVector
-WAITFORINTNOTIME_PSC vNoVector
-FASTCOMP_PSC vNoVector
-FASTWRITE_PSC vNoVector
-FASTREAD_PSC vNoVector
-SLOWCOMP_PSC vNoVector
-SLOWWRITE_PSC vNoVector
-INTHND_SCSI_PSC vNoVector
-INITHW_SCSI_PSC vNoVector
-BUSERRHANDLER_PSC vNoVector
-WAITFORSCSIINTRP_PSC vNoVector
-RESETBUS_PSC vNoVector
-HANDLESELINPROGPSC vNoVector
-WT4DREQORINTPSC vNoVector
-XFER1BYTE_PSC vNoVector
-TRANSFER_PSC vNoVector
-SLOWREAD_PSC vNoVector
-SCSIMGRINITPSC vNoVector
-INITMGR_SCSI_PSC vNoVector
-SCSIC96INSTALL vNoVector
-PATCHSCSIDRIVERS vNoVector
-SCSIPATCHTOBLOCKIOINDRIVER vNoVector
-
-;ÑÑÑÑÑ SCSI Manager 4.3												; {sources}OS:SCSIMgr4pt3:Å
-SCSIAtomic						vATrap	 	A???									
-
-JmpToDrvr						vIndirect	$205C,	$01d8,	A7, hasAsyncSCSI		; BootItt.a
-CheckSumDrvr					vIndirect	$205C,	$01dc,	A7, hasAsyncSCSI		; BootItt.a
-;					UNUSED		vIndirect	$205C,	$01e0,	A1, hasAsyncSCSI		; BootItt.c
-;					UNUSED		vIndirect	$205C,	$01e4,	A1, hasAsyncSCSI		; BootItt.c
-;					UNUSED		vIndirect	$205C,	$01e8,	A1, hasAsyncSCSI		; BootItt.c
-ScanDrive						vIndirect	$205C,	$01ec,	A1, hasAsyncSCSI		; BootItt.c
-LoadDriver						vIndirect	$205C,	$01f0,	A1, hasAsyncSCSI		; BootItt.c
-ScRead							vIndirect	$205C,	$01f4,	A1, hasAsyncSCSI		; BootItt.c
-;					UNUSED		vIndirect	$205C,	$01f8,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$01fc,	Ax, hasAsyncSCSI		; HALc96.a
-RecordEvent						vIndirect	$205C,	$0200,	A7, hasAsyncSCSI		; Recorder.a
-;					UNUSED		vIndirect	$205C,	$0204,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$0208,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$020c,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$0210,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$0214,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$0218,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$021c,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$0220,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$0224,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$0228,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$022c,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$0230,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$0234,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$0238,	Ax, hasAsyncSCSI		; HALc96.a
-;					UNUSED		vIndirect	$205C,	$023c,	Ax, hasAsyncSCSI		; HALc96.a
-SIMRegisterHAL					vIndirect	$205C,	$0240,	A1, hasAsyncSCSI		; HALc96Data.a
-SIMReregisterHAL				vIndirect	$205C,	$0244,	A1, hasAsyncSCSI		; HALc96Data.a
-SIMRegisterCommon				vIndirect	$205C,	$0248,	A1, hasAsyncSCSI		; HALc96Data.a
-EarlySwitchPhase				vIndirect	$205C,	$024c,	A1, hasAsyncSCSI		; HALc96Data.a
-WastePhase						vIndirect	$205C,	$0250,	A1, hasAsyncSCSI		; HALc96Data.a
-HandleInitWErr					vIndirect	$205C,	$0254,	A1, hasAsyncSCSI		; HALc96Data.a
-HandleRejectedIdentify			vIndirect	$205C,	$0258,	A1, hasAsyncSCSI		; HALc96Data.a
-HandleEarlyMsgIn				vIndirect	$205C,	$025c,	A1, hasAsyncSCSI		; SIMmachine.c
-HandleNoIdentifyMsg				vIndirect	$205C,	$0260,	A1, hasAsyncSCSI		; HALc96Data.a
-CallMachine						vIndirect	$205C,	$0264,	A1, hasAsyncSCSI		; HALc96Data.a
-GetVirtualIDInfo 				vIndirect	$205C,	$0268,	A1, hasAsyncSCSI		; HALc96Data.a
-CheckInterrupts 				vIndirect	$205C,	$026c,	A1, hasAsyncSCSI		; HALc96Data.a
-XPTCallCompRoutine 				vIndirect	$205C,	$0270,	A1, hasAsyncSCSI		; HALc96Data.a
-SIMIntPoll 						vIndirect	$205C,	$0274,	A1, hasAsyncSCSI		; HALc96Data.a
-SetupResetPB 					vIndirect	$205C,	$0278,	A1, hasAsyncSCSI		; HALc96Data.a
-ValidateDeviceIdent 			vIndirect	$205C,	$027c,	A1, hasAsyncSCSI		; HALc96HWInit.a
-TryToRecover					vIndirect	$205C,	$0280,	A1, hasAsyncSCSI		; HALc96Init.a
-XPTRegisterCommon				vIndirect	$205C,	$0284,	A1, hasAsyncSCSI		; HALc96HWInit.a
-NewXPTioPB						vIndirect	$205C,	$0288,	A1, hasAsyncSCSI		; HALc96PSC.a
-;					UNUSED		vIndirect	$205C,	$028c,	Ax, hasAsyncSCSI		; HALc96DMA.a
-;					UNUSED		vIndirect	$205C,	$0290,	Ax, hasAsyncSCSI		; HALc96DMA.a
-;					UNUSED		vIndirect	$205C,	$0294,	Ax, hasAsyncSCSI		; HALc96DMA.a
-COMPRESETDEVICE 				vIndirect	$205C,	$0298,	A7, hasAsyncSCSI		; HALc96DMA.a
-Disconnected					vIndirect	$205C,	$029c,	A1, hasAsyncSCSI		; HALc96Routines.a
-ciDebuggerPatch					vIndirect	$205C,	$02a0,	A7, hasAsyncSCSI		; XPT.a
-ReRegisterAllSIMs				vIndirect	$205C,	$02a4,	A1, hasAsyncSCSI		; XPT.c
-;					UNUSED		vIndirect	$205C,	$02a8,	Ax, hasAsyncSCSI		; HALc96Routines.a
-;					UNUSED		vIndirect	$205C,	$02ac,	Ax, hasAsyncSCSI		; HALc96Routines.a
-;					UNUSED		vIndirect	$205C,	$02b0,	Ax, hasAsyncSCSI		; HALc96Routines.a
-;					UNUSED		vIndirect	$205C,	$02b4,	Ax, hasAsyncSCSI		; HALc96Routines.a
-Ck4SCSIInt						vIndirect	$205C,	$02b8,	A7, hasAsyncSCSI		; HALc96Routines.a
-Wt4SCSIInt			 			vIndirect	$205C,	$02bc,	A7, hasAsyncSCSI		; InitItt.c
-Ck4DREQ 						vIndirect	$205C,	$02c8,	A7, hasAsyncSCSI		; HALc96Routines.a
-;					UNUSED		vIndirect	$205C,	$02c0,	Ax, hasAsyncSCSI		; HALc96Routines.a
-;					UNUSED		vIndirect	$205C,	$02c4,	Ax, hasAsyncSCSI		; HALc96Routines.a
-
-;					UNUSED		vIndirect	$205C,	$02cc,	Ax, hasAsyncSCSI		; 
-;					UNUSED		vIndirect	$205C,	$02d0,	Ax, hasAsyncSCSI		;
-;					UNUSED		vIndirect	$205C,	$02d4,	Ax, hasAsyncSCSI		; 
-;					UNUSED		vIndirect	$205C,	$02d8,	Ax, hasAsyncSCSI		; 
-;					UNUSED		vIndirect	$205C,	$02dc,	Ax, hasAsyncSCSI		; 
-;					UNUSED		vIndirect	$205C,	$02e0,	Ax, hasAsyncSCSI		; Recorder.a
-CallOldXPT						vIndirect	$205C,	$02e4,	A7, hasAsyncSCSI		; SCSIGlue.a
-;					UNUSED		vIndirect	$205C,	$02e8,	Ax, hasAsyncSCSI		; SCSIGlue.a
-;					UNUSED		vIndirect	$205C,	$02ec,	Ax, hasAsyncSCSI		; SCSIGlue.a
-;					UNUSED		vIndirect	$205C,	$02f0,	Ax, hasAsyncSCSI		; SCSIGlue.a
-SIMaction						vIndirect	$205C,	$02f4,	A1, hasAsyncSCSI		; SIMCore.c
-NewOldCall						vIndirect	$205C,	$02f8,	A1, hasAsyncSCSI		; SIMCore.c
-SIMinit 						vIndirect	$205C,	$02fc,	A1, hasAsyncSCSI		; SIMCore.c
-SIM_ISR 						vIndirect	$205C,	$0300,	A1, hasAsyncSCSI		; SIMCore.c
-ResetSIM						vIndirect	$205C,	$0304,	A1, hasAsyncSCSI		; SIMCore.c
-ResetDevice 					vIndirect	$205C,	$0308,	A1, hasAsyncSCSI		; SIMCore.c
-TerminateIO 					vIndirect	$205C,	$030c,	A1, hasAsyncSCSI		; SIMCore.c
-AbortCommand					vIndirect	$205C,	$0310,	A1, hasAsyncSCSI		; SIMCore.c
-SetTempXPTg						vIndirect	$205C,	$0314,	A1, hasAsyncSCSI		; XPT.c
-EnQIO							vIndirect	$205C,	$0318,	A1, hasAsyncSCSI		; SIMQ.c
-DeQIO							vIndirect	$205C,	$031c,	A1, hasAsyncSCSI		; SIMQ.c
-GetNextReadyIO					vIndirect	$205C,	$0320,	A1, hasAsyncSCSI		; SIMQ.c
-ResetQueues 					vIndirect	$205C,	$0324,	A1, hasAsyncSCSI		; SIMQ.c
-GetNextAutoSense				vIndirect	$205C,	$0328,	A1, hasAsyncSCSI		; SIMQ.c
-FindIO							vIndirect	$205C,	$032c,	A1, hasAsyncSCSI		; SIMQ.c
-SwitchQ 						vIndirect	$205C,	$0330,	A1, hasAsyncSCSI		; SIMQ.c
-;					UNUSED		vIndirect	$205C,	$0334,	Ax, hasAsyncSCSI		; SIMmachine.a
-;					UNUSED		vIndirect	$205C,	$0338,	Ax, hasAsyncSCSI		; SIMmachine.a
-VMEnableUserCode				vIndirect	$205C,	$033c,	A7, hasAsyncSCSI		; SIMmachine.a
-VMDisableUserCode				vIndirect	$205C,	$0340,	A7, hasAsyncSCSI		; SIMmachine.a
-TheMachine 						vIndirect	$205C,	$0344,	A1, hasAsyncSCSI		; SIMmachine.c
-Reconnect						vIndirect	$205C,	$0348,	A1, hasAsyncSCSI		; SIMmachine.c
-SwitchPhase 					vIndirect	$205C,	$034c,	A1, hasAsyncSCSI		; SIMmachine.c
-FreeMachine 					vIndirect	$205C,	$0350,	A1, hasAsyncSCSI		; SIMmachine.c
-StartMachine					vIndirect	$205C,	$0354,	A1, hasAsyncSCSI		; SIMmachine.c
-NewIOStartMachine				vIndirect	$205C,	$0358,	A1, hasAsyncSCSI		; SIMmachine.c
-;					UNUSED		vIndirect	$205C,	$035c,	Ax, hasAsyncSCSI		; SIMmachine.c
-CompleteIO						vIndirect	$205C,	$0360,	A1, hasAsyncSCSI		; SIMmachine.c
-;					UNUSED		vIndirect	$205C,	$0364,	Ax, hasAsyncSCSI		; SIMmachine.c
-CheckErrors 					vIndirect	$205C,	$0368,	A1, hasAsyncSCSI		; SIMmachine.c
-SetupSensePB					vIndirect	$205C,	$036c,	A1, hasAsyncSCSI		; SIMmachine.c
-COMPAUTOSENSE					vIndirect	$205C,	$0370,	A1, hasAsyncSCSI		; SIMmachine.c
-ValidatePB						vIndirect	$205C,	$0374,	A1, hasAsyncSCSI		; SIMmachine.c
-StartTimer						vIndirect	$205C,	$0378,	A1, hasAsyncSCSI		; Timeout.c
-SIMTimerProc					vIndirect	$205C,	$037c,	A7, hasAsyncSCSI		; Timeout.c
-;					UNUSED		vIndirect	$205C,	$0380,	Ax, hasAsyncSCSI		; XPT.a
-;					UNUSED	 	vIndirect	$205C,	$0384,	Ax, hasAsyncSCSI		; XPT.a
-;					UNUSED		vIndirect	$205C,	$0388,	Ax, hasAsyncSCSI		; XPT.a
-;					UNUSED		vIndirect	$205C,	$038c,	Ax, hasAsyncSCSI		; XPT.a
-;					UNUSED		vIndirect	$205C,	$0390,	Ax, hasAsyncSCSI		; XPT.a
-;					UNUSED		vIndirect	$205C,	$0394,	Ax, hasAsyncSCSI		; XPT.c
-;					UNUSED		vIndirect	$205C,	$0398,	Ax, hasAsyncSCSI		; XPT.c
-;					UNUSED		vIndirect	$205C,	$039c,	Ax, hasAsyncSCSI		; XPT.c
-XPTRegisterBus					vIndirect	$205C,	$03a0,	A1, hasAsyncSCSI		; XPT.c
-XPTDeregisterBus				vIndirect	$205C,	$03a4,	A1, hasAsyncSCSI		; XPT.c
-XPTAction						vIndirect	$205C,	$03a8,	A1, hasAsyncSCSI		; XPT.c
-CallSIMaction					vIndirect	$205C,	$03ac,	A1, hasAsyncSCSI		; XPT.c
-SyncWait						vIndirect	$205C,	$03b0,	A1, hasAsyncSCSI		; XPT.c
-XPTKillXPT	 					vIndirect	$205C,	$03b4,	A1, hasAsyncSCSI		; XPT.c
-DispatchISR 					vIndirect	$205C,	$03b8,	A1, hasAsyncSCSI		; XPT.c
-SetRefNum						vIndirect	$205C,	$03bc,	A1, hasAsyncSCSI		; XPT.c
-GetRefNum						vIndirect	$205C,	$03c0,	A1, hasAsyncSCSI		; XPT.c
-RemoveRefNum					vIndirect	$205C,	$03c4,	A1, hasAsyncSCSI		; XPT.c
-CallCompRoutine 				vIndirect	$205C,	$03c8,	A1, hasAsyncSCSI		; XPT.c
-XPTReregisterBus 				vIndirect	$205C,	$03cc,	A1, hasAsyncSCSI		; XPT.c
-SCSIXLATE						vIndirect	$205C,	$03d0,	A7, hasAsyncSCSI		; XPTSCSIXlate.a
-;					UNUSED		vIndirect	$205C,	$03d4,	Ax, hasAsyncSCSI		; 
-Clear							vIndirect	$205C,	$03d8,	A1, hasAsyncSCSI		; XPTfunctions.c
-;					UNUSED		vIndirect	$205C,	$03dc,	Ax, hasAsyncSCSI		; 
-OldSCSICall 					vIndirect	$205C,	$03e0,	A1, hasAsyncSCSI		; XPToldCall.c
-EnumPhaseToSCSIStat 			vIndirect	$205C,	$03e4,	A1, hasAsyncSCSI		; XPToldCall.c
-CallSIMNewOldCall				vIndirect	$205C,	$03e8,	A1, hasAsyncSCSI		; XPToldCall.c
-OldCallWait 					vIndirect	$205C,	$03ec,	A1, hasAsyncSCSI		; XPToldCall.c
-getTimerPB						vIndirect	$205C,	$03f0,	A7, hasAsyncSCSI		; timeout.a
-
-
-SIMCoreRegisterHAL 				vNoVector
-FindIOFromID 					vNoVector
-
-AttemptDriverLoad 				vNoVector
-
-InitXPT 						vNoVector
-SetXPTg 						vNoVector
-XlateOldSCSIGlobals				vNoVector
-Init_SCSIXlate					vNoVector
-InitRecorder					vNoVector
-InitItt							vNoVector
-TestFor_SCSI96_1Exists			vNoVector
-TestFor_SCSI96_2Exists			vNoVector
-TestFor_PSCExists				vNoVector
-WtForFIFOData	 				vNoVector
-Init53c9xSW 					vNoVector
-OldSCSIExists					vNoVector
-SCSITrap						vNoVector
-getCurrentA5					vNoVector
-restoreCurrentA5				vNoVector
-InitSyncWait					vNoVector
-RemoveSyncWait				 	vNoVector
-ReconnectISR					vNoVector
-BlockInterrupts 				vNoVector
-UnblockInterrupts				vNoVector
-Install_ISR 					vNoVector
-OneByteRead 					vNoVector
-OneByteWrite					vNoVector
-Xfer1Byte96 					vNoVector
-SlowRead96						vNoVector
-FastRead96						vNoVector
-SlowWrite96 					vNoVector
-FastWrite96 					vNoVector
-Init53c9xHW 					vNoVector
-Initc96Asm						vNoVector
-AsmInit53c9xHW 					vNoVector
-HALinit 						vNoVector
-GetHalInfo						vNoVector
-HALSyncConfig					vNoVector
-HALTeardownIO					vNoVector
-HALAssertATN					vNoVector
-HALResetBus						vNoVector
-HALIntPoll 						vNoVector
-CallBusInquiry					vNoVector
-HALaction						vNoVector
-CallCompRoutineGlue 			vNoVector
-Ck4IgnoreCmdShOptDel			vNoVector
-Ck4OnlyLoadFromDefault			vNoVector
-AutoMsgIn						vNoVector
-HandleBusInt					vNoVector
-InitHW_SCSI96_BIOS				vNoVector
-DoWeHaveFastSCSI				vNoVector
-DataIn_DMA1x1					vNoVector
-DataOut_DMA1x1					vNoVector
-InitAMIC						vNoVector
-HALc96DataBIOS					vNoVector
-OneByteWrite_BIOS				vNoVector
-OneByteRead_BIOS				vNoVector
-FastWrite_96_BIOS				vNoVector
-FastRead_96_BIOS				vNoVector
-DeferAndWait					vNoVector
-DataDTask						vNoVector
-RemoveBEH96						vNoVector
-InstallBEH96					vNoVector
-CEnqueueHead					vNoVector
-TestFor_OrwellExists			vNoVector
-TestFor_djMEMCExists			vNoVector
-IllegalInstr					vNoVector
-UnimplementedATrap				vNoVector
-VMRunning						vNoVector
-InitXPTAsm						vNoVector
-Ck4EjectableVolume				vNoVector
-DummyOldCallRead				vNoVector
-ReInitHAL						vNoVector
-HALInitCommon					vNoVector
-InitHW_AMIC						vNoVector
-InitSW_AMIC						vNoVector
-SetupIOAMIC						vNoVector
-TeardownIOAMIC					vNoVector
-InitHW_PSC						vNoVector
-InitSW_PSC						vNoVector
-SetupIOPSC						vNoVector
-TeardownIOPSC					vNoVector
-
-HALc96							vDataTable											; HALc96.a
-HALc96Data						vDataTable											; HALc96Data.a
-HALc96Init						vDataTable											; HALc96Init.a
-
-;ÑÑÑ Internally Dispatched Entry points		
-DoInitiate						vNoVector
-DoBitBucket						vNoVector
-DoDataIn						vNoVector
-DoDataOut						vNoVector
-DoAcceptMsg						vNoVector
-DoMsgIn							vNoVector
-DoMsgOut						vNoVector
-DoStatus						vNoVector
-DoComplete						vNoVector
-DoSaveDataPointer				vNoVector
-DoModifyDataPointer				vNoVector
-DoRestorePointers				vNoVector
-GetReconnectInfo				vNoVector
-GetSelectInfo					vNoVector
-DoSelect						vNoVector
-DoSelectWAtn					vNoVector
-DoCommand						vNoVector
-SetParity						vNoVector
-SetupIONoDMA					vNoVector
-DoReset							vNoVector
-DoAssertATN						vNoVector
-TeardownIONoDMA					vNoVector
-HandleSelected					vNoVector
-
-;ÑÑÑ Internally Dispatched (Non-entry points)			
-InitDataBuffer					vNoVector
-InitDataTIB						vNoVector
-InitDataSG						vNoVector
-DoDataBuffer					vNoVector
-DoDataTIB						vNoVector
-DoDataSG						vNoVector
-DataIn_DMA						vNoVector
-DataOut_DMA						vNoVector
-CyclePhase						vNoVector
-BusErrHandler96					vNoVector
-
-;ÑÑÑ Internally Vectored (Non-entry points)			
-Wt4SelectComplete				vNoVector
-StartPSC						vNoVector											; HALc96PSC.a
-PausePSC						vNoVector											; HALc96PSC.a
-Wt4PSCComplete					vNoVector											; HALc96PSC.a
-StopPSCRead						vNoVector											; HALc96PSC.a
-StopPSCWrite					vNoVector											; HALc96PSC.a
-StartAMIC 						vNoVector											; HALc96AMIC.a
-Wt4AMICComplete 				vNoVector											; HALc96AMIC.a
-StopAMICRead 					vNoVector											; HALc96AMIC.a
-StopAMICWrite 					vNoVector											; HALc96AMIC.a
-DMAInitSW						vNoVector											; HALc96PSC.c
-HALc96Routines					vNoVector											; HALc96Routines.a
-SizeOfGlobals					vNoVector											; HALc96Routines.a
-HAL_SingleISR 					vNoVector											; HALc96Routines.a
-InterruptLevel					vNoVector											; XPT.a
-DEFERREDCALL					vNoVector											; XPT.a
-InitDataStuff					vNoVector
-TeardownIO 						vNoVector
-Init53x9xRegs 					vNoVector
-HAL_DualISR 					vNoVector
-TestFor_HMCDecoder 				vNoVector
-SetLoadFlag 					vNoVector
-SOpenDriver 					vNoVector
-HAL_NoISR 						vNoVector
-DMAInitHW 						vNoVector
-SetupIOPB 						vNoVector
-TeardownIOPB 					vNoVector
-ITTGESTALT 						vNoVector
-XPT_ISR0 						vNoVector
-XPT_ISR1 						vNoVector
-XPT_ISR2 						vNoVector
-XPT_ISR3 						vNoVector
-XPT_ISR4 						vNoVector
-XPT_ISR5 						vNoVector
-XPT_ISR6 						vNoVector
-XPT_ISR7 						vNoVector
-XPT_ISR8 						vNoVector
-XPT_ISR9 						vNoVector
-XPT_ISRa 						vNoVector
-XPT_ISRb 						vNoVector
-XPT_ISRc 						vNoVector
-XPT_ISRd 						vNoVector
-XPT_ISRe 				 		vNoVector
-XPT_ISRf 						vNoVector
-ReadInitiatorID					vNoVector
-GetInitiatorID					vNoVector
-
-;ÑÑÑ Non-vectored but we don't want them vectored (debugging or init things)			
-ISITT							vNoVector
-INITSCSIBOOT					vNoVector
-ITTBOOT 						vNoVector
-RecordError						vNoVector
-
-;============================== End SCSI Manager Vectors
-
 ;============================== Script Manager Vectors
 
 GETIDENTRY						vIndirect	$2060,	$0004,	A7		; {sources}Toolbox:ScriptMgr:DblByteCompat.a
@@ -3485,6 +2502,9 @@ INTLTOKENIZE					vIndirect	$2060,	$01dc,	A7		; {sources}Toolbox:ScriptMgr:Script
 MAXOLDDATE						vDataTable							; {sources}Objects:ROM:ScriptMgr.lib
 SECSINDAYX						vDataTable							; {sources}Objects:ROM:ScriptMgr.lib
 
+SCRIPTMGR_VEC01E0				vIndirect	$2060,	$01e0,	A7
+SCRIPTMGR_VEC01E4				vIndirect	$2060,	$01e4,	A7
+
 ;============================== End Script Manager Vectors
 
 ;============================== Segment Loader Vectors
@@ -3525,8 +2545,8 @@ UPDATEEMUWARMSTART				vIndirect	$2068,	$002C,	A7		; {sources}Toolbox:ShutDownMgr
 
 ;============================== Original SuperMario Team Names
 
-MAGICNAME						vIndirect	$206C,	$0004,	A7		; Ricardo's attempt to hide the name strings
-MAGIC							vIndirect	$206C,	$0008,	A7		; can be found in {Sources}OS:MagicData.a
+;MAGICNAME						vIndirect	$206C,	$0004,	A7		; Ricardo's attempt to hide the name strings
+;MAGIC							vIndirect	$206C,	$0008,	A7		; can be found in {Sources}OS:MagicData.a
 
 ;============================== Original SuperMario Team Names
 
@@ -3563,8 +2583,8 @@ CARDCHANGED 					vIndirect	$206C,	$003c,	A7		; {sources}OS:SlotMgr:SlotMgr.a
 SLOTEXEC						vIndirect	$206C,	$0040,	A7		; {sources}OS:SlotMgr:SlotMgr.a
 CALCSPOINTER					vIndirect	$206C,	$0044,	A7		; {sources}OS:SlotMgr:SlotMgr.a
 GETSLOTDRVR 					vIndirect	$206C,	$0048,	A7		; {sources}OS:SlotMgr:SlotMgr.a
-GETDRIVERPATCH					vIndirect	$206C,	$004c,	A7, has2MegROMOrMore		; {sources}OS:SlotMgr:SlotMgr.a
-GETDEVINDEX 					vIndirect	$206C,	$0050,	A7, has2MegROMOrMore		; {sources}OS:SlotMgr:SlotMgr.a
+;GETDRIVERPATCH					vIndirect	$206C,	$004c,	A7, has2MegROMOrMore		; {sources}OS:SlotMgr:SlotMgr.a
+;GETDEVINDEX 					vIndirect	$206C,	$0050,	A7, has2MegROMOrMore		; {sources}OS:SlotMgr:SlotMgr.a
 JSRTBL							vDataTable							; {sources}OS:SlotMgr:SlotMgr.a
 READSLOTPRAM					vIndirect	$206C,	$0054,	A7		; {sources}OS:SlotMgr:SlotMgr.a
 PUTSLOTPRAM 					vIndirect	$206C,	$0058,	A7		; {sources}OS:SlotMgr:SlotMgr.a
@@ -3622,124 +2642,6 @@ DOSECONDARYINIT 				vIndirect	$206C,	$0114,	A7		; {sources}OS:SlotMgr:SlotMgrIni
 SECONDARYEND					vNoVector							; {sources}OS:SlotMgr:SlotMgrInit.a
 
 ;============================== End Slot Manager Vectors
-
-;============================== Sound Manager Vectors
-
-AcceptInitOptions 				vIndirect	$2070,	$0004,	A7		; {sources}Toolbox:SoundMgr:
-AddToHead 						vIndirect	$2070,	$0008,	A7		; {sources}Toolbox:SoundMgr:
-CancelWaitCallback 				vIndirect	$2070,	$000c,	A7		; {sources}Toolbox:SoundMgr:
-ClearASCInt 					vIndirect	$2070,	$0010,	A7		; {sources}Toolbox:SoundMgr:
-ClearStandardASCInterrupt 		vNoVector
-CloseOutputDevice 				vIndirect	$2070,	$0018,	A7		; {sources}Toolbox:SoundMgr:
-__Comp3to1 						vIndirect	$2070,	$001c,	A7		; {sources}Toolbox:SoundMgr:
-__Comp6to1 						vIndirect	$2070,	$0020,	A7		; {sources}Toolbox:SoundMgr:
-CountMatchingBits 				vIndirect	$2070,	$0024,	A7		; {sources}Toolbox:SoundMgr:
-DisableASCInts 					vIndirect	$2070,	$0028,	A7		; {sources}Toolbox:SoundMgr:
-DisableStandardASCInterrupt 	vNoVector
-DispAddTool 					vIndirect	$2070,	$0030,	A7		; {sources}Toolbox:SoundMgr:
-DispFuncDisp 					vIndirect	$2070,	$0034,	A7		; {sources}Toolbox:SoundMgr:
-DispRemTool 					vNoVector
-DispToolAddr 					vNoVector
-DispVersion 					vNoVector
-DoNothing 						vNoVector
-DOUBLEBUFFERCOMPLETE 			vIndirect	$2070,	$0048,	A7		; {sources}Toolbox:SoundMgr:
-EnableASCInts 					vIndirect	$2070,	$004c,	A7		; {sources}Toolbox:SoundMgr:
-EnableStandardASCInterrupt 		vNoVector
-__Exp1to3 						vIndirect	$2070,	$0054,	A7		; {sources}Toolbox:SoundMgr:
-__Exp1to6 						vIndirect	$2070,	$0058,	A7		; {sources}Toolbox:SoundMgr:
-GetBuiltInDevice 				vIndirect	$2070,	$005c,	A7		; {sources}Toolbox:SoundMgr:
-GetHardwareVolume 				vIndirect	$2070,	$0060,	A7		; {sources}Toolbox:SoundMgr:
-GetSoundAttributes 				vIndirect	$2070,	$0064,	A7		; {sources}Toolbox:SoundMgr:
-GetThisComponent 				vIndirect	$2070,	$0068,	A7		; {sources}Toolbox:SoundMgr:
-HGetFCBInfo 					vIndirect	$2070,	$006c,	A7		; {sources}Toolbox:SoundMgr:
-InitSoundMgr 					vNoVector							; {sources}Toolbox:SoundMgr:
-InitSndDispatch 				vIndirect	$2070,	$0074,	A7		; {sources}Toolbox:SoundMgr:
-InitWaveBuffer 					vIndirect	$2070,	$0078,	A7		; {sources}Toolbox:SoundMgr:
-InsertInQueue 					vIndirect	$2070,	$007c,	A7		; {sources}Toolbox:SoundMgr:
-InstallNewGlobals 				vIndirect	$2070,	$0080,	A7		; {sources}Toolbox:SoundMgr:
-InstallSoundIntHandler 			vIndirect	$2070,	$0084,	A7		; {sources}Toolbox:SoundMgr:
-IsDeadProcess 					vIndirect	$2070,	$0088,	A7		; {sources}Toolbox:SoundMgr:
-IsUnknownChannel 				vIndirect	$2070,	$008c,	A7		; {sources}Toolbox:SoundMgr:
-LoadSoundInputDriver 			vIndirect	$2070,	$0090,	A7		; {sources}Toolbox:SoundMgr:
-MACEDispatch 					vIndirect	$2070,	$0094,	A7		; {sources}Toolbox:SoundMgr:
-MakeFlags 						vIndirect	$2070,	$0098,	A7		; {sources}Toolbox:SoundMgr:
-NEXTDOUBLEBUFFER 				vIndirect	$2070,	$009c,	A7		; {sources}Toolbox:SoundMgr:
-NextFromQueue 					vIndirect	$2070,	$00a0,	A7		; {sources}Toolbox:SoundMgr:
-NEXTNOTEBUFFER 					vIndirect	$2070,	$00a4,	A7		; {sources}Toolbox:SoundMgr:
-NEXTWAVEBUFFER 					vIndirect	$2070,	$00a8,	A7		; {sources}Toolbox:SoundMgr:
-OpenOutputDevice 				vIndirect	$2070,	$00ac,	A7		; {sources}Toolbox:SoundMgr:
-OpenPreferenceFile 				vIndirect	$2070,	$00b0,	A7		; {sources}Toolbox:SoundMgr:
-PowerTable 						vDataTable							; {sources}Toolbox:SoundMgr:
-PrepChannel 					vIndirect	$2070,	$00b8,	A7		; {sources}Toolbox:SoundMgr:
-PrepDoubleBuffer 				vIndirect	$2070,	$00bc,	A7		; {sources}Toolbox:SoundMgr:
-PrepNoteBuffer 					vIndirect	$2070,	$00c0,	A7		; {sources}Toolbox:SoundMgr:
-PrepSoundParamBlock 			vIndirect	$2070,	$00c4,	A7		; {sources}Toolbox:SoundMgr:
-PrepWaveBuffer 					vIndirect	$2070,	$00c8,	A7		; {sources}Toolbox:SoundMgr:
-ProcessCmd 						vIndirect	$2070,	$00cc,	A7		; {sources}Toolbox:SoundMgr:
-ProcessNextCmd 					vIndirect	$2070,	$00d0,	A7		; {sources}Toolbox:SoundMgr:
-PumpSndResource 				vIndirect	$2070,	$00d4,	A7		; {sources}Toolbox:SoundMgr:
-QuantizeSample 					vNoVector
-SadismDispatch 					vIndirect	$2070,	$00dc,	A7		; {sources}Toolbox:SoundMgr:
-SadismJmpTable 					vNoVector
-SamplesToBytes 					vNoVector
-ScheduleWaitCallback 			vIndirect	$2070,	$00e8,	A7		; {sources}Toolbox:SoundMgr:
-SetChannelType 					vIndirect	$2070,	$00ec,	A7		; {sources}Toolbox:SoundMgr:
-SetSoundHeader 					vIndirect	$2070,	$00f0,	A7		; {sources}Toolbox:SoundMgr:
-SetTimbre 						vIndirect	$2070,	$00f4,	A7		; {sources}Toolbox:SoundMgr:
-SetUpSifter 					vIndirect	$2070,	$00f8,	A7		; {sources}Toolbox:SoundMgr:
-SetupSoundInterruptVectors 		vIndirect	$2070,	$00fc,	A7		; {sources}Toolbox:SoundMgr:
-SetWaveTable 					vIndirect	$2070,	$0100,	A7		; {sources}Toolbox:SoundMgr:
-SineTable 						vDataTable							; {sources}Toolbox:SoundMgr:
-SndManagerDispatch 				vIndirect	$2070,	$0108,	A7		; {sources}Toolbox:SoundMgr:
-SndManagerJmpTable 				vNoVector							; {sources}Toolbox:SoundMgr:
-SOUNDCOMPLETE 					vIndirect	$2070,	$0110,	A7		; {sources}Toolbox:SoundMgr:
-SoundDispatcher 				vIndirect	$2070,	$0114,	A7		; {sources}Toolbox:SoundMgr:
-SoundInDispatch 				vIndirect	$2070,	$0118,	A7		; {sources}Toolbox:SoundMgr:
-SoundIntHandler 				vIndirect	$2070,	$011c,	A7		; {sources}Toolbox:SoundMgr:
-StartSyncedSounds 				vIndirect	$2070,	$0120,	A7		; {sources}Toolbox:SoundMgr:
-TryRomBeep 						vIndirect	$2070,	$0124,	A7		; {sources}Toolbox:SoundMgr:
-TwelthPower 					vIndirect	$2070,	$0128,	A7		; {sources}Toolbox:SoundMgr:
-UnimplFunction 					vIndirect	$2070,	$012c,	A7		; {sources}Toolbox:SoundMgr:
-WAITCOMPLETION 					vIndirect	$2070,	$0130,	A7		; {sources}Toolbox:SoundMgr:
-__CLOSEMIXERCOMPONENT 			vIndirect	$2070,	$0134,	A7		; {sources}Toolbox:SoundMgr:
-__DISPOSESOUNDGLOBALS 			vIndirect	$2070,	$0138,	A7		; {sources}Toolbox:SoundMgr:
-__GETCOMPRESSIONINFO 			vIndirect	$2070,	$013c,	A7		; {sources}Toolbox:SoundMgr:
-__GETDEFAULTOUTPUTVOLUME 		vIndirect	$2070,	$0140,	A7		; {sources}Toolbox:SoundMgr:
-__GETDEFAULTSOUNDOUTPUT 		vIndirect	$2070,	$0144,	A7		; {sources}Toolbox:SoundMgr:
-__GETSOUNDHEADEROFFSET 			vIndirect	$2070,	$0148,	A7		; {sources}Toolbox:SoundMgr:
-__GETSOUNDPREFERENCE 			vIndirect	$2070,	$014c,	A7		; {sources}Toolbox:SoundMgr:
-__GETSYSBEEPVOLUME 				vIndirect	$2070,	$0150,	A7		; {sources}Toolbox:SoundMgr:
-__MAKESIFTERCHAIN 				vIndirect	$2070,	$0154,	A7		; {sources}Toolbox:SoundMgr:
-__MulDivU 						vIndirect	$2070,	$0158,	A7		; {sources}Toolbox:SoundMgr:
-__OPENMIXERCOMPONENT 			vIndirect	$2070,	$015c,	A7		; {sources}Toolbox:SoundMgr:
-__SETDEFAULTOUTPUTVOLUME 		vIndirect	$2070,	$0160,	A7		; {sources}Toolbox:SoundMgr:
-__SETDEFAULTSOUNDOUTPUT 		vIndirect	$2070,	$0164,	A7		; {sources}Toolbox:SoundMgr:
-__SETSOUNDPREFERENCE 			vIndirect	$2070,	$0168,	A7		; {sources}Toolbox:SoundMgr:
-__SETSOUNDVOL 					vNoVector
-__SETSYSBEEPVOLUME 				vIndirect	$2070,	$0170,	A7		; {sources}Toolbox:SoundMgr:
-__SNDADDMODIFIER 				vIndirect	$2070,	$0174,	A7		; {sources}Toolbox:SoundMgr:
-__SNDAPPDEAD 					vIndirect	$2070,	$0178,	A7		; {sources}Toolbox:SoundMgr:
-__SNDCHANNELSTATUS 				vIndirect	$2070,	$017c,	A7		; {sources}Toolbox:SoundMgr:
-__SNDCONTROL 					vIndirect	$2070,	$0180,	A7		; {sources}Toolbox:SoundMgr:
-__SNDDISPOSECHANNEL 			vIndirect	$2070,	$0184,	A7		; {sources}Toolbox:SoundMgr:
-__SNDDOCOMMAND 					vIndirect	$2070,	$0188,	A7		; {sources}Toolbox:SoundMgr:
-__SNDDOIMMEDIATE 				vIndirect	$2070,	$018c,	A7		; {sources}Toolbox:SoundMgr:
-__SNDGETSYSBEEPSTATE 			vIndirect	$2070,	$0190,	A7		; {sources}Toolbox:SoundMgr:
-__SNDMANAGERSTATUS 				vIndirect	$2070,	$0194,	A7		; {sources}Toolbox:SoundMgr:
-__SNDNEWCHANNEL 				vIndirect	$2070,	$0198,	A7		; {sources}Toolbox:SoundMgr:
-__SNDPLAY 						vIndirect	$2070,	$019c,	A7		; {sources}Toolbox:SoundMgr:
-__SNDPLAYDOUBLEBUFFER 			vIndirect	$2070,	$01a0,	A7		; {sources}Toolbox:SoundMgr:
-__SNDSETSYSBEEPSTATE 			vIndirect	$2070,	$01a4,	A7		; {sources}Toolbox:SoundMgr:
-__SNDSOUNDMANAGERVERSION 		vIndirect	$2070,	$01a8,	A7		; {sources}Toolbox:SoundMgr:
-__SYSBEEP 						vIndirect	$2070,	$01ac,	A7		; {sources}Toolbox:SoundMgr:
-
-DELTA_TABLE 					vDataTable							; {sources}Toolbox:SoundMgr:Tables.3.a
-MIN2_TABLE						vDataTable							; {sources}Toolbox:SoundMgr:Tables.3.a
-MIN3_TABLE						vDataTable							; {sources}Toolbox:SoundMgr:Tables.3.a
-IQUADEL2_TABLE					vDataTable							; {sources}Toolbox:SoundMgr:Tables.3.a
-IQUADEL3_TABLE					vDataTable							; {sources}Toolbox:SoundMgr:Tables.3.a
-
-;============================== End Sound Manager Vectors
 
 ;============================== Start Manager Vectors
 SIZEMEMORY						vNoVector							; {sources}OS:StartMgr:SizeMem.a
@@ -3904,101 +2806,6 @@ SONIC_Test						vNoVector							; {sources}OS:StartMgr:UnivTestEnv:SONIC_Test.c
 
 ;============================== End Start Manager Vectors
 
-;============================== Text Services Manager Vectors
-
-TSMDISPATCH 					vATrap		A???					; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-XINITTSMAWAREAPPLICATION		vIndirect	$2078,	$0004,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-xInitTSMAwareDriver 			vIndirect	$2078,	$0008,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-utaRecordDocumentID 			vIndirect	$2078,	$000c,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-utaRemoveDocumentID 			vIndirect	$2078,	$0010,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-utaUpdateAppFlagInPSNTable		vIndirect	$2078,	$0014,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-utaUpdateDocFlagInPSNTable		vIndirect	$2078,	$0018,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-utaTSMAwareApplicationP 		vIndirect	$2078,	$001c,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-XCLOSETSMAWAREAPPLICATION		vIndirect	$2078,	$0020,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-utCloseAppCommon				vIndirect	$2078,	$0024,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-UTAGETTSMAWAREDOCTABLE			vIndirect	$2078,	$0028,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-UTAGETTSMAPPRECORDPTR			vIndirect	$2078,	$002c,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-UTAGETAPPSUSEINPUTWINDOWFLAG	vIndirect	$2078,	$0030,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-UTAISAPPTSMAWAREANDNOTUSINGIW	vIndirect	$2078,	$0034,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-XINFORMTSM						vIndirect	$2078,	$0038,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-TSMGestalt						vIndirect	$2078,	$003c,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-TSMGRINSTALL					vIndirect	$2078,	$0040,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-OLDJAPANESEINPUTMETHODEXISTS	vIndirect	$2078,	$0044,	A7		; {sources}Toolbox:TextServicesMgr:TSMExtension.a
-utNewTSMDocument				vIndirect	$2078,	$0048,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XNEWTSMDOCUMENT4SWM 			vIndirect	$2078,	$004c,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XNEWTSMDOCUMENT 				vIndirect	$2078,	$0050,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XDELETETSMDOCUMENT				vIndirect	$2078,	$0054,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XDEACTIVATETSMDOCUMENT			vIndirect	$2078,	$0058,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XACTIVATETSMDOCUMENT			vIndirect	$2078,	$005c,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-utTSMEvent2InputMethod			vIndirect	$2078,	$0060,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XTSMEVENTFROMSWM				vIndirect	$2078,	$0064,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XTSMEVENT						vIndirect	$2078,	$0068,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XTSMMENUSELECT					vIndirect	$2078,	$006c,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XFIXTSMDOCUMENT 				vIndirect	$2078,	$0070,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XSETTSMCURSOR					vIndirect	$2078,	$0074,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XGETSERVICELIST 				vIndirect	$2078,	$0078,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XOPENTEXTSERVICE				vIndirect	$2078,	$007c,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XCLOSETEXTSERVICE				vIndirect	$2078,	$0080,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-utMapInstance2Refcon			vIndirect	$2078,	$0084,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-XSENDAETOCLIENT 				vIndirect	$2078,	$0088,	A1		; {sources}Toolbox:TextServicesMgr:TSMFunctions.c
-utJustDeactivateIM4Document 	vIndirect	$2078,	$008c,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utBadSandL						vIndirect	$2078,	$0090,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utVerifyTSMDocID				vIndirect	$2078,	$0094,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utAppendTS2Document 			vIndirect	$2078,	$0098,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utMakeRoom4SInfoHandle			vIndirect	$2078,	$009c,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utHidePaletteAndMenu			vIndirect	$2078,	$00a0,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utCleanUpPreviousDoc			vIndirect	$2078,	$00a4,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utCreateSystemVersionOfMenu 	vIndirect	$2078,	$00a8,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utActivateIM4Document			vIndirect	$2078,	$00ac,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utDeactivateIMforDocument		vIndirect	$2078,	$00b0,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utDeleteCleanUpTSMDocument		vIndirect	$2078,	$00b4,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utCloseIM4Document				vIndirect	$2078,	$00b8,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utDeleteInputMethodsPreviousMenu vIndirect	$2078,	$00bc,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utCheckSysHeapSlop				vIndirect	$2078,	$00c0,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utOpenIM4Document				vIndirect	$2078,	$00c4,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utOpenActivateDefaultIM 		vIndirect	$2078,	$00c8,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utActivateThisDocsInputMethod	vIndirect	$2078,	$00cc,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utSupportedSL					vIndirect	$2078,	$00d0,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utScriptIsNotCCJK				vIndirect	$2078,	$00d4,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utScriptIsCCJKAndNeedsIM		vIndirect	$2078,	$00d8,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utInformPMgr					vIndirect	$2078,	$00dc,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utDocNeedsInputMethod			vIndirect	$2078,	$00e0,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utGetScriptIndex				vIndirect	$2078,	$00e4,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utGetTSMDefaultInputMethod		vIndirect	$2078,	$00e8,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utSLRec2CompFlag				vIndirect	$2078,	$00ec,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utChangeToOldJIM				vIndirect	$2078,	$00f0,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utSuspendResumeApp				vIndirect	$2078,	$00f4,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utAddTSMResource				vIndirect	$2078,	$00f8,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utUpdateDefaultInputMethodResource vIndirect	$2078,	$00fc,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utFixDocumentAndCloseSWMWindow	vIndirect	$2078,	$0100,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utCloseSWMWindow				vIndirect	$2078,	$0104,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utDeleteMenu					vIndirect	$2078,	$0108,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utDeleteSysMenu 				vIndirect	$2078,	$010c,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-utSwapZone						vIndirect	$2078,	$0110,	A1		; {sources}Toolbox:TextServicesMgr:TSMInternalUtils.c
-XSETDEFAULTINPUTMETHOD			vIndirect	$2078,	$0114,	A1		; {sources}Toolbox:TextServicesMgr:TSMUtility.c
-XGETDEFAULTINPUTMETHOD			vIndirect	$2078,	$0118,	A1		; {sources}Toolbox:TextServicesMgr:TSMUtility.c
-XSETTEXTSERVICELANGUAGE 		vIndirect	$2078,	$011c,	A1		; {sources}Toolbox:TextServicesMgr:TSMUtility.c
-XGETTEXTSERVICELANGUAGE 		vIndirect	$2078,	$0120,	A1		; {sources}Toolbox:TextServicesMgr:TSMUtility.c
-XUSEINPUTWINDOW 				vIndirect	$2078,	$0124,	A1		; {sources}Toolbox:TextServicesMgr:TSMUtility.c
-XNEWSERVICEWINDOW				vIndirect	$2078,	$0128,	A1		; {sources}Toolbox:TextServicesMgr:TSMUtility.c
-XCLOSESERVICEWINDOW 			vIndirect	$2078,	$012c,	A1		; {sources}Toolbox:TextServicesMgr:TSMUtility.c
-XGETFRONTSERVICEWINDOW			vIndirect	$2078,	$0130,	A1		; {sources}Toolbox:TextServicesMgr:TSMUtility.c
-XFINDSERVICEWINDOW				vIndirect	$2078,	$0134,	A1		; {sources}Toolbox:TextServicesMgr:TSMUtility.c
-MISCMGR 						vNoVector							; {sources}Toolbox:ToolboxEventMgr:ToolboxEventMgr.a
-GETKEYS 						vATrap	 	A???					; {sources}Toolbox:ToolboxEventMgr:ToolboxEventMgr.a
-BUTTON							vATrap	 	A???					; {sources}Toolbox:ToolboxEventMgr:ToolboxEventMgr.a
-TICKCOUNT						vATrap	 	A???					; {sources}Toolbox:ToolboxEventMgr:ToolboxEventMgr.a
-GETMOUSE						vATrap	 	A???					; {sources}Toolbox:ToolboxEventMgr:ToolboxEventMgr.a
-STILLDOWN						vATrap	 	A???					; {sources}Toolbox:ToolboxEventMgr:ToolboxEventMgr.a
-WAITMOUSEUP 					vATrap	 	A???					; {sources}Toolbox:ToolboxEventMgr:ToolboxEventMgr.a
-EVENTAVAIL						vATrap	 	A???					; {sources}Toolbox:ToolboxEventMgr:ToolboxEventMgr.a
-GETNEXTEVENT					vATrap	 	A???					; {sources}Toolbox:ToolboxEventMgr:ToolboxEventMgr.a
-WAITNEXTEVENT					vATrap	 	A???					; {sources}Toolbox:ToolboxEventMgr:ToolboxEventMgr.a
-DOSYSERRORUPDATES				vATrap	 	A???					; {sources}Toolbox:ToolboxEventMgr:ToolboxEventMgrPatches.a
-CLEARSYSERRORUPDATERECT 		vIndirect	$2078,	$0138,	A7		; {sources}Toolbox:ToolboxEventMgr:ToolboxEventMgrPatches.a
-
-;============================== End Text Services Manager Vectors
-
 ;============================== TextEdit Vectors
 
 TEXTEDIT						vNoVector							; {sources}Toolbox:TextEdit:TextEdit.a
@@ -4082,17 +2889,17 @@ TEGETOFFSET 					vATrap	 	A???					; {sources}Toolbox:TextEdit:TextEdit.a
 
 ;============================== Time Manager Vectors
 
-TIMEMGR 						vNoVector							; {sources}OS:TimeMgr:TimeMgr.a
-__RMVTIME						vATrap	 	A???					; {sources}OS:TimeMgr:TimeMgr.a
-AFTERFREEZETIMEINRMVTIME		vIndirect	$2080,	$0004,	A7		; {sources}OS:TimeMgr:TimeMgr.a
-__INSTIME						vATrap	 	A???					; {sources}OS:TimeMgr:TimeMgr.a
-MULTANDMERGE					vIndirect	$2080,	$0008,	A7		; {sources}OS:TimeMgr:TimeMgr.a
-__PRIMETIME 					vATrap	 	A???					; {sources}OS:TimeMgr:TimeMgr.a
-AFTERFREEZETIMEINPRIMETIME		vIndirect	$2080,	$000c,	A7		; {sources}OS:TimeMgr:TimeMgr.a
-AFTERFREEZETIMEINTIMER2INT		vIndirect	$2080,	$0010,	A7		; {sources}OS:TimeMgr:TimeMgr.a
-__MICROSECONDS					vATrap	 	A???					; {sources}OS:TimeMgr:TimeMgr.a
-FREEZETIME						vIndirect	$2080,	$0014,	A7		; {sources}OS:TimeMgr:TimeMgr.a
-INITTIMEMGR 					vNoVector							; {sources}OS:TimeMgr:TimeMgr.a
+;TIMEMGR 						vNoVector							; {sources}OS:TimeMgr:TimeMgr.a
+;__RMVTIME						vATrap	 	A???					; {sources}OS:TimeMgr:TimeMgr.a
+;AFTERFREEZETIMEINRMVTIME		vIndirect	$2080,	$0004,	A7		; {sources}OS:TimeMgr:TimeMgr.a
+;__INSTIME						vATrap	 	A???					; {sources}OS:TimeMgr:TimeMgr.a
+;MULTANDMERGE					vIndirect	$2080,	$0008,	A7		; {sources}OS:TimeMgr:TimeMgr.a
+;__PRIMETIME 					vATrap	 	A???					; {sources}OS:TimeMgr:TimeMgr.a
+;AFTERFREEZETIMEINPRIMETIME		vIndirect	$2080,	$000c,	A7		; {sources}OS:TimeMgr:TimeMgr.a
+;AFTERFREEZETIMEINTIMER2INT		vIndirect	$2080,	$0010,	A7		; {sources}OS:TimeMgr:TimeMgr.a
+;__MICROSECONDS					vATrap	 	A???					; {sources}OS:TimeMgr:TimeMgr.a
+;FREEZETIME						vIndirect	$2080,	$0014,	A7		; {sources}OS:TimeMgr:TimeMgr.a
+;INITTIMEMGR 					vNoVector							; {sources}OS:TimeMgr:TimeMgr.a
 
 ;============================== End Time Manager Vectors
 
@@ -4286,165 +3093,94 @@ FASTERINVALRECT 				vATrap	 	A???					; {sources}Toolbox:WindowMgr:WindowMgrExte
 ACTIVATEPALETTELAYERBRACKET 	vATrap	 	A???					; {sources}Toolbox:WindowMgr:WindowMgrExtensions.a
 GETREARWINDOW					vIndirect	$2084,	$01d0,	A7		; {sources}Toolbox:WindowMgr:WindowMgrExtensions.a
 
+WINDOWMGR_VEC01D4				vIndirect	$2084,	$01d4,	A1
+
 ;============================== End Window Manager Vectors
 
-;============================== Figment Memory Manager Vectors
+;============================== Expansion Bus Manager Vectors
 
+EXPANSIONBUSMGR_VEC0004			vIndirect	$208c,	$0004,	A7
+EXPANSIONBUSMGR_VEC0008			vIndirect	$208c,	$0008,	A7
+EXPANSIONBUSMGR_VEC000C			vIndirect	$208c,	$000c,	A7
+EXPANSIONBUSMGR_VEC0010			vIndirect	$208c,	$0010,	A7
+EXPANSIONBUSMGR_VEC0014			vIndirect	$208c,	$0014,	A7
+EXPANSIONBUSMGR_VEC0018			vIndirect	$208c,	$0018,	A7
+EXPANSIONBUSMGR_VEC001C			vIndirect	$208c,	$001c,	A7
+EXPANSIONBUSMGR_VEC0020			vIndirect	$208c,	$0020,	A7
+EXPANSIONBUSMGR_VEC0024			vIndirect	$208c,	$0024,	A7
+EXPANSIONBUSMGR_VEC0028			vIndirect	$208c,	$0028,	A7
+EXPANSIONBUSMGR_VEC002C			vIndirect	$208c,	$002c,	A7
+EXPANSIONBUSMGR_VEC0030			vIndirect	$208c,	$0030,	A7
+EXPANSIONBUSMGR_VEC0034			vIndirect	$208c,	$0034,	A7
+EXPANSIONBUSMGR_VEC0038			vIndirect	$208c,	$0038,	A7
+EXPANSIONBUSMGR_VEC003C			vIndirect	$208c,	$003c,	A7
+EXPANSIONBUSMGR_VEC0040			vIndirect	$208c,	$0040,	A7
+EXPANSIONBUSMGR_VEC0044			vIndirect	$208c,	$0044,	A7
+EXPANSIONBUSMGR_VEC0048			vIndirect	$208c,	$0048,	A7
+EXPANSIONBUSMGR_VEC004C			vIndirect	$208c,	$004c,	A7
+EXPANSIONBUSMGR_VEC0050			vIndirect	$208c,	$0050,	A7
+EXPANSIONBUSMGR_VEC0054			vIndirect	$208c,	$0054,	A7
+EXPANSIONBUSMGR_VEC0058			vIndirect	$208c,	$0058,	A7
+EXPANSIONBUSMGR_VEC005C			vIndirect	$208c,	$005c,	A7
+EXPANSIONBUSMGR_VEC0060			vIndirect	$208c,	$0060,	A7
+EXPANSIONBUSMGR_VEC0064			vIndirect	$208c,	$0064,	A7
+EXPANSIONBUSMGR_VEC0068			vIndirect	$208c,	$0068,	A7
+EXPANSIONBUSMGR_VEC006C			vIndirect	$208c,	$006c,	A7
+EXPANSIONBUSMGR_VEC0070			vIndirect	$208c,	$0070,	A7
+EXPANSIONBUSMGR_VEC0074			vIndirect	$208c,	$0074,	A7
+EXPANSIONBUSMGR_VEC0078			vIndirect	$208c,	$0078,	A7
+EXPANSIONBUSMGR_VEC007C			vIndirect	$208c,	$007c,	A7
+EXPANSIONBUSMGR_VEC0080			vIndirect	$208c,	$0080,	A7
+EXPANSIONBUSMGR_VEC0084			vIndirect	$208c,	$0084,	A7
+EXPANSIONBUSMGR_VEC0088			vIndirect	$208c,	$0088,	A7
+EXPANSIONBUSMGR_VEC008C			vIndirect	$208c,	$008c,	A7
+EXPANSIONBUSMGR_VEC0090			vIndirect	$208c,	$0090,	A7
+EXPANSIONBUSMGR_VEC0094			vIndirect	$208c,	$0094,	A7
+EXPANSIONBUSMGR_VEC0098			vIndirect	$208c,	$0098,	A7
+EXPANSIONBUSMGR_VEC0100			vIndirect	$208c,	$0100,	A7
+EXPANSIONBUSMGR_VEC0104			vIndirect	$208c,	$0104,	A7
+EXPANSIONBUSMGR_VEC0108			vIndirect	$208c,	$0108,	A7
+EXPANSIONBUSMGR_VEC010C			vIndirect	$208c,	$010c,	A7
+EXPANSIONBUSMGR_VEC0110			vIndirect	$208c,	$0110,	A7
+EXPANSIONBUSMGR_VEC0114			vIndirect	$208c,	$0114,	A7
+EXPANSIONBUSMGR_VEC0118			vIndirect	$208c,	$0118,	A7
+EXPANSIONBUSMGR_VEC011C			vIndirect	$208c,	$011c,	A7
+EXPANSIONBUSMGR_VEC0120			vIndirect	$208c,	$0120,	A7
+EXPANSIONBUSMGR_VEC0124			vIndirect	$208c,	$0124,	A7
+EXPANSIONBUSMGR_VEC012C			vIndirect	$208c,	$012c,	A7
+EXPANSIONBUSMGR_VEC0130			vIndirect	$208c,	$0130,	A7
+EXPANSIONBUSMGR_VEC0134			vIndirect	$208c,	$0134,	A7
+EXPANSIONBUSMGR_VEC0138			vIndirect	$208c,	$0138,	A7
+EXPANSIONBUSMGR_VEC014C			vIndirect	$208c,	$014c,	A7
+EXPANSIONBUSMGR_VEC0150			vIndirect	$208c,	$0150,	A7
+EXPANSIONBUSMGR_VEC0154			vIndirect	$208c,	$0154,	A7
+EXPANSIONBUSMGR_VEC0158			vIndirect	$208c,	$0158,	A7
+EXPANSIONBUSMGR_VEC015C			vIndirect	$208c,	$015c,	A7
+EXPANSIONBUSMGR_VEC0160			vIndirect	$208c,	$0160,	A7
+EXPANSIONBUSMGR_VEC0164			vIndirect	$208c,	$0164,	A7
+EXPANSIONBUSMGR_VEC0168			vIndirect	$208c,	$0168,	A7
+EXPANSIONBUSMGR_VEC016C			vIndirect	$208c,	$016c,	A7
+EXPANSIONBUSMGR_VEC0170			vIndirect	$208c,	$0170,	A7
+EXPANSIONBUSMGR_VEC0174			vIndirect	$208c,	$0174,	A7
+EXPANSIONBUSMGR_VEC0178			vIndirect	$208c,	$0178,	A7
+EXPANSIONBUSMGR_VEC017C			vIndirect	$208c,	$017c,	A7
+EXPANSIONBUSMGR_VEC0180			vIndirect	$208c,	$0180,	A7
+EXPANSIONBUSMGR_VEC0184			vIndirect	$208c,	$0184,	A7
+EXPANSIONBUSMGR_VEC0188			vIndirect	$208c,	$0188,	A7
+EXPANSIONBUSMGR_VEC018C			vIndirect	$208c,	$018c,	A7
+EXPANSIONBUSMGR_VEC0190			vIndirect	$208c,	$0190,	A7
+EXPANSIONBUSMGR_VEC0194			vIndirect	$208c,	$0194,	A7
+EXPANSIONBUSMGR_VEC0198			vIndirect	$208c,	$0198,	A7
+EXPANSIONBUSMGR_VEC019C			vIndirect	$208c,	$019c,	A7
+EXPANSIONBUSMGR_VEC01A0			vIndirect	$208c,	$01a0,	A7
+EXPANSIONBUSMGR_VEC01A4			vIndirect	$208c,	$01a4,	A7
+EXPANSIONBUSMGR_VEC01A8			vIndirect	$208c,	$01a8,	A7
+EXPANSIONBUSMGR_VEC01AC			vIndirect	$208c,	$01ac,	A7
+EXPANSIONBUSMGR_VEC01B0			vIndirect	$208c,	$01b0,	A7
+EXPANSIONBUSMGR_VEC01B4			vIndirect	$208c,	$01b4,	A7
 
-HEAPDISPATCH					vIndirect	$2088,	$0004,	A7		; Figment
-FIG_HSETFLAGS					vIndirect	$2088,	$0008,	A7		; Figment
-FIG_HGETFLAGS					vIndirect	$2088,	$000c,	A7		; Figment
-FIG_HNORSRC 					vIndirect	$2088,	$0010,	A7		; Figment
-FIG_HRSRC						vIndirect	$2088,	$0014,	A7		; Figment
-FIG_STACKSPACETRAP				vIndirect	$2088,	$0018,	A7		; Figment
-FIG_PURGESPACETRAP				vIndirect	$2088,	$001c,	A7		; Figment
-FIG_MAXBLOCKTRAP				vIndirect	$2088,	$0020,	A7		; Figment
-FIG_MOVEHLOW					vIndirect	$2088,	$0024,	A7		; Figment
-FIG_MOVEHHI 					vIndirect	$2088,	$0028,	A7		; Figment
-FIG_SETGROWZONE 				vIndirect	$2088,	$002c,	A7		; Figment
-FIG_HNOPURGE					vIndirect	$2088,	$0030,	A7		; Figment
-FIG_HPURGE						vIndirect	$2088,	$0034,	A7		; Figment
-FIG_HUNLOCK 					vIndirect	$2088,	$0038,	A7		; Figment
-FIG_HLOCK						vIndirect	$2088,	$003c,	A7		; Figment
-FIG_EMPTYHANDLE 				vIndirect	$2088,	$0040,	A7		; Figment
-FIG_PURGEMEM					vIndirect	$2088,	$0044,	A7		; Figment
-FIG_RESRVMEM					vIndirect	$2088,	$0048,	A7		; Figment
-FIG_COMPACTMEMTRAP				vIndirect	$2088,	$004c,	A7		; Figment
-FIG_MAXMEMTRAP					vIndirect	$2088,	$0050,	A7		; Figment
-FIG_FREEMEM 					vIndirect	$2088,	$0054,	A7		; Figment
-FIG_PTRZONETRAP 				vIndirect	$2088,	$0058,	A7		; Figment
-FIG_SETPTRSIZETRAP				vIndirect	$2088,	$005c,	A7		; Figment
-FIG_GETPTRSIZETRAP				vIndirect	$2088,	$0060,	A7		; Figment
-FIG_DISPOSEPTR					vIndirect	$2088,	$0064,	A7		; Figment
-FIG_NEWPTRTRAP					vIndirect	$2088,	$0068,	A7		; Figment
-FIG_REALLOCHANDLETRAP			vIndirect	$2088,	$006c,	A7		; Figment
-FIG_RECOVERHANDLETRAP			vIndirect	$2088,	$0070,	A7		; Figment
-FIG_HANDLEZONETRAP				vIndirect	$2088,	$0074,	A7		; Figment
-FIG_SETHANDLESIZETRAP			vIndirect	$2088,	$0078,	A7		; Figment
-FIG___GETHANDLESIZE 			vIndirect	$2088,	$007c,	A7		; Figment
-FIG_DSPOSEHANDLE				vIndirect	$2088,	$0080,	A7		; Figment
-FIG_NEWEMPTYHANDLETRAP			vIndirect	$2088,	$0084,	A7		; Figment
-FIG_NWHANDLE					vIndirect	$2088,	$0088,	A7		; Figment
-FIG_SETZONE 					vIndirect	$2088,	$008c,	A7		; Figment
-FIG_GETZONE 					vIndirect	$2088,	$0090,	A7		; Figment
-FIG_MOREMASTERS 				vIndirect	$2088,	$0094,	A7		; Figment
-FIG_MAXAPPLZONE 				vIndirect	$2088,	$0098,	A7		; Figment
-FIG_SETAPPLLIMIT				vIndirect	$2088,	$009c,	A7		; Figment
-FIG_INITZONETRAP				vIndirect	$2088,	$00a0,	A7		; Figment
-c_InitZone						vIndirect	$2088,	$00a4,	A7		; Figment
-c_SetApplLimit					vIndirect	$2088,	$00a8,	A7		; Figment
-c_MaxApplZone					vIndirect	$2088,	$00ac,	A7		; Figment
-c_MoreMasters					vIndirect	$2088,	$00b0,	A7		; Figment
-c_GetZone						vIndirect	$2088,	$00b4,	A7		; Figment
-c_SetZone						vIndirect	$2088,	$00b8,	A7		; Figment
-c_NewHandle 					vIndirect	$2088,	$00bc,	A7		; Figment
-c_NewEmptyHandle				vIndirect	$2088,	$00c0,	A7		; Figment
-c_NewHandleHi					vIndirect	$2088,	$00c4,	A7		; Figment
-c_DisposeHandle 				vIndirect	$2088,	$00c8,	A7		; Figment
-c_GetHandleSize 				vIndirect	$2088,	$00cc,	A7		; Figment
-c_SetHandleSize 				vIndirect	$2088,	$00d0,	A7		; Figment
-c_HandleZone					vIndirect	$2088,	$00d4,	A7		; Figment
-c_RecoverHandle 				vIndirect	$2088,	$00d8,	A7		; Figment
-c_ReallocHandle 				vIndirect	$2088,	$00dc,	A7		; Figment
-c_NewPtr						vIndirect	$2088,	$00e0,	A7		; Figment
-c_DisposePtr					vIndirect	$2088,	$00e4,	A7		; Figment
-c_GetPtrSize					vIndirect	$2088,	$00e8,	A7		; Figment
-c_SetPtrSize					vIndirect	$2088,	$00ec,	A7		; Figment
-c_PtrZone						vIndirect	$2088,	$00f0,	A7		; Figment
-c_FreeMem						vIndirect	$2088,	$00f4,	A7		; Figment
-c_MaxMem						vIndirect	$2088,	$00f8,	A7		; Figment
-c_CompactMem					vIndirect	$2088,	$00fc,	A7		; Figment
-c_ReserveMem					vIndirect	$2088,	$0100,	A7		; Figment
-c_PurgeMem						vIndirect	$2088,	$0104,	A7		; Figment
-c_EmptyHandle					vIndirect	$2088,	$0108,	A7		; Figment
-c_HLock 						vIndirect	$2088,	$010c,	A7		; Figment
-c_HUnlock						vIndirect	$2088,	$0110,	A7		; Figment
-c_HPurge						vIndirect	$2088,	$0114,	A7		; Figment
-c_HNoPurge						vIndirect	$2088,	$0118,	A7		; Figment
-c_SetGrowZone					vIndirect	$2088,	$011c,	A7		; Figment
-c_MoveHHi						vIndirect	$2088,	$0120,	A7		; Figment
-c_MoveHLow						vIndirect	$2088,	$0124,	A7		; Figment
-c_MaxBlock						vIndirect	$2088,	$0128,	A7		; Figment
-c_PurgeSpace					vIndirect	$2088,	$012c,	A7		; Figment
-c_StackSpace					vIndirect	$2088,	$00130,	A7		; Figment
-c_HSetRBit						vIndirect	$2088,	$0134,	A7		; Figment
-c_HClrRBit						vIndirect	$2088,	$0138,	A7		; Figment
-c_HGetState 					vIndirect	$2088,	$013c,	A7		; Figment
-c_HSetState 					vIndirect	$2088,	$0140,	A7		; Figment
-c_GetNextBlockInHeap			vIndirect	$2088,	$0144,	A7		; Figment
-c_DisposeZone					vIndirect	$2088,	$0148,	A7		; Figment
-c_SetZoneCompatibilityFlags 	vIndirect	$2088,	$014c,	A7		; Figment
-c_GetZoneCompatibilityFlags 	vIndirect	$2088,	$0150,	A7		; Figment
-c_RegisterDisposeProc			vIndirect	$2088,	$0154,	A7		; Figment
-GetZoneFromNilMP				vIndirect	$2088,	$0158,	A7		; Figment
-WalkUpFindNewLowRemoveable		vIndirect	$2088,	$015c,	A7		; Figment
-FixedBlockInRange				vIndirect	$2088,	$0160,	A7		; Figment
-CompactHeap 					vIndirect	$2088,	$0164,	A7		; Figment
-CalcMaxBlockSize				vIndirect	$2088,	$0168,	A7		; Figment
-ExtendHeapLimit 				vIndirect	$2088,	$016c,	A7		; Figment
-ExtendApplLimit 				vIndirect	$2088,	$0170,	A7		; Figment
-MakeSpaceLow					vIndirect	$2088,	$0174,	A7		; Figment
-MakeSpaceHigh					vIndirect	$2088,	$0178,	A7		; Figment
-ShrinkHeapLimit 				vIndirect	$2088,	$017c,	A7		; Figment
-NewBlock						vIndirect	$2088,	$0180,	A7		; Figment
-NewBlockFast					vIndirect	$2088,	$0184,	A7		; Figment
-MarkBlockAsPrivate				vIndirect	$2088,	$0188,	A7		; Figment
-AllocateMoreMasters 			vIndirect	$2088,	$018c,	A7		; Figment
-KillBlock						vIndirect	$2088,	$0190,	A7		; Figment
-SetBlockSize					vIndirect	$2088,	$0194,	A7		; Figment
-CalcFreeSpaceAndFindRegionTop	vIndirect	$2088,	$0198,	A7		; Figment
-MoveBlockHigh					vIndirect	$2088,	$019c,	A7		; Figment
-MoveBlockLow					vIndirect	$2088,	$01a0,	A7		; Figment
-CalcLargestPurgeRegion			vIndirect	$2088,	$01a4,	A7		; Figment
-PurgeBlock						vIndirect	$2088,	$01a8,	A7		; Figment
-DoEmpty 						vIndirect	$2088,	$01ac,	A7		; Figment
-LocatePurgePtr					vIndirect	$2088,	$01b0,	A7		; Figment
-PurgeAndMakeSpace				vIndirect	$2088,	$01b4,	A7		; Figment
-PurgeAndCompactHeap 			vIndirect	$2088,	$01b8,	A7		; Figment
-FindHeap						vIndirect	$2088,	$01bc,	A7		; Figment
-FindBlockInHeap 				vIndirect	$2088,	$01c0,	A7		; Figment
-IsValidBlockInHeap				vIndirect	$2088,	$01c4,	A7		; Figment
-CreateNewHeap					vIndirect	$2088,	$01c8,	A7		; Figment
-MoveHeapHeaderHigh				vIndirect	$2088,	$01cc,	A7		; Figment
-RemoveHeap						vIndirect	$2088,	$01d0,	A7		; Figment
-GrowHeap						vIndirect	$2088,	$01d4,	A7		; Figment
-ShrinkHeap						vIndirect	$2088,	$01d8,	A7		; Figment
-CLEARBYTES						vIndirect	$2088,	$01dc,	A7		; Figment
-FillBytes						vIndirect	$2088,	$01e0,	A7		; Figment
-c_InitProcessMgrHeap			vIndirect	$2088,	$01e4,	A7		; Figment
-c_ShrinkSysHeap 				vIndirect	$2088,	$01e8,	A7		; Figment
-c_LowerProcessMgrZoneBottom 	vIndirect	$2088,	$01ec,	A7		; Figment
-c_ShrinkProcessMgrZone			vIndirect	$2088,	$01f0,	A7		; Figment
-c_ExtendSystemZone				vIndirect	$2088,	$01f4,	A7		; Figment
-c_ReclaimSpaceIfSysHeapLow		vIndirect	$2088,	$01f8,	A7		; Figment
-c_StraddleBlockSize 			vIndirect	$2088,	$01fc,	A7		; Figment
-c_ProcessMgrMaxBlock			vIndirect	$2088,	$0200,	A7		; Figment
-c_GetProcessMgrLoFreeBytes		vIndirect	$2088,	$0204,	A7		; Figment
-c_GetSystemHiFreeBytes			vIndirect	$2088,	$0208,	A7		; Figment
-GetSystemHiPurgeBytes			vIndirect	$2088,	$020c,	A7		; Figment
-FIG_VIAZPOSTINIT				vIndirect	$2088,	$0210,	A7		; Figment
-FIG_VIAZINIT					vIndirect	$2088,	$0214,	A7		; Figment
-FIG_INITAPPLZONE				vIndirect	$2088,	$0218,	A7		; Figment
-FIG_SETAPPLBASE 				vIndirect	$2088,	$021c,	A7		; Figment
-FIG___STRIPADDRESS				vIndirect	$2088,	$0220,	A7		; Figment
-MOVEBYTES020					vIndirect	$2088,	$0224,	A7		; Figment
-MOVEBYTES040					vIndirect	$2088,	$0228,	A7		; Figment
-INITQTMEMORY					vIndirect	$2088,	$022c,	A7		; Figment
-addTrashMemoryProc				vIndirect	$2088,	$0230,	A7		; Figment
-removeTrashMemoryProc			vIndirect	$2088,	$0234,	A7		; Figment
-c_RegisterHandleTrashNotification vIndirect $2088,	$0238,	A7		; Figment
-c_UnregisterHandleTrashNotification vIndirect $2088, $023c, A7	    ; Figment
-c_TrashZone 					vIndirect	$2088,	$0240,	A7		; Figment
-c_TrashProcess					vIndirect	$2088,	$0244,	A7		; Figment
-c_TrashMemoryArea				vIndirect	$2088,	$0248,	A7		; Figment
-c_NewHandleSystemSafe			vIndirect	$2088,	$024c,	A7		; Figment
-c_NewPtrSystemSafe				vIndirect	$2088,	$0250,	A7		; Figment
-c_EnoughSystemHeapSlop			vIndirect	$2088,	$0254,	A7		; Figment
-OLD_INITMEMMGR					vIndirect	$2088,	$0258,	A7		; Figment
-OLD_INITMEMVECT 				vIndirect	$2088,	$025c,	A7		; Figment
-OLD_AFTERBOOTSETAPPLBASE		vIndirect	$2088,	$0260,	A7		; Figment
+;============================== End Expansion Bus Manager Vectors
 
-;============================== End Figment Memory Manager Vectors
 
 ;
 ;	The following list of entrypoints are not currently vectorized.
@@ -6092,8 +4828,8 @@ PC1TBL vNoVector
 ADBPROC vNoVector
 INITADB vNoVector
 GETRIDOFPOWERMGRINFREEZETIME vNoVector
-INSTALLTIMEMGRPLUSSEII vNoVector
-INSTALLTIMEMGRPORTABLEIICI vNoVector
+;INSTALLTIMEMGRPLUSSEII vNoVector
+;INSTALLTIMEMGRPORTABLEIICI vNoVector
 RMVTIMENEWFREEZETIME vNoVector
 PRIMETIMENEWFREEZETIME vNoVector
 TIMER2INTNEWFREEZETIME vNoVector
@@ -6179,75 +4915,3 @@ PARTIALFONTZONEGROWZONEPROCEDURE vNoVector
 INITIALIZEPARTIALFONTS vNoVector
 SetCurrentFragment vNoVector
 Assert vNoVector
-AssertCharacter vNoVector
-AssertInteger vNoVector
-AssertUnsignedInteger vNoVector
-AssertPointer vNoVector
-NewZonePtr vNoVector
-GetZoneHandleSize vNoVector
-ResizeZoneHandle vNoVector
-MoveZoneHandleHigh vNoVector
-INITIALIZEDISKCACHE vNoVector
-DISKCACHERESOURCEMANAGERPURGEPROCEDURE vNoVector
-DISKCACHESHUTDOWNPROCEDURE vNoVector
-GetFontCacheFileSize vNoVector
-SetFontCacheFileSize vNoVector
-GetFontCacheFileStatus vNoVector
-SetFontCacheFileStatus vNoVector
-FontCacheFileExists vNoVector
-LoadDiskCacheMap vNoVector
-NEWGESTALT vNoVector
-PPCOPEN vNoVector
-PPCINFORM vNoVector
-PPCACCEPT vNoVector
-PPCREJECT vNoVector
-PPCWRITE vNoVector
-PPCREAD vNoVector
-PPCEND vNoVector
-PPCCLOSE vNoVector
-IPCLISTPORTS vNoVector
-NAN vNoVector
-TESTHALT vNoVector
-GETPRECISION vNoVector
-SETPRECISION vNoVector
-GETROUND vNoVector
-SETROUND vNoVector
-SETHALT vNoVector
-SETEXCEPTION vNoVector
-TESTEXCEPTION vNoVector
-COMPOUND vNoVector
-ANNUITY vNoVector
-REMAINDER vNoVector
-COPYSIGN vNoVector
-LOGB vNoVector
-RINT vNoVector
-NEXTEXTENDED vNoVector
-SCALB vNoVector
-SETENVIRONMENT vNoVector
-GETENVIRONMENT vNoVector
-PROCEXIT vNoVector
-PROCENTRY vNoVector
-NUM2DEC vNoVector
-DEC2NUM vNoVector
-RELATION vNoVector
-RANDOMX vNoVector
-NEXTDOUBLE vNoVector
-CLASSEXTENDED vNoVector
-CLASSCOMP vNoVector
-CLASSDOUBLE vNoVector
-LOG2 vNoVector
-TAN vNoVector
-EXP1 vNoVector
-EXP2 vNoVector
-LN1 vNoVector
-SIGNNUM vNoVector
-GETHALTVECTOR vNoVector
-SETHALTVECTOR vNoVector
-X96TOX80 vNoVector
-X80TOX96 vNoVector
-TJUMP vNoVector
-GetCTEGlobals vNoVector
-SIZESOUNDBUFFER vNoVector
-HMCMERGE vNoVector
-HHEADMERGE vNoVector
-DICTIONARYDISPATCH vNoVector

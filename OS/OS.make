@@ -77,29 +77,28 @@ RealTimeDir		=	{OSDir}RealTime:
 #include {RealTimeDir}RealTime.make
 
 
-OSObjs	= 							"{ObjDir}clock.a.o"								¶
+OSObjs	= 							"{ObjDir}BCScreenRelated.o"						¶
+									"{ObjDir}clock.a.o"								¶
 									"{ObjDir}CrsrDev.a.o"							¶
 									"{ObjDir}CudaMgr.a.o"							¶
 									"{ObjDir}DeferredTaskMgr.a.o"					¶
-									"{ObjDir}DeviceMgr.a.o"							¶
-									"{ObjDir}DockingMgr.a.o"						¶
+									"{ObjDir}DeviceRelatedMgr.o"					¶
 									"{ObjDir}EgretMgr.a.o"							¶
 									"{ObjDir}HwPriv.a.o"							¶
-									"{ObjDir}I2C.a.o"							¶
 									"{ObjDir}Universal.a.o"							¶
-									"{ObjDir}InterruptHandlers.a.o"					¶
-									"{ObjDir}IOPMgr.a.o"							¶
 									"{ObjDir}OSEventMgr.a.o"						¶
 									"{ObjDir}queue.a.o"								¶
 									"{ObjDir}sysUtil.a.o"							¶
 									"{ObjDir}VerticalRetraceMgr.a.o"				¶
 									"{ObjDir}MiscPatches.a.o"						¶
-									"{ObjDir}MagicData.a.o"							¶
 									"{ObjDir}PowerMgr.o"							¶
-									"{ObjDir}PwrControlsPatches.o"					¶
 									"{ObjDir}VMPatches.a.o"							¶
+									"{ObjDir}NKLogShim.a.o"							¶
 									"{ObjDir}Dispatch.a.o"							¶
-									"{ObjDir}UniversalTables.a.o"
+									"{ObjDir}UniversalTables.a.o"					¶
+									"{ObjDir}NKEventGroupRelated.a.o"				¶
+									"{ObjDir}InterruptHandlers.a.o"					¶
+									"{ObjDir}NKEventGroupWrapper.a.o"
 
 
 "{LibDir}OS.lib"				Ä	{OSObjs}
@@ -133,14 +132,14 @@ OSObjs	= 							"{ObjDir}clock.a.o"								¶
 	Asm {StdAOpts} -o "{Targ}" "{OSDir}DeferredTaskMgr.a"
 
 
-"{ObjDir}DeviceMgr.a.o"			Ä	"{OSDir}DeviceMgr.a"							¶
-									"{ObjDir}StandardEqu.d"							¶
-									"{AIncludes}HardwareEqu.a"						¶
-									"{IntAIncludes}UniversalEqu.a"					¶
-									"{AIncludes}ROMEqu.a"							¶
-									"{AIncludes}Slots.a"							¶
-									"{AIncludes}FSEqu.a"
-	Asm {StdAOpts} -o "{Targ}" "{OSDir}DeviceMgr.a"
+# "{ObjDir}DeviceMgr.a.o"			Ä	"{OSDir}DeviceMgr.a"							¶
+# 									"{ObjDir}StandardEqu.d"							¶
+# 									"{AIncludes}HardwareEqu.a"						¶
+# 									"{IntAIncludes}UniversalEqu.a"					¶
+# 									"{AIncludes}ROMEqu.a"							¶
+# 									"{AIncludes}Slots.a"							¶
+# 									"{AIncludes}FSEqu.a"
+# 	Asm {StdAOpts} -o "{Targ}" "{OSDir}DeviceMgr.a"
 
 
 "{ObjDir}DispatchHelper.a.o"	Ä 	"{ObjDir}StandardEqu.d"							¶
@@ -191,19 +190,19 @@ OSObjs	= 							"{ObjDir}clock.a.o"								¶
 										"{IntAIncludes}i2cEqu.a"
 	Asm {StdAOpts} -o "{Targ}" "{I2CDir}I2C.a"
 
-"{ObjDir}InterruptHandlers.a.o"	Ä	"{ObjDir}StandardEqu.d"							¶
-									"{IntAIncludes}HardwarePrivateEqu.a"			¶
-									"{IntAIncludes}SysPrivateEqu.a"					¶
-									"{IntAIncludes}UniversalEqu.a"					¶
-									"{IntAIncludes}IOPrimitiveEqu.a"				¶
-									"{AIncludes}Shutdown.a"							¶
-									"{IntAIncludes}PowerPrivEqu.a"					¶
-									"{IntAIncludes}EgretEqu.a"						¶
-									"{IntAIncludes}PSCEqu.a"						¶
-									"{IntAIncludes}AMICEqu.a"						¶
-									"{IntAIncludes}GrandCentralPriv.a"				¶
-									"{OSDir}InterruptHandlers.a"
-	Asm {StdAOpts} -o "{Targ}" "{OSDir}InterruptHandlers.a"
+# "{ObjDir}InterruptHandlers.a.o"	Ä	"{ObjDir}StandardEqu.d"							¶
+# 									"{IntAIncludes}HardwarePrivateEqu.a"			¶
+# 									"{IntAIncludes}SysPrivateEqu.a"					¶
+# 									"{IntAIncludes}UniversalEqu.a"					¶
+# 									"{IntAIncludes}IOPrimitiveEqu.a"				¶
+# 									"{AIncludes}Shutdown.a"							¶
+# 									"{IntAIncludes}PowerPrivEqu.a"					¶
+# 									"{IntAIncludes}EgretEqu.a"						¶
+# 									"{IntAIncludes}PSCEqu.a"						¶
+# 									"{IntAIncludes}AMICEqu.a"						¶
+# 									"{IntAIncludes}GrandCentralPriv.a"				¶
+# 									"{OSDir}InterruptHandlers.a"
+# 	Asm {StdAOpts} -o "{Targ}" "{OSDir}InterruptHandlers.a"
 
 
 "{ObjDir}IOPMgr.a.o"			Ä	"{ObjDir}StandardEqu.d"							¶
@@ -255,14 +254,14 @@ OSObjs	= 							"{ObjDir}clock.a.o"								¶
 	Asm {StdAOpts} -o "{Targ}" "{OSDir}Universal.a" -i "{OSDir}StartMgr"
 
 
-"{ObjDir}UniversalTables.a.o"		Ä	"{ObjDir}StandardEqu.d"						¶
-										"{IntAIncludes}HardwarePrivateEqu.a"		¶
-										"{IntAIncludes}UniversalEqu.a"				¶
-										"{AIncludes}Slots.a"						¶
-										"{IntAincludes}DepVideoEqu.a"				¶
-										"{AIncludes}ROMEqu.a"						¶
-										"{OSDir}UniversalTables.a"
-	Asm {StdAOpts} -o "{Targ}" "{OSDir}UniversalTables.a" -i "{OSDir}IoPrimitives:"
+# "{ObjDir}UniversalTables.a.o"		Ä	"{ObjDir}StandardEqu.d"						¶
+# 										"{IntAIncludes}HardwarePrivateEqu.a"		¶
+# 										"{IntAIncludes}UniversalEqu.a"				¶
+# 										"{AIncludes}Slots.a"						¶
+# 										"{IntAincludes}DepVideoEqu.a"				¶
+# 										"{AIncludes}ROMEqu.a"						¶
+# 										"{OSDir}UniversalTables.a"
+# 	Asm {StdAOpts} -o "{Targ}" "{OSDir}UniversalTables.a" -i "{OSDir}IoPrimitives:"
 
 
 "{ObjDir}VerticalRetraceMgr.a.o" Ä	"{ObjDir}StandardEqu.d"							¶
@@ -282,3 +281,11 @@ OSObjs	= 							"{ObjDir}clock.a.o"								¶
 
 "{ObjDir}VMPatches.a.o"			Ä	"{OSDir}VMPatches.a"
 	Asm {StdAOpts} -o "{Targ}" "{OSDir}VMPatches.a"
+
+
+"{ObjDir}NKLogShim.a.o"			Ä	"{OSDir}NKLogShim.a"
+	Asm {StdAOpts} -o "{Targ}" "{OSDir}NKLogShim.a"
+
+
+"{ObjDir}NKEventGroupWrapper.a.o"	Ä	"{OSDir}NKEventGroupWrapper.a"
+	Asm {StdAOpts} -o "{Targ}" "{OSDir}NKEventGroupWrapper.a"

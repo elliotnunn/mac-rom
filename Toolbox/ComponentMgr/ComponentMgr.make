@@ -22,8 +22,8 @@ ComponentMgrObjects 				=	"{ObjDir}ThingManagerDispatcher.a.o"										¶
 										"{ObjDir}ThingSearch.c.o"						¶
 										"{ObjDir}ThingFiles.c.o"						¶
 
-"{LibDir}ComponentMgr.lib"			Ä	{ComponentMgrObjects}
-	Lib {StdLibOpts} {ComponentMgrObjects} -o "{Targ}"
+# "{LibDir}ComponentMgr.lib"			Ä	{ComponentMgrObjects}
+# 	Lib {StdLibOpts} {ComponentMgrObjects} -o "{Targ}"
 
 
 "{ObjDir}ThingManagerDispatcher.a.o" Ä	"{ComponentMgrDir}ThingManagerDispatcher.a"		¶

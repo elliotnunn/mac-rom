@@ -162,26 +162,21 @@ IntAIncludes	=	{Sources}Internal:Asm:
 IntCIncludes	=	{Sources}Internal:C:
 IntPInterfaces	=	{Sources}Internal:Pascal:
 IntRIncludes	=	{Sources}Internal:Rez:
-Libraries		=	{Sources}Libs:Libraries:
-CLibraries		=	{Sources}Libs:CLibraries:
-PLibraries		=	{Sources}Libs:PLibraries:
 
 
-MAOpts			=	-d TRUE=1 -d FALSE=0 -d Alignment=8 -d CPU=20 -d ROMRelease=$D4C1 -wb -d SubRelease=3 -blksize 62
-MCOpts			=	-d TRUE=1 -d FALSE=0 -d Alignment=8 -d CPU=20 -d ROMRelease=$D4C1 -b3 -mbg full -mc68020 -blksize 62 -opt full
+MAOpts			=	-d TRUE=1 -d FALSE=0 -d Alignment=8 -d CPU=20 -d ROMRelease=$45F6 -wb -d SubRelease=1 -blksize 62
+MCOpts			=	-d TRUE=1 -d FALSE=0 -d Alignment=8 -d CPU=20 -d ROMRelease=$45F6 -b3 -mbg full -mc68020 -blksize 62 -opt full
 MPOpts			=	-mbg full -mc68020
 
-RomBase			=	$40800000
+RomBase			=	$FFC00000
 
 Features		=	hasRISCV0ResMgrPatches					¶
 					hasDoubleByte							¶
-					hasAMIC									¶
 					SupportNativeComponents					¶
 					Script_Char_Extra						¶
 					hasPenFraction							¶
 					hasFullKerning							¶
 					hasGlyphState							¶
-					hasNewHeapMgr							¶
 					hasPDMMaceEnet							¶
 					hasAppleTalkInROM						¶
 					hasMixedMode							¶
@@ -189,9 +184,7 @@ Features		=	hasRISCV0ResMgrPatches					¶
 					hasSCSIDiskModeFeature					¶
 					hasSysSevenResources					¶
 					hasDataAccessPACK						¶
-					hasYMCA									¶
 					hasCPUIDRegister						¶
-					hasHMC									¶
 					has2MegROMOrMore						¶
 					hasVideoIn								¶
 					hasAsyncSCSI							¶
@@ -208,7 +201,6 @@ Features		=	hasRISCV0ResMgrPatches					¶
 					forLocalizability						¶
 					has040MMU								¶
 					hasADBKeyLayouts						¶
-					hasASC									¶
 					hasAliasMgr 							¶
 					hasApple2Fonts							¶
 					hasAppleEventMgr						¶
@@ -216,49 +208,25 @@ Features		=	hasRISCV0ResMgrPatches					¶
 					hasBattery								¶
 					hasCommToolbox							¶
 					hasCQD									¶
-					hasDAFB									¶
-					hasDJMEMC								¶
-					hasDataAccessMgr						¶
 					hasDisplayMgr 							¶
 					hasDisplayMgrWindows 					¶
 					hasEDisk								¶
-					hasEclipseVIA2							¶
-					hasEditionMgr							¶
 					hasEgret								¶
 					hasExtendedCharacterSet					¶
-					hasFMC									¶
 					hasGDU									¶
-					hasGlue									¶
-					hasGrandCentral							¶
 					hasIdle 								¶
-					hasIopScc								¶
-					hasIopSwim								¶
-					hasJaws 								¶
-					hasMDU									¶
-					hasMMU									¶
-					hasMSC									¶
-					hasMac2VIA2 							¶
-					hasNetBoot								¶
-					hasNiagra								¶
-					hasOrwell								¶
-					hasOss									¶
-					hasPratt								¶
 					hasProtectedPRAM						¶
 					hasSCSI96								¶
 					hasSWIM2								¶
-					hasSwim3								¶
 					hasSlotMgr								¶
-					hasSonora								¶
 					hasSplineFonts							¶
 					hasVDAC									¶
 					hasVIAClock								¶
 					hasVISA2								¶
-					hasVISADecoder							¶
 					hasWaimeaVIA2							¶
 					isUniversal								¶
 					hasPwrControls							¶
 					hasPwrMgrClock							¶
-					hasRBV									¶
 					hasSplineFonts							¶
 					hasVIAClock 							¶
 					hasWaimeaVIA2							¶
@@ -267,6 +235,8 @@ Features		=	hasRISCV0ResMgrPatches					¶
 					onHafMac								¶
 					onMac32 								¶
 					onNuMac 								¶
+					hasBCScreen								¶
+					hasMMU									¶
 					ForROM
 
 
@@ -340,9 +310,6 @@ FeatureSet						Ä
 	Set CIncludes			"{CIncludes}"
 	Set PInterfaces			"{PInterfaces}"
 	Set RIncludes			"{RIncludes}"
-	Set	Libraries			"{Libraries}"
-	Set	CLibraries			"{CLibraries}"
-	Set	PLibraries			"{PLibraries}"
 	Set StdAOpts			"{MAOpts} {FeatureSet} -i {IntAIncludes} {AOpts} -i {ObjDir}"
 	Set StdCOpts			"{MCOpts} {FeatureSet} -i {IntCIncludes} {COpts}"
 	Set StdCPOpts			"{MCPOpts} {FeatureSet} -i {IntCIncludes} {COpts}"
@@ -381,10 +348,10 @@ Clean							Ä
 
 #include {ToolSrcDir}Tools.make
 
-#include {MakeDir}MainCode.make
-
-#include {DeclDir}DeclData.make
-
 #include {DriverDir}Drivers.make
 
-#include {ResourceDir}Resources.make
+#include {MakeDir}MainCode.make
+
+##include {DeclDir}DeclData.make
+
+##include {ResourceDir}Resources.make

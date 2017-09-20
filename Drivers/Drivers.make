@@ -22,8 +22,8 @@ BackLightDir	=	{DriverDir}BackLight:
 
 #include {SonyDir}Sony.make
 
-#include {SerialDir}Serial.make
-#include {SerialDMADir}SerialDMA.make
+##include {SerialDir}Serial.make
+##include {SerialDMADir}SerialDMA.make
 
 #include {NewAgeDir}NewAge.make
 

@@ -285,7 +285,7 @@
 			Exit 1			
 		End
 
-		"{Sources}Tools:Make" -w {MOpts} {Targets} -f "{MakeFile}" > "{MakeOut}" || Exit
+		Make -w {MOpts} {Targets} -f "{MakeFile}" > "{MakeOut}" || Exit
 
 		If {EchoCmds}
 			Set Echo 1

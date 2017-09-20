@@ -129,10 +129,11 @@
 				INCLUDE 	'Balloons.a'			; 
 				INCLUDE 	'BalloonsPriv.a'		; 
 				INCLUDE 	'PowerPrivEqu.a'		; 
+				INCLUDE		'Processes.a'
 
 Events			PROC	EXPORT	
 
-				EXPORT	InitEvents,PostEventTrap,GetOSEventTrap,OSEventAvailTrap,FlushEvents
+				EXPORT	InitEvents,PostEventTrap,GetOSEventTrap,OSEventAvailTrap,FlushEvents,NewEMFunction
 				IMPORT	EnqueueTrap,DequeueTrap,SMgrPostMunging
 
 
@@ -143,7 +144,7 @@ EvtOffset		EQU 	6					; event record offset from start of
 
 ;_______________________________________________________________________
 ;
-; Routine:		InitEvents
+; Routine:		InitEvents afe0
 ;
 ; Arguments:	D0 (input)   --  number of elements in the event queue
 ;				D0 (output)  --  result code
@@ -184,7 +185,7 @@ InitEvents	move.w	EventQueue,d2				; check the first word of the EventQ	<SM9>
 
 ;_______________________________________________________________________
 ;
-; Routine:		PostEvent
+; Routine:		PostEvent b010
 ;
 ; Arguments:	  A0 (input)   --  event number (16-bit)
 ;				  D0 (input)   --  event message (32-bit)
@@ -304,7 +305,7 @@ FillRecord		MOVE.L	Ticks,EvtTicks(A0)	; fill in the current time
 
 ;_______________________________________________________________________
 ;
-; Routine:		OSEventavail
+; Routine:		OSEventavail b09c
 ;
 ; Arguments:	  A0 (input)   --  pointer to user event record (32-bit)
 ;				  D0 (input)   --  set of events desired (event mask)
@@ -330,8 +331,9 @@ FillRecord		MOVE.L	Ticks,EvtTicks(A0)	; fill in the current time
 ;_______________________________________________________________________
 
 OSEventAvailTrap 
-			IMPORT	ptchHMGetBalloons					; <SM6> rb, start
-			IMPORT	ptchHMCallTrackerInContext
+			ANDI.L	#$FFFF,D0
+
+OSEventAvailSkippingAndi
 			with  PowerDispRec
 			MOVEM.L	A0-A1/D0-D2,-(SP)					; we need to save these regs
 
@@ -348,7 +350,40 @@ OSEventAvailTrap
 			BNE.S	@DoNothing							; do nothing on the reentrant case
 
 			ST		hmgOSEventReentrantCount(A0)		; say that we're busy
-			JSR		ptchHMCallTrackerInContext
+
+;	from BalloonExtensions.a: ptchHMCallTrackerInContext
+
+			SUBQ	#$8, SP
+			SUBQ	#$2, SP
+			PEA.L	$2(SP)
+
+			MOVEQ.L	#-$1, D0								; like _GetFrontProcess but not quite
+			MOVE.L	D0, -(SP)
+			MOVE	#$39, -(SP)
+			_OSDispatch
+
+			TST		(SP)+
+			BNE.B	@wasError
+			SUBQ	#$2, SP
+
+			PEA.L	$2(SP)
+			_WakeUpProcess
+
+			TST		(SP)+
+			BNE.B	@wasError
+
+			SUBQ	#$2, SP
+			MOVE	#$FC, D0								; from Balloonptch28.p: HMBalloonBulk
+			_Pack14
+
+			TST		(SP)+
+@wasError	AddQ	#$8, SP
+
+														; from BalloonExtensions.a: ptchHMGetHelpGlobal
+			MOVE.L	ExpandMem,A0							; point to the expand mem ptr
+			MOVE.L	ExpandMemRec.emHelpGlobals(A0),A0		; return the global ptr on the stack
+
+			CLR		hmgOSEventReentrantCount(A0)
 
 @DoNothing
 			MOVEM.L	(SP)+,A0-A1/D0-D2					; restore 'em, <SM6> rb, end
@@ -389,9 +424,12 @@ TstAutoEvent	AND.W	SysEvtMask,D0		; figure in system mask for pseudo-evts
 				MOVE.L	Ticks,D1			; check first threshold
 				MOVE.L	D1,D2
 				SUB.L	KeyTime,D1
+				CMPI.L	#$8000,D1
+				BGE		@skip
 				CMP 	KeyThresh,D1
 				BLT.S	NoEventAvail		; br if not time yet
 
+@skip
 				SUB.L	KeyRepTime,D2		; check second threshold
 				CMP 	KeyRepThresh,D2
 				BLT.S	NoEventAvail		; br if not time yet
@@ -439,7 +477,7 @@ NoEventAvail	BSR.S	FillRecord			; fill in record for null events
 
 ;_______________________________________________________________________
 ;
-; Routine:		GetOSEvent
+; Routine:		GetOSEvent b1aa
 ;
 ; Arguments:	  A0 (input)   --  pointer to user event buffer (32-bit)
 ;				  D0 (input)   --  type of event desired (event mask)
@@ -458,7 +496,10 @@ NoEventAvail	BSR.S	FillRecord			; fill in record for null events
 ; Other:		uses D0,D1,D2,A0,A1
 ;_______________________________________________________________________
 	
-GetOSEventTrap	BSR.S	OldOSEventAvail		; first find the event						<SM11>
+GetOSEventTrap	ANDI.L	#$FFFF,D0
+
+GetOSEventSkippingAndi
+				BSR.S	OldOSEventAvail		; first find the event						<SM11>
 				BNE.S	@EventDone			; don't dequeue null or update events
 
 				MOVE.L	A0,-(SP)			; save user's event record ptr
@@ -487,7 +528,7 @@ DeleteEvt		JSR 	DequeueTrap			; dequeue it (D0 destroyed)
 
 ;_______________________________________________________________________
 ;
-; Routine:		FlushEvents
+; Routine:		FlushEvents b1ea
 ;
 ; Arguments:	  D0 (input)   --  low word: events to remove (event mask)
 ;								  high word: events on which to stop (event mask)
@@ -548,33 +589,38 @@ FlushStop		MOVEM.L (SP)+,D3-D4 		; restore regs
 				MOVE.W	(SP)+, SR			;  on as our result
 				RTS
 
-				END 
+
+NewEMFunction
+; b232
+				MoveA.L	(A7)+, A1
+				CmpI	#$1, D0
+				BEQ.B	L13
+				CmpI	#$2, D0
+				BEQ.B	L14
+				CmpI	#$3, D0
+				BEQ.B	L15
+				MoveQ.L	#$C, D0
+				DC.W	$A9C9
+L13				Move.L	(A7)+, D0
+				MoveA	(A7)+, A0
+				Move.L	A1, -(A7)
+				Bsr		GetFreeOne
+				Bra.B	L16
+L14				MoveA.L	(A7)+, A0
+				Move.L	(A7)+, D0
+				Move.L	A1, -(A7)
+				Bsr		OSEventAvailSkippingAndi
+				Not.L	D0
+				AndI.L	#$101, D0
+				Bra.B	L16
+L15				MoveA.L	(A7)+, A0
+				Move.L	(A7)+, D0
+				Move.L	A1, -(A7)
+				Bsr		GetOSEventSkippingAndi
+				Not.L	D0
+				AndI.L	#$101, D0
+L16				Move.L	D0, $4(A7)
+				Rts
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+				END

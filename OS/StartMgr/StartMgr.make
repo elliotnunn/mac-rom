@@ -27,7 +27,9 @@
 
 StartMgrObjs			=	"{ObjDir}StartTop.a.o"								¶
 							"{ObjDir}StartInit.a.o"								¶
+							"{ObjDir}StartInterstix.c.o"						¶
 							"{ObjDir}StartSearch.a.o"							¶
+							"{ObjDir}StartLibGlue.c.o"							¶
 							"{ObjDir}StartBoot.a.o"								¶
 							"{ObjDir}StartFail.a.o"								¶
 							"{ObjDir}StartErr.a.o"								¶

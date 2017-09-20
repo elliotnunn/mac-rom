@@ -14,22 +14,22 @@
 #
 
 
-"{ObjDir}PowerMgr.o"			Ä	"{ObjDir}StandardEqu.d"							¶
-									"{IntAIncludes}HardwarePrivateEqu.a"			¶
-									"{IntAIncludes}UniversalEqu.a"					¶
-									"{IntAIncludes}PowerPrivEqu.a"					¶
-									"{AIncludes}AppleTalk.a"						¶
-									"{AIncludes}Notification.a"						¶
-									"{IntAIncludes}IopEqu.a"						¶
-									"{IntAIncludes}EgretEqu.a"						¶
-									"{IntAIncludes}AppleDeskBusPriv.a"				¶
-									"{IntAIncludes}MMUEqu.a"						¶
-									"{IntAIncludes}IOPrimitiveEqu.a"				¶
-									"{AIncludes}LAPEqu.a"							¶
-									"{IntAIncludes}DockingEqu.a"					¶
-									"{AIncludes}Slots.a"							¶
-									"{PowerMgrDir}PowerMgr.a"
-	Asm {StdAOpts} -o "{Targ}" "{PowerMgrDir}PowerMgr.a"
+# "{ObjDir}PowerMgr.o"			Ä	"{ObjDir}StandardEqu.d"							¶
+# 									"{IntAIncludes}HardwarePrivateEqu.a"			¶
+# 									"{IntAIncludes}UniversalEqu.a"					¶
+# 									"{IntAIncludes}PowerPrivEqu.a"					¶
+# 									"{AIncludes}AppleTalk.a"						¶
+# 									"{AIncludes}Notification.a"						¶
+# 									"{IntAIncludes}IopEqu.a"						¶
+# 									"{IntAIncludes}EgretEqu.a"						¶
+# 									"{IntAIncludes}AppleDeskBusPriv.a"				¶
+# 									"{IntAIncludes}MMUEqu.a"						¶
+# 									"{IntAIncludes}IOPrimitiveEqu.a"				¶
+# 									"{AIncludes}LAPEqu.a"							¶
+# 									"{IntAIncludes}DockingEqu.a"					¶
+# 									"{AIncludes}Slots.a"							¶
+# 									"{PowerMgrDir}PowerMgr.a"
+# 	Asm {StdAOpts} -o "{Targ}" "{PowerMgrDir}PowerMgr.a"
 
 "{ObjDir}PwrControlsPatches.o"			Ä	"{ObjDir}StandardEqu.d"							¶
 									"{IntAIncludes}HardwarePrivateEqu.a"			¶

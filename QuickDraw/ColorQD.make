@@ -28,8 +28,8 @@ CQDObjs							=	"{ObjDir}CheckDevicesINIT.a.o"			¶
 	Rez {StdROpts} -o "{Targ}" "{ColorQDDir}CQD.r" -i "{QDPatchesDir}"
 
 
-"{LibDir}CQD.lib"				Ä	{CQDObjs}
-	Lib {StdLibOpts} -o "{Targ}" {CQDObjs}
+# "{LibDir}CQD.lib"				Ä	{CQDObjs}
+# 	Lib {StdLibOpts} -o "{Targ}" {CQDObjs}
 
 
 "{ObjDir}CheckDevicesINIT.a.o"	Ä	"{ColorQDDir}CheckDevicesINIT.a"

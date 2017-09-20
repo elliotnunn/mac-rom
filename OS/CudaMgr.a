@@ -208,7 +208,7 @@ ErrCudaInit		equ		$0030			; TEMPORARY definition of error equate defined in STEQ
 			WITH 	EgretGlobals,EgretPB,RespHeader		
 			eject						;	{ 	With
 ;________________________________________________________________________________________________
-;	Routine:	CudaDispatch
+;	Routine:	CudaDispatch 8f90
 ;
 ;	Function:	This is the Cuda manager trap routine.  It waits for Cuda to be idle, sends
 ;				the first byte of the command packet.  If Cuda didn't abort, then it sets up
@@ -271,6 +271,48 @@ CudaDispatch
 			bra		@done
 
 @CudaRestart
+			CmpI      #$10C, (A0)
+			BEQ.B     @L4
+			CmpI      #$107, (A0)
+			BNE.B     @endChicanery
+			Tst.B     $64(A2)
+			BEQ       @endChicanery
+
+@L4			CmpI      #$100, $2(A0)
+			BLT.B     @L5
+			Move      #$FFCE, $E(A0)
+			Bra       @done
+
+@L5			Lea.L     $66(A2), A2
+			Move      $6(A0), D1
+			BEQ       @L9
+			SubQ      #$1, D1
+			MoveQ.L   #$0, D2
+			Move      $2(A0), D2
+			MoveA.L   $8(A0), A1
+
+@L6			CmpI.B    #$7, $1(A0)
+			BEQ.B     @L7
+			Move.B    (A1)+, $0(A2,D2.W)
+			Bra.B     @L8
+
+@L7			Move.B    $0(A2,D2.W), (A1)+
+
+@L8			AddQ      #$1, D2
+			AndI      #$FF, D2
+			DBF       D1, @L6
+
+@L9			MoveA.L   ($DE0), A2
+			MoveA.L   ($1D4), A1
+			CmpI.B    #$C, $1(A0)
+			BEQ.B     @endChicanery
+			Tst.L     $10(A0)
+			BEQ       @done
+			MoveA.L   $10(A0), A1
+			Jsr       (A1)
+			Bra       @done
+
+@endChicanery
 			move.w	sr,-(sp)					; save SR
 			ori.w	#hiIntMask,sr				; mask interrupts
 			
@@ -285,17 +327,21 @@ CudaDispatch
 			
 @abort		move.w	(sp)+,sr					; we were busy, enable interrupts
 			jsr		pollByte					; poll shift reg, calling handler if interrupts masked
-			bra.s	@CudaRestart				; and keep waiting for busy to go away...
+			bra.s	@endChicanery				; and keep waiting for busy to go away...
 
 @sendPackType									; interrupts masked here
 		eieioSTP
 			bset.b	#SRdir,vACR(a1)				; switch to output, Define direction FROM System		
+			nop
 		eieioSTP
 			move.b	pbCmdType(a0),vSR(a1)		; send command packet to shift reg
+			nop
 		eieioSTP
 			bset.b	#vByteAck,vBufB(a1)			; make sure state is idle before transaction
+			nop
 		eieioSTP
 			bclr.b	#TIP,vBufB(a1)				; assert TIP (we're starting command packet)
+			nop
 		eieioSTP
 
 ;
@@ -303,7 +349,7 @@ CudaDispatch
 ;		When the shift register irq comes in call the PollProc
 ;		then process the shift register irq data
 ;
-			movem.l	d0/d1/a0-a4/a6,-(sp)		; save some registers
+			movem.l	d0-d3/a0-a4/a6,-(sp)		; save some registers
 			move.l	PollStack,-(sp)				; save previous poll stack
 			lea		@zero, a3
 			move.l	sp,PollStack				; Pointer to buffer for polled bytes
@@ -323,6 +369,7 @@ CudaDispatch
 			beq.s	@2
 			move.b	(a6),-(sp)					; Push the data on the stack
 @2
+			bsr.l	otherDelay
 		eieioSTP
 			btst.b	#vShift,vIFR(a1)			; now wait for shift reg IRQ
 		eieioSTP
@@ -341,7 +388,7 @@ CudaDispatch
 
 @NoSCCData
 			move.l	(sp)+,PollStack				; restore previous poll stack
-			movem.l	(sp)+,d0/d1/a0-a4/a6		; restore work registers
+			movem.l	(sp)+,d0-d3/a0-a4/a6		; restore work registers
 		eieioSTP
 			btst.b	#TReq,vBufB(a1)				; did CUDA abort?		
 		eieioSTP
@@ -353,22 +400,24 @@ CudaDispatch
 ;	of CB1.  Delay long enough for the edge to occur before acknowledging the shift
 ;	register interrupt.	(R. Montagne	1/11/93)
 ;________________________________________________________________________________________________
-			moveq	#10,d0						; delay for 10µS min.
+			move	$d00,d0
+			divu	#$50,d0
 @mode7delay
-		eieioSTP
-			tst.b	vBufB(a1)					; 1.2µS per access
-		eieioSTP
 			dbra	d0,@mode7delay
 			
 		eieioSTP
 			bclr.b	#SRdir,vACR(a1)				; yes, switch back to input
+			nop
 		eieioSTP
 			tst.b	vSR(a1)						; clear pending shift register interrupt
+			nop
 		eieioSTP
 			ori.b	#((1<<TIP)|\				; abort the current transaction
 					(1<<vByteAck)),vBufB(a1)	;						
+			nop
 		eieioSTP
 @abortAck
+			bsr.l	otherDelay
 		eieioSTP
 			btst.b	#ifSR,vIFR(a1)				; now wait for shift reg IRQ to acknowledge abort
 		eieioSTP
@@ -394,7 +443,7 @@ CudaDispatch
 			rts
 
 ;________________________________________________________________________________________________
-;	Routine:	PollByte
+;	Routine:	PollByte 914e
 ;
 ;	Function:	This routine checks to see if level 1 interrupts are masked, exits if not.  
 ;				If masked, it polls the flag register for a shift reg interrupt, and 
@@ -412,6 +461,7 @@ PollByte
 			move.w	sr,d0						; get 68xxx interrupt mask
 			andi.w	#hiIntMask,d0				; are we at interrupt level?
 			beq.s	@exit						; no, just exit
+			bsr.l	otherDelay
 		eieioSTP
 			btst.b	#ifSR,vIFR(a1)				; yes, poll the shift reg
 		eieioSTP
@@ -421,7 +471,7 @@ PollByte
 
 
 ;________________________________________________________________________________________________
-;	Routine:	SendByte
+;	Routine:	SendByte 9168
 ;
 ;	Function:	This routine transmits a byte by writing to the via shift register and
 ;				then changes the state of vByteAck to indicate that the via shift register
@@ -438,8 +488,10 @@ PollByte
 SendByte
 		eieioSTP
 			move.b	d0,vSR(a1)					; send the byte to the shift reg
+			nop
 		eieioSTP
 			eori.b	#1<<vByteAck,vBufB(a1)		; let Cuda know it's there
+			nop
 		eieioSTP
 			rts
 
@@ -456,7 +508,7 @@ CudaCallShiftRegIRQ
 
 
 ;________________________________________________________________________________________________
-;	Routine:	CudaShiftRegIRQ
+;	Routine:	CudaShiftRegIRQ 9176
 ;
 ;	Function:	This routine is called in response to a VIA shift reg interrupt.  It will transfer
 ;				the next byte in the current packet.  When the packet is complete, the globals are
@@ -492,27 +544,34 @@ CudaCallShiftRegIRQ
 CudaShiftRegIRQ
 			move.w	sr,d3
 			ori.w	#hiIntMask,sr				; mask interrupts						<LW8><LW5>
-			movea.l	EgretBase,a2				; get ptr to globals <13>
-			bset.b	#busy,flags(a2)				; make sure we're marked as busy
-			
-		eieioSTP
-			btst.b	#SRdir,vACR(a1)				; see if VIA direction is output
-		eieioSTP
-			beq.s	@input						; no, then we're receiving..
+
+			btst.b	#vShift,vIFR(a1)
+			bne.s	@output
+
+			move.w	d3,sr						; restore interrupts
+			rts
+
 ;________________________________________________________________________________________________
 ;	When outputing from the VIA to Cuda, the interrupt will occur prior to the rising edge
 ;	of CB1.  Delay long enough for the edge to occur before acknowledging the shift
 ;	register interrupt.	(R. Montagne	1/11/93)
 ;________________________________________________________________________________________________
-			moveq	#10,d0						; delay for 10µS min.					<LW2><VIA rbm>
+
+@output
+			movea.l	EgretBase,a2				; get ptr to globals <13>
+			bset.b	#busy,flags(a2)				; make sure we're marked as busy
+
+			btst.b	#$4, $1600(A1)
+			beq.s	* + $60 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+			move	$d00,d0
+			divu	#$50,d0
 @mode7delay
-		eieioSTP
-			tst.b	vBufB(a1)					; 1.2µS per access						<LW2><VIA rbm>
-		eieioSTP
 			dbra	d0,@mode7delay				;										<LW2><VIA rbm>
 		
 		eieioSTP
 			tst.b	vSR(a1)						; clear the shift reg interrupt
+			nop
 		eieioSTP
 			tst.w	sendHdrCnt(a2)				; any bytes left in header?
 			ble.s	@ckSendData					; no, see if any send bytes left...
@@ -535,6 +594,7 @@ CudaShiftRegIRQ
 @CmdFinished
 		eieioSTP
 			bclr.b	#SRdir,vACR(a1)				; now switch to input
+			nop
 		eieioSTP
 ;________________________________________________________________________________________________
 ;	When changing VIA direction, a clock can be generated to the VIA bit counter.  An
@@ -548,12 +608,14 @@ CudaShiftRegIRQ
 		eieioSTP
 			ori.b	#((1<<TIP)| \				; terminate transaction	
 					 (1<<vByteAck)),vBufB(a1)	; and set idle state	
+			nop
 		eieioSTP
 			bra		@exit						; and exit
 			
 @input		;-----------------------------------------------------------------------------
 		eieioSTP
 			move.b	vSR(a1),d0					; read the byte from shift reg into D0			
+			nop
 		eieioSTP
 			tst.w	rcvHdrCnt(a2)				; any bytes left in response packet header?
 			ble.s	@ckRcvData					; if not then must be data byte
@@ -612,7 +674,7 @@ CudaShiftRegIRQ
 			cmp.b	#((1<<TIP)|\				; is this an idle acknowledge?
 					(1<<vByteAck)|\
 					(1<<TReq)),d0
-			beq.s	@done						; yes, dont handshake.	
+			beq		@done						; yes, dont handshake.	
 
 			cmp.b	#((1<<TIP)|\				; is this an attention byte?
 					(1<<vByteAck)|\
@@ -629,12 +691,14 @@ CudaShiftRegIRQ
 @dataIrq
 		eieioSTP
 			eori.b	#1<<vByteAck,vBufB(a1)		; acknowledge the current byte
+			nop
 		eieioSTP
 			bra		@exit						;						
 
 @attnIrq
 		eieioSTP
 			bclr.b	#TIP,vBufB(a1)				; start the response packet transaction
+			nop
 		eieioSTP
 			bra		@exit						;						
 
@@ -642,6 +706,7 @@ CudaShiftRegIRQ
 		eieioSTP
 			ori.b	#((1<<TIP)|\				; no, terminate the response packet transaction
 					(1<<vByteAck)),vBufB(a1)
+			nop
 		eieioSTP
 
 ;---------------------------------------------------------------------------
@@ -656,11 +721,13 @@ CudaShiftRegIRQ
 ;																									<SM6> (rbm)
 @waitIdleAck									;													<SM6> (rbm)
 		eieioSTP
+			bsr.l	otherDelay
 			btst.b	#ifSR,vIFR(a1)				; wait for idle state acknowledgement				<SM6> (rbm)
 		eieioSTP
 			beq.s	@waitIdleAck				;													<SM6> (rbm)
 		eieioSTP
 			tst.b	vSR(a1)						; clear the shift reg interrupt						<SM6> (rbm)
+			nop
 		eieioSTP
 
 ;---------------------------------------------------------------------------
@@ -806,7 +873,7 @@ CudaShiftRegIRQ
 			Eject
 
 ;________________________________________________________________________________________________
-;	Routine:	SetTransferParams
+;	Routine:	SetTransferParams 93e0
 ;
 ;	Function:	This routine sets up transmit/receive ptrs (globals) for the packet pointed to by A0, 
 ;				for use by the Shift Reg interrupt handler.
@@ -850,7 +917,9 @@ SetTransferParams
 			clr.l	sendDataPtr(a2)					; no extended data ptr 							<12>
 			bra		@rcvParams
 			
-@notDFAC	cmp.b	#RdWrIIC,pbCmd(a0)				; check for IIC transaction						<SM3>
+@notDFAC	cmp.b	#$25,pbCmd(a0)
+			beq		@dontjump
+			cmp.b	#RdWrIIC,pbCmd(a0)				; check for IIC transaction						<SM3>
 			bne.s	@notRdWrIIC						; use the table if not RdWrIIC					<SM3>
 *
 *	Here is how the transfer globals are set up for IIC transactions…
@@ -885,21 +954,30 @@ SetTransferParams
 *		RespData		•										RespData		•
 *	curPB				CudaPB								curPB				CudaPB
 *
+@dontjump
 			move.w	pbByteCnt(a0),d1				; RdWrIIC uses byte count for send portion	<SM3>
 			addq.w	#1,d1							; include the packet byte already sent		<SM3>
 			move.w	d1,sendHdrCnt(a2)				; set up header byte count					<SM3>
 			move.w	#4,rcvHdrCnt(a2)				; 4 byte header default						<SM3>
 			clr.w	rcvHdrIndex(a2)					; reset index into header buffer			<SM3>
 			move.l	pbBufPtr(a0),a1					; get address of data buffer				<SM3>
-			btst.b	#0,pbParam(a0)					; is this a read or write IIC operation?	<SM3>
-			bne.s	@doIICread						;											<SM3>
+
+			cmp.b	#RdWrIIC,pbCmd(a0)
+			beq.s	@doIICwrite
+
+			btst.b	#0,4(a0)
+			bne.s	@doIICread
 @doIICwrite											;											<SM3>
+			btst.b	#0,pbParam(a0)
+			bne.s	@doIICread
+
 			moveq	#0,d1							; data phase count must be 1 to 256			<SM3>
 			move.b	(a1),d1							;											<SM3>
 			bne.s	@wrCntOK						;											<SM3>
 			move.w	#$0100,d1						;											<SM3>
 @wrCntOK											;											<SM3>
 			move.w	d1,sendDataCnt(a2)				; number of extended data bytes to send		<SM3>
+@newlbl
 			adda.l	#1,a1							;											<SM3>
 			move.l	a1,sendDataPtr(a2)				; extended data ptr							<SM3>
 			clr.w	rcvDataCnt(a2)					; no data to receive on IIC write			<SM3>
@@ -1001,7 +1079,7 @@ CheckCudaPacket
 
 
 ;________________________________________________________________________________________________
-;	Routine:	CudaTickHandler
+;	Routine:	CudaTickHandler 9566
 ;
 ;	Function:	This is the completion routine for tick response packets.
 ;
@@ -1063,7 +1141,7 @@ CudaTickHandler
 			ENDWITH								;	}
 			
 ;=========================================================================
-; Routine: 	CudaInit
+; Routine: 	CudaInit 9584
 ;													
 ; This routine sends a NOP/WarmStart command to Cuda.  This routine is
 ; called early during rom Startup to stop autopoll and 1 sec irq.  Also,
@@ -1118,6 +1196,7 @@ CudaInit
 		eieioSTP
 			ori.b	#((1<<TIP)| \						; terminate transaction										<SM3>
 					 (1<<vByteAck)),vBufB(a2)			; and set idle state										<SM3> <SM9>
+			nop
 		eieioSTP
 			move.l	#hw4msDelay,d4						; we want to delay 4 millisecs for ADB reset to complete	<SM3>
 @killtime
@@ -1139,10 +1218,12 @@ CudaInit
 @noX
 		eieioSTP
 			tst.b	vSR(a2)								; clear the pending interrupt									 <SM9>
+			nop
 		eieioSTP
 			move.l	#hw10msDelay,d4						; Timeout values must exceed duration of maximum ADB auto poll.	<7>
 		eieioSTP
 			bclr.b	#vByteAck,vBufB(a2)					; issue a sync state (TIP = negated, ByteAck = asserted)	 <SM9>
+			nop
 		eieioSTP
 @waitSync
 		eieioSTP
@@ -1161,6 +1242,7 @@ CudaInit
 @haveSync	move.l	#hw10msDelay,d4						; number of retries before giving up with Cuda
 		eieioSTP
 			bset.b	#vByteAck,vBufB(a2)					; terminate the sync cycle									 <SM9>
+			nop
 		eieioSTP
 @syncTerm	
 		eieioSTP
@@ -1172,6 +1254,7 @@ CudaInit
 @haveTerm	
 		eieioSTP
 			tst.b	vSR(a2)								; clear the pending interrupt								 <SM9>
+			nop
 		eieioSTP
 			move.l	#hw10msDelay,d4						; number of retries before giving up with Cuda
 @waitIdle2	
@@ -1185,15 +1268,17 @@ CudaInit
 		eieioSTP
 			ori.b	#((1<<TIP)| \						; terminate transaction
 					 (1<<vByteAck)),vBufB(a2)			; and set idle state										 <SM9>
+			nop
 		eieioSTP
 			tst.b	vSR(a2)								; clear the pending interrupt								 <SM9>
+			nop
 		eieioSTP
 @exit
 			rts6										; setup the return to caller of CudaInit
 
 				eject
 ************************************************************************************************************
-* SendCudaCmd:	This register based routine will send up to four bytes of data to 
+* SendCudaCmd 9630:	This register based routine will send up to four bytes of data to 
 *				Cuda.  The packet type, command, byte count and data are passed in 
 *				registers.  The routine will return with d0.w = $0000 if it sent the 
 *				command successfully.  A value of $FFFF signifies that the command did 
@@ -1236,14 +1321,17 @@ SendCudaCmd
 		eieioSTP
 			ori.b	#((1<<TIP)| \			; terminate transaction
 					(1<<vByteAck)),vBufB(a1)	; and set idle state
+			nop
 		eieioSTP
 @WaitIdle
+			bsr.l	otherDelay
 		eieioSTP
 			btst.b	#ifSR,vIFR(a1)			; wait for idle state acknowledgement
 		eieioSTP
 			beq.s	@WaitIdle				;				
 		eieioSTP
 			tst.b	vSR(a1)					; clear the idle acknowledge interrupt
+			nop
 		eieioSTP
 			
 @AllOK		swap.w	d4						; timeout in low word of d4 Retry count in high word
@@ -1276,9 +1364,11 @@ SendCudaCmd
 
 		eieioSTP
 			bclr.b	#SRdir,vACR(a1)			; shift in
+			nop
 		eieioSTP
 			ori.b	#((1<<TIP)|\			; terminate command packet transaction
 					(1<<vByteAck)),vBufB(a1)			;				
+			nop
 		eieioSTP
 		
 ;
@@ -1287,6 +1377,7 @@ SendCudaCmd
 			bsr5	readAttn				; get the Attention byte
 		eieioSTP
 			bclr.b	#TIP,vBufB(a1)			; start the response transaction
+			nop
 		eieioSTP
 		
 			bsr5	readByte				; get the packet type
@@ -1302,15 +1393,19 @@ SendCudaCmd
 		eieioSTP
 			ori.b	#((1<<TIP)|\			; terminate command packet transaction
 					(1<<vByteAck)),vBufB(a1)			;				
+			nop
 		eieioSTP
 		
 @WaitIdle1
+			bsr.l	otherDelay
 		eieioSTP
 			btst.b	#ifSR,vIFR(a1)			; wait for idle state acknowledgement
+			nop
 		eieioSTP
 			beq.s	@WaitIdle1				;				
 		eieioSTP
 			tst.b	vSR(a1)					; clear the idle acknowledge interrupt
+			nop
 		eieioSTP
 ;
 ;	Check for an error packet returned by Cuda
@@ -1327,20 +1422,24 @@ SendCudaCmd
 @SendPtype
 		eieioSTP
 			bset.b	#SRdir,vACR(a1)			; shift out
+			nop
 		eieioSTP
 			btst.b	#TReq,vBufB(a1)			; check for abort
 		eieioSTP
 			beq.w	AbortReq				; go away if abort requested
 		eieioSTP
 			move.b	d0,vSR(a1)				; load byte into shift reg
+			nop
 		eieioSTP
 			bclr.b	#TIP,vBufB(a1)			; TIP indicates shift reg is full on 1st byte
+			nop
 		eieioSTP
 ;
 ;	Check Vsr Irq until timeout.  If timeout then check the retry count
 ;	and Call Death Chimes if Retry count exausted.
 ;
-@PollDelay	btst.b	#ifSR,vIFR(a1)			; wait for shift to complete
+@PollDelay	bsr.l	otherDelay
+			btst.b	#ifSR,vIFR(a1)			; wait for shift to complete
 		eieioSTP
 			bne.w	VsrIrq					; Go service Shift register Irq
 			dbra.w	d4,@PollDelay			; try again if timed out
@@ -1353,29 +1452,30 @@ DeadCuda
 		eieioSTP
 			ori.b	#((1<<TIP)| \						; terminate transaction
 					 (1<<vByteAck)),vBufB(a1)			; and set idle state
+		 	nop
 		eieioSTP
 			move.l	#ErrCudaInit,d7			; Cuda failed, zero high byte flags 		<SM7>
 			move.l	#0001,d6				; d6.l must be nonzero
-			bigjmp	Error1Handler,a3		; Play death chimes
+			bra.s	*
 
 VsrIrq
-			move.b	#10,d4					; mode 7 interrupt occurs at falling edge CB1	<LW2><VIA rbm>
-@m7dly										; use d4 since retry count not required anymore	<LW2><VIA rbm>
-		eieioSTP
-			tst.b	vBufB(a1)				; hardware access is 1.2µS						<LW2><VIA rbm>
-		eieioSTP
-			sub.b	#1,d4					; can only trash low byte						<LW2><VIA rbm>
-			bne.s	@m7dly					; wait long enough for CB1 to rise (10µS delay)	<LW2><VIA rbm>
-			
+			move.l	d4,-(sp)
+			move	$d00,d4
+			divu	#10,d4
+			dbra.w	d4,*
+			move.l	(sp)+,d4
+
 		eieioSTP
 			tst.b	vSR(a1)					; clear the interrupt
+			nop
 		eieioSTP
 			btst.b	#TReq,vBufB(a1)			; exit with abort status
+			nop
 		eieioSTP
 AbortReq	rts5
 
 ;--------------------------------------------------------------------------
-; DumpAbort	This routine will read all the data for an abort transaction and
+; DumpAbort 9774	This routine will read all the data for an abort transaction and
 ;			discard it.  When done it will jump back to SendNopCmd entry point
 ;			to retry our command.  This command will eventually complete...
 			
@@ -1383,14 +1483,18 @@ AbortReq	rts5
 RealAbort	
 		eieioSTP
 			bclr.b	#SRdir,vACR(a1)			; shift in										<rbm>
+			nop
 		eieioSTP
 			ori.b	#((1<<TIP)| \			; terminate transaction
 					(1<<vByteAck)),vBufB(a1)	; and set idle state
+			nop
 		eieioSTP
-WAbortAck	btst.b	#ifSR,vIFR(a1)			; wait for acknowledgement of abort cycle
+WAbortAck	bsr.l	otherDelay
+			btst.b	#ifSR,vIFR(a1)			; wait for acknowledgement of abort cycle
 		eieioSTP
 			beq.s	WAbortAck				;				
 			tst.b	vSR(a1)					; clear the pending interrupt
+			nop
 		eieioSTP
 			bra.s	StartRPkt				; and go start the response transaction
 ;
@@ -1406,27 +1510,33 @@ IrqMissed
 			bsr5	Delay100us				; Let Cuda see SysSes. ≥ 125µsec
 		eieioSTP
 			bclr.b	#SRdir,vACR(a1)			; shift in
+			nop
 		eieioSTP
 StartRPkt
 		eieioSTP
 			tst.b	vSR(a1)					; discard the byte
+			nop
 		eieioSTP
 			bclr.b	#TIP,vBufB(a1)			; start the response transaction
+			nop
 		eieioSTP
 
 DumpAbort
+			bsr.l	otherDelay
 		eieioSTP
 			btst.b	#ifSR,vIFR(a1)			; wait for shift to complete
 		eieioSTP
 			beq.s	DumpAbort
 		eieioSTP
 			tst.b	vSR(a1)					; discard the byte
+			nop
 		eieioSTP
  			btst.b	#TReq,vBufB(a1)			; check for last byte
 		eieioSTP
 			bne.s	DumpDone				; Clock Tick Packets only 2 bytes
 		eieioSTP
 			eori.b	#1<<vByteAck,vBufB(a1)	; acknowlege byte
+			nop
 		eieioSTP
 			bra.s	DumpAbort				; and loop for next byte
 ;
@@ -1456,14 +1566,17 @@ DumpDone
 		eieioSTP
 			ori.b	#((1<<TIP)| \			; terminate transaction
 					(1<<vByteAck)),vBufB(a1)	; and set idle state
+			nop
 		eieioSTP
 @WaitIdleAck
+			bsr.l	otherDelay
 		eieioSTP
 			btst.b	#ifSR,vIFR(a1)			; wait for idle state acknowledge
 		eieioSTP
 			beq.s	@WaitIdleAck			;				
 		eieioSTP
 			tst.b	vSR(a1)					; discard the byte
+			nop
 		eieioSTP
 			bra.w	SendCudaCmd				; go try sending our command again
 
@@ -1474,50 +1587,57 @@ DumpDone
 sendByte1
 		eieioSTP
 			bset.b	#SRdir,vACR(a1)			; shift out
+			nop
 		eieioSTP
 			move.b	d0,vSR(a1)				; load byte into shift reg
+			nop
 		eieioSTP
 			eori.b	#1<<vByteAck,vBufB(a1)	; indicate byte pending in VIA
+			nop
 		eieioSTP
-@poll		btst.b	#ifSR,vIFR(a1)			; wait for shift to complete
+@poll		bsr.l	otherDelay
+			btst.b	#ifSR,vIFR(a1)			; wait for shift to complete
 		eieioSTP
 			beq.s	@poll
-			move.b	#10,d0					; mode 7 interrupt occurs at falling edge CB1	<LW2><VIA rbm>
-@m7dly
-		eieioSTP
-			tst.b	vBufB(a1)				; hardware access is 1.2µS						<LW2><VIA rbm>
-		eieioSTP
-			sub.b	#1,d0					; can only trash low byte						<LW2><VIA rbm>
-			bne.s	@m7dly					; wait long enough for CB1 to rise (10µS delay)	<LW2><VIA rbm>
-			
+			move.l	d0,-(sp)
+			move	$d00,d0
+			divu	#10,d0
+			dbra.w	d0,*
+			move.l	(sp)+,d0
 		eieioSTP
 			tst.b	vSR(a1)					; clear the interrupt
+			nop
 		eieioSTP
 			rts5
 
 ;--------------------------------------------------------------------------
 ;			Export	readByte	
 readByte	
+			bsr.l	otherDelay
 		eieioSTP
 			btst.b	#ifSR,vIFR(a1)			; wait for shift to complete
 		eieioSTP
 			beq.s	readByte
 		eieioSTP
 			move.b	vSR(a1),d0				; read the byte
+			nop
 		eieioSTP
 			eori.b	#1<<vByteAck,vBufB(a1)	; and acknowledge it
+			nop
 		eieioSTP
 			rts5
 
 ;--------------------------------------------------------------------------
 ;			Export	readAttn	
 readAttn
+			bsr.l	otherDelay
 		eieioSTP
 			btst.b	#ifSR,vIFR(a1)			; wait for shift to complete
 		eieioSTP
 			beq.s	readAttn
 		eieioSTP
 			tst.b	vSR(a1)					; clear the interrupt
+			nop
 		eieioSTP
 			rts5
 
@@ -1533,6 +1653,14 @@ delay100us
 			dbra	d3,@wait				; delay at least 100 us (very rough)
 			rts5
 
+;--------------------------------------------------------------------------
+otherDelay	
+			move.l	d0,-(sp)
+			move	$d00,d0
+			lsr		#6,d0
+			dbra.w	d0,*
+			move.l	(sp)+,d0
+			rts
 			
 
 	ENDPROC								;	EndProc for CudaMgr		}

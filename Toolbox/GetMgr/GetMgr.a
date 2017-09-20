@@ -181,13 +181,14 @@ VisState		EQU		-1					; flag for resource's vis state			<C314/31Oct86> DAF
 Align			EQU		-2					; another byte to re-align stack frame	<C666/22Jan87> DAF
 IsACPort		EQU		-4					; flag for color port
 	
-GetNewCWindow	LINK	A6,#IsACPort		; build stack frame					<C106 EHB>
-				MOVE	#-1,IsACPort(A6)	; flag the color port				<C106 EHB>
+GetNewCWindow	MOVEQ.L	#-1,D0				; color port
 				BRA.S	GNWShare			; =>dive into common code			<C106 EHB>
 					
-GetNewWindow	LINK	A6,#IsACPort		; build stack frame
-				CLR		IsACPort(A6)		; flag black and white port			<C106 EHB>
-GNWShare		MOVE.L	A3,-(SP)			; preserve a work register
+GetNewWindow	MOVEQ.L	#0,D0				; black and white port
+
+GNWShare		LINK	A6,#IsACPort		; build stack frame
+				MOVE	D0,IsACPort(A6)		; flag port
+				MOVE.L	A3,-(SP)			; preserve a work register
 				CLR.L	result(A6)			; set result to NIL
 	
 				SUBQ	#4,SP				; make space for result
@@ -496,18 +497,18 @@ LoadMDEF
 			   MOVE.W	 #MapTRUE,ROMMapInsert	 ; get the MDEF from the ROM map	<EHB 10 Jul 85>
 			   _GetResource 				 ; get it!
 
-			   MOVE.L	 (A3),A0			 ; get pointer to menu
-			   MOVE.L	 (SP)+,MenuDefHandle(A0) ; install the defProc handle (which may be NIL)
-
-			   MOVE.L	 A3,-(SP)			 ; push the menu handle
-			   _CalcMenuSize				 ; calculate the size of the menu
-
 ;
 ; Now try to load a menu color table with the same ID as the menu's					<FJL C408/C417>
 ;
 				move.b	#1, -(sp)			; force Resource Load to true
 				_SetResLoad			
 				
+			   MOVE.L	 (A3),A0			 ; get pointer to menu
+			   MOVE.L	 (SP)+,MenuDefHandle(A0) ; install the defProc handle (which may be NIL)
+
+			   MOVE.L	 A3,-(SP)			 ; push the menu handle
+			   _CalcMenuSize				 ; calculate the size of the menu
+
 				subq	#4, sp				; make room for the result
 				move.l	#'mctb', -(sp)		; push resource type
 				move.w	8(a6), -(sp)		; push menuID
@@ -584,6 +585,7 @@ GetNewMBar
 
 ; loop, getting and inserting one menu at a time
 
+			   BRA.S	skipAllThis
 GetMBLoop
 			   SUBQ 	 #4,SP				 ;make room for result
 			   MOVE.L	 (A3),A0			 ;get pointer to mBarDef
@@ -595,8 +597,9 @@ GetMBLoop
 			   CLR.W	 -(SP)				 ;insert at end of menuBar
 			   _InsertMenu
 
-			   MOVE.L	 (A3),A0			 ;get ptr to mBarDef
 			   ADDQ 	 #1,D3				 ;bump to next menu
+skipAllThis
+			   MOVE.L	 (A3),A0			 ;get ptr to mBarDef
 			   CMP		 (A0),D3			 ;done yet
 			   BLT.S	 GetMBLoop			 ;loop until done
 

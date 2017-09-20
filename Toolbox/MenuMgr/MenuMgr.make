@@ -29,8 +29,8 @@ MenuMgrObjs			=				"{ObjDir}MenuMgr.a.o"							¶
 	Link {StdLOpts} {StdAlign} -rt MDEF=0 -o "{Targ}" "{ObjDir}StandardMDEF.a.o" || Exit 1
 
 
-"{LibDir}MenuMgr.lib"			Ä	{MenuMgrObjs}
-	Lib {StdLibOpts} -o "{Targ}" {MenuMgrObjs}
+# "{LibDir}MenuMgr.lib"			Ä	{MenuMgrObjs}
+# 	Lib {StdLibOpts} -o "{Targ}" {MenuMgrObjs}
 
 
 "{ObjDir}StandardMDEF.a.o"		Ä	"{ObjDir}StandardEqu.d"							¶

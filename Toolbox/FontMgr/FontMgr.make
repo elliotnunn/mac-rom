@@ -61,8 +61,8 @@ FontMgrObjs							=	"{ObjDir}fnt.c.o"							¶
 										"{ObjDir}FontMgr.a.o" 						
 
 
-"{LibDir}FontMgr.lib"				Ä	{FontMgrObjs}
-	Lib	{StdLibOpts} {FontMgrObjs} -o "{Targ}"
+# "{LibDir}FontMgr.lib"				Ä	{FontMgrObjs}
+# 	Lib	{StdLibOpts} {FontMgrObjs} -o "{Targ}"
 
 
 "{ObjDir}FontFolderExtension.a.o"	Ä 	"{IntAIncludes}LinkedPatchMacros.a"			¶

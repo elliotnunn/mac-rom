@@ -255,6 +255,7 @@ CMGR			PROC	  EXPORT
 ; External Routines used by Control Manager
 ;
 				IMPORT	GetNewRgn
+				IMPORT	FlushCRange
 
 ;
 ;  FUNCTION NewControl( window: 	windowPtr;
@@ -302,8 +303,6 @@ NewControl
 				MOVE.L	A0,(A4) 				;also, its the function result
 				MOVE.L	(A3),A2 				;handle -> pointer
 
-				TST.B	MMU32Bit				; are we in 32-bit mode?				<C777/09Feb87> DAF
-				BEQ.S	@1						; nope, so continue						<C612/12Jan87> DAF
 				SF.B	contrlVis(A2)			; set this temporarily, so SetCtlColor won't try to draw <C612/12Jan87> DAF
 				MOVE.L	A3,-(SP)				; push controlHandle					<C612/12Jan87> DAF
 				MOVE.L	#-1,-(SP)				; push -1 to make a new rec with default CTab <C612/12Jan87> DAF
@@ -371,8 +370,6 @@ GetCDefProc
 
 				MOVE.W	(A4),D0 				;get resource ID
 				AND 	#$000F,D0				;use only low 4 bits
-				TST.B	MMU32Bit				; is it in 32-bit mode?			<C777/09Feb87> DAF
-				BEQ.S	@1						; nope, so hide in hi-byte 		<C612/12Jan87> DAF
 				MOVE.L	A0,-(SP)				; save A0						<C612/12Jan87> DAF
 				MOVE.L	D0,-(SP)				; save D0 too					<C612/12Jan87> DAF
 				SUBQ	#6,SP					; get placeholder for auxCtlHndl, and boolean result <C612/12Jan87> DAF
@@ -385,10 +382,7 @@ GetCDefProc
 				MOVE.L	(SP)+,D0				; restore D0 (with variant)		<C612/12Jan87> DAF
 				MOVE.B	D0,acReserved(A0)		; put variant in auxRec			<C612/12Jan87> DAF<1.6>
 				MOVE.L	(SP)+,A0				; restore A0					<C612/12Jan87> DAF
-				BRA.S	@2						; all done						<C612/12Jan87> DAF
-@1
-				MOVE.B	D0,(A0) 				;keep in high byte of handle
-@2
+
 				ADDQ	#4,A0					;bump to next field
 
 				CLR.L	(A0)+					;init dataHandle
@@ -470,9 +464,7 @@ CallControl
 				MOVE.W	(SP)+,10(SP)			; move from top of stack to placeholder <C491/08Dec86> DAF
 
 				MOVE.L	(A3),A0 				;get pointer to control structure
-				MOVE.L	ContrlDefHandle(A0),D0	;get handle of controlProc			<C491/08Dec86> DAF
-				_StripAddress					;clean variant code out of hi byte 	<C491/08Dec86> DAF
-				MOVE.L	D0,A0					;copy to an A-reg					<C491/08Dec86> DAF
+				MOVE.L	ContrlDefHandle(A0),A0	;get handle of controlProc			<C491/08Dec86> DAF
 				TST.L	(A0)					;needs reloading?
 				BNE.S	SkipCLoad				;if not,skip
 
@@ -497,7 +489,12 @@ SkipCLoad
 				_GetHandleSize					; How big is our CDEF Handle					<LW3> fau
 				cmp.l		#32,D0				; Is it "small"									<LW6> chp
 				bhi.s		@RealCDEF			; no, don't flush the cache						<LW3> fau
-				jsr			([jCacheFlush])		; else, flush the caches.						<LW3> fau
+				move.l		A0,-(SP)
+				move.l		(A0),A0
+				move.l		D0,A1
+				bsr.l		FlushCRange			; else, flush the caches.						<LW3> fau
+				move.l		(SP)+,A0
+
 @RealCDEF										;												<LW3> fau
 				_HLock							; lock it down				<C424/18Nov86>
 				MOVE.L	(A0),A0 				;get cDefProc ptr
@@ -527,8 +524,6 @@ NoDControl
 
 GetCVariant										;					<C491/08Dec86> DAF
 				MOVE.L	4(SP),A0 				; get ctl handle
-				TST.B	MMU32Bit				; are we in 32-Bit mode?		<C777/09Feb87> DAF
-				BEQ.S	@1						; no, so do it the old way		<C612/12Jan87> DAF
 				SUBQ	#6,SP					; leave room for result and boolean	<C612/12Jan87> DAF
 				MOVE.L	A0,-(SP)				; push the controlHandle		<C612/12Jan87> DAF
 				PEA		6(SP)					; point to result placeholder	<C612/12Jan87> DAF
@@ -538,12 +533,7 @@ GetCVariant										;					<C491/08Dec86> DAF
 				MOVE.L	(A0),A0					; get the auxRecPtr				<C612/12Jan87> DAF
 				CLR.W	D0						; clear top byte				<C612/12Jan87> DAF
 				MOVE.B	acReserved(A0),D0		; get variant code				<C612/12Jan87> DAF<1.6>
-				BRA.S	@2						;								<C612/12Jan87> DAF
-@1
-				MOVE.L	(A0),A0					; get ctl ptr
-				MOVE.B	ContrlDefHandle(A0),D0	; get selector parameter
-				AND.W	#$000F,D0				; lo nybble only
-@2
+
 				MOVE.W	D0,8(SP)				; return result
 				MOVE.L	(SP)+,A0				; get return addr
 				ADDQ	#4,SP					; flush parameters
@@ -569,18 +559,10 @@ EraseControl
 				_NewRgn 						;allocate a new region
 				MOVE.L	(SP),A4 				;keep the region in A4, keep on stack
 
-				TST.B	MMU32Bit				;are we in 32-bit mode?						<1.3>
-				BEQ.S	@24bit					;no, don’t call new message					<1.3>
 				MOVEQ	#CalcWholeCtlMsg,D0		;message is calculate whole regions			<1.2>
 				MOVE.L	A4,D1					;the region is the parameter				<1.2>
-				BSR.S	CallControl 			;send it the message						<1.2>
-				BRA.S	@doneCalc 				;											<1.2>
-@24bit											;											<1.3>
-				MOVEQ	#CalcCtlMsg,D0			;message is calculate regions
-				MOVE.L	A4,D1					;the region is the parameter
-				BCLR	#31,D1					;hi-bit clear means whole thing
-				BSR.S	CallControl 			;send it the message
-@doneCalc
+				BSR		CallControl 			;send it the message						<1.2>
+
 ;
 ; paint white to erase control and add it to the window’s update region
 ;
@@ -657,9 +639,6 @@ DontEraseControl								;										<3>
 				MOVE.L	(A0),A0					; get auxCtlRec ptr
 				MOVE.L	acCTable(A0),-(SP)		; push default colors hndl				<1.6>
 
-				TST.B	MMU32Bit					; are we in 32-bit mode?								<1.4/DAF>
-				BEQ.S	@CtlRec24					; nope, so get rid of it the easy, old-fashioned way	<1.4/DAF>
-
 				LEA		AuxCtlHead,A1				; get the head of the auxCtlList (offset is zero so this works!)
 @10
 				MOVE.L	(A1),A2						; get the handle to the auxCtlRec
@@ -684,11 +663,6 @@ DontEraseControl								;										<3>
 				MOVE.L	A2,A0						; release the auxCtlRec
 				_DisposHandle						;
 				ADDQ	#4,SP						; get rid of the extra window pointer pushed above
-				BRA.S	@CtlRecDone					;
-
-@CtlRec24
-				_SetCtlColor					; set this control’s colors to default (and delete)
-@CtlRecDone
 
 ;
 ; delete it from the window’s controlList
@@ -991,7 +965,7 @@ GetCTitle
 				MOVEQ	#0,D0					;clear high part
 				MOVE.B	(A0),D0 				;get length of string
 				ADDQ.L	#1,D0					;include the length byte, too
-				_BLOCKMOVE						;move it in place
+				_BLOCKMOVEDATA					;move it in place
 				RTS 							;all done!
 ;
 ; PROCEDURE SetCTitle(theControl: controlHandle; theTitle: Str255);
@@ -1034,7 +1008,7 @@ CopyCTitle										;									<3>
 				MOVE.L	(A3),A1 				;get control pointer
 				LEA 	ContrlTitle(A1),A1		;point to title string
 				ADDQ	#1,D0					;dont forget the length byte
-				_BlockMove						;move it in
+				_BlockMoveData					;move it in
 ;
 ; make it visible if it used to be
 ;
@@ -1221,8 +1195,6 @@ DragCon1
 ;
 				JSR 	GetNewRgn				;allocate a new region
 
-				TST.B	MMU32Bit				;are we in 32-bit mode?						<1.3>
-				BEQ.S	@24bit					;no, don’t call new message					<1.3>
 				MOVEQ	#CalcWholeCtlMsg,D0		;message is calculate whole regions			<1.2>
 				TST.W	DragFlag				;if we’re called as real MoveControl,		<1.2>
 				BEQ.S	@0						;then we picked the right message			<1.2>
@@ -1230,16 +1202,7 @@ DragCon1
 @0												;											<1.2>
 				MOVE.L	(SP),D1					;the region is the parameter				<1.2>
 				BSR.S	CallControl 			;send it the message						<1.2>
-				BRA.S	@doneCalc 				;											<1.2>
-@24bit											;											<1.3>
-				TST.W	DragFlag				;if we’re called as real MoveControl,
-				SNE 	(SP)					;high bit off means we want whole thing
-				MOVE.L	(SP),D1 				;parameter goes in D1
-				MOVEQ	#CalcCtlMsg,D0			;tell controlProc to calculate it regions
-				BSR 	CallControl 			;tell the control about it
-;
-				CLR.B	(SP)					;clear high byte of region
-@doneCalc
+
 				MOVE.L	(SP)+,A4				;keep it in A4
 ;
 ;  set up the parameters for dragging the region around (careful -- extra reg

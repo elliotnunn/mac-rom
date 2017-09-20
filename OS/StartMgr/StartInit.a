@@ -1145,15 +1145,15 @@ MyROM		MAIN	Export
 			EXPORT	InitDefGamma
 			EXPORT	InitSCC
 			EXPORT	OpensDrvr
-			EXPORT	PMSPSwOS
+;			EXPORT	PMSPSwOS
 			EXPORT	RomLoc
 			EXPORT	StartBoot
 			EXPORT	StartInit1
-			EXPORT	WDCBSwOS
+;			EXPORT	WDCBSwOS
 			EXPORT	TCOff
 			EXPORT	SetUpTimeK						; <SM142>
 
-			EXPORT	DynamicBoxFlag
+;			EXPORT	DynamicBoxFlag
 
 *************************************************************************************************
 *																								*
@@ -1216,63 +1216,23 @@ GOOFYDoEject
 			BRA.L	DoEject							; branch island to eject code
 
 
+			STRING	AsIs
+			DC.L	'Copyright (c) 1983-2002 Apple Computer, Inc.  All Rights Reserved.'
+
 
 *************************************************************************************************
 *																								*
 *						R E S E T / R E B O O T   E N T R Y   P O I N T							*
 *																								*
 *************************************************************************************************
+; b4
 
-TCOff		dc.l	0								; for turning off MMU below
+TCOff		dc.w	0								; for turning off MMU below
 
 Start
 StartBoot	MOVE	#$2700,SR						; Disable processor interrupts.
 
-	IF NOT ROMinRAM THEN							; 														<SM52>
-			sub.l	d0,d0							; D0 = 0
-			bset	#CACR_DE_040,d0					; set Data Cache Enable bit on 040s						<T22>
-			movec	d0,CACR							; attempt to enable data cache (temporarily)
-			movec	CACR,d0							; check and see if it's still there
-			btst	#CACR_DE_040,d0					; see if the bit exists in CACR							<T22>
-			beq.s	@not040							; IF we're on a 68040 THEN
-			
-			MACHINE	MC68040							;	need this for the MOVEC D0,TC below
-
-			cinva	bc								;	make sure caches are invalidated
-			sub.l	d0,d0							;	clear d0
-			movec	d0,CACR							;	disable both instruction and data caches
-			movec	d0,TC							;	make sure that the MMU is disabled
-			move.l	#nuBusTTxlat,D0					;	get value to translate upper nuBus space			<T18>
-			movec	d0,DTT0							;	use serialized writes on this space 				<T18>
-			move.l	#ioNuBusTTxlat,D0				;	get value to translate i/o and nuBus space			<T18>
-			movec	d0,DTT1							;	use serialized writes on this space 				<T18>
-			bra.s	@not030							;	step around the rest of the 020/030 cache/tc stuff
-
-			MACHINE	MC68030							;	set it back to what works for 020/030
-@not040												; ELSE
-			move.l	#(1<<CACR_WA_030),d0			;	CACR value w/WA bit for 030
-			movec	d0,CACR							;	disable both instruction & data caches
-			movec	CACR,d0							;	hmmm, maybe we are an 030
-			tst.l	d0								;	see if WA bit is still on
-			beq.s	@not030							;	IF we are an 030 processor
-			lea		TCOff,a0						;     point to TC value that disabled the MMU
-			pmove	(a0),tc							;     turn off MMU
-													;	ENDIF
-@not030
-
-		  IF	forRomulator THEN
-			TestInRam	A0
-			bne.s	@dontReset						; don't reset if running in RAM
-		  ENDIF
-
-;	NOTE: The MMU must be disabled before doing a RESET if the MMU tables are in RAM, especially
-;	on machines with Overlay bits.  RESET will cause the hardware to enter Overlay Mode, and RAM
-;	will go away, and ROM data will be returned instead, so the MMU will not be able to access
-;	the translation tables.
-
 			RESET									; ***** Reset The World *****
-@dontReset
-	ENDIF											; 														<SM52>
 
 ; <60>, check what WakeUp does, does it return here again after changing clock ?
 
@@ -1284,13 +1244,20 @@ StartBoot	MOVE	#$2700,SR						; Disable processor interrupts.
 *						H A R D W A R E   I N I T I A L I Z A T I O N							*
 *																								*
 *************************************************************************************************
-			
+; bc
+
 			BSR6	JumpIntoROM						; init the hardware
-	
-		IF hasPwrControls THEN						; If we're on a portable,
-			BigBSR6	PortableCheck					; check to see if we are coming out of sleep
-		ENDIF
-			BRA.L	StartTest1						; run new universal diagnostics
+
+
+
+			move	#$2600, sp
+			moveq	#0, d7
+			moveq	#0, d6
+			move	#$11, d7
+
+			import	LASTLY_A8FE0
+			BSR6	LASTLY_A8FE0
+			move.l	(sp),a6
 StartInit1											; Jumped to from StartTest1. <C11>
 
 ;-----
@@ -1323,6 +1290,7 @@ StartInit1											; Jumped to from StartTest1. <C11>
 ;
 ;		On 68000 machines, exception vectors set up by the diagnostics are in RAM at address zero.
 ;-----
+; de
 
 			WITH	StartGlobals
 
@@ -1348,6 +1316,7 @@ getHInfo	move.l	a6,-(sp)						; save regs												<SM44>
 ;		d2 - Bits 15..8, BoxFlag info (possibly unknown)
 ;		d2 - Bits  7..0, Address Decoder Kind (zero if unknown)
 ;-----
+; 108
 
 			BSR6	InitVIAs,a2						; initialize the VIAs and RBV
 
@@ -1358,22 +1327,18 @@ getHInfo	move.l	a6,-(sp)						; save regs												<SM44>
 ;----------------------------------------------------------------
 ; Get logical: set up RAM, address translation tables
 ;----------------------------------------------------------------
+; 11a
 
 			bsr		ConfigureRam					; set up RAM, move sp to middle of 1st bank
 
 ;----------------------------------------------------------------
 ; D7 <- CPU type in low word, logic board type in hi word
 ;----------------------------------------------------------------
+; 11e
 			BSR		WhichCPU						; get CPU type in low word of d7
 			bsr		WhichBoard						; get logic board type in hi word of d7
 
-			btst.l	#hwCbMMU+16,d2					; HwCfgFlags in high word of d2
-			bne.s	@hasMMU							;  yes, InitMMU
-													;  no,  InitNonMMU
-			bsr		InitNonMMU						; init a4,a5,a6 for non MMU based machines
-			bra.s	@done
-
-@hasMMU		bsr.l	InitMMU							; generate MMU tables, enable MMU						<SM15>
+			bsr.l	InitMMU							; generate MMU tables, enable MMU						<SM15>
 													; returns a4 -> BootGlobs
 			
 			move.l	sgTotalRAM(a4),a6				; get top of memory
@@ -1403,6 +1368,7 @@ getHInfo	move.l	a6,-(sp)						; save regs												<SM44>
 ;		sp	- in the middle of the useable logical space
 ;
 ;-----
+; 136
 
 			MOVEM.L	sgScratch(A4),D3-D6				; get the extended Universal info						<SM82>
 			ENDWITH									; {StartGlobals}
@@ -1421,7 +1387,7 @@ getHInfo	move.l	a6,-(sp)						; save regs												<SM44>
 			LEA		HeapStart,A1					; A1 <- pointer to end of system globals.
 			BSR		FillWithOnes					; Fill system globals with ones.
 
-			BSR		InitRomVectors					; initialize ROM vectorization
+			BSR.L	InitRomVectors					; initialize ROM vectorization
 
 			MOVEM.L	(SP)+,D0-D6/A0-A1				; restore Universal info								<SM82>
 
@@ -1439,8 +1405,6 @@ getHInfo	move.l	a6,-(sp)						; save regs												<SM44>
 
 			MOVE.B	D7,CpuFlag						; save type of CPU we have
 			swap	d7								;
-
-			bsr		DynamicBoxFlag					; Calculate the Boxflag based on Family type and CPU speed <mc2>
 			
 @StoreBox	move.b	d7,BoxFlag						; ... and save it in lomem
 
@@ -1448,149 +1412,17 @@ getHInfo	move.l	a6,-(sp)						; save regs												<SM44>
 			MOVE.L	A5,BufPtr						; save the top of useable memory
 			MOVE.L	A6,MemTop						;  and the top of available memory
 
-			; Here, we check to see if a special bit is set on PRAM, which tells us							<SM99> rb, start
-			; that the user want's his ROM to run from RAM for a slightly faster machine.
-			; We copy the ROM image into RAM and then re-initialize vectorization with the new RAM/ROM.
-	
-			IMPORT	PramIO
-			
-			MOVEM.L	D0-D6/A0-A4,-(SP)				; save Universal info
-			CLR.W	-(SP)							; make buffer space in stack for PRAM data
-			MOVE.L	SP,A3							; set buffer pointer
-			MOVE.L	#(0<<31)|\						; read PRAM command
-					 (1<<16)|\						; 1 byte please
-					 (11<<0),D3						; from address X
-			BSR.L	PramIO							; read PRAM
-			MOVE.W	(SP)+,D0						; get the byte read from PRAM
-			ANDI.W	#$0100,D0						; let's see if bit 1 was set in our byte
-			BEQ.W	NoROMinRAM						; if bit is clear, don't use RAM for the ROM <SM99>
-			
-			LEA		BaseOfRom,A0					; set source address
-			MOVE.L	A0,ROMBase						; save in ROMBase since it's not setup yet
-			MOVE.L	$40(A0),D3						; get the ROM size in D3
-			SUBA.L	D3,A5							; Subtract the ROM size from BufPtr
-			MOVE.L	A5,D0							; let's make sure A5 is aligned
-			ANDI.L	#$0000000F,D0					; mask up to 15 bytes of mis-alignement
-			SUBA.L	D0,A5							; and adjust A5 for 16 byte alignment
-			MOVE.L	A5,BufPtr						; and set the new BufPtr
-			MOVE.L	A5,A1							; set Destination address
-			
-			MOVE.L	D3,D0							; set count
-			MOVEQ.L	#16,D2							; set copy amount per loop (16 for non 040)
-			CMPI.B	#cpu68040,CPUFlag				; are we in an 040 ?
-			BNE.S	@CopyLongs						; if not, then copy longs only
-			MOVEQ.L	#32,D2							; set copy amount per loop
-			BRA.S	@Copy16							; do the copy thing, based on BlockMove040
-			NOP										; no warnings please
-			
-			ALIGN	16								; align with a cache line
-			MACHINE MC68040							; for move 16
-@Copy16
-			MOVE16	(A0)+,(A1)+						; copy 16 bytes
-			SUB.L	D2,D0							; decrement our count by 32 bytes
-			MOVE16	(A0)+,(A1)+						; copy another 16...
-			BHI.S	@Copy16							; and keep copying until we have 2 Meg
-			
-@JumpIntoRAM
-			LEA		InRAM,A0						; get our address in RAM (almost)
-			MOVE.L	ROMBase,D5						; save old ROMBase in D5								<SM104> rb
-			SUBA.L	ROMBase,A0						; get rid of the ROM offset
-			MOVE.L	BufPtr,A5						; get BufPtr (ROMBase soon) in a5
-			MOVE.L	A5,ROMBase						; set the new ROM base
-			ADDA.L	A0,A5							; add offset to InRAM routine
-			JMP		(A5)							; and go there !
-			NOP										; fill me in
-			
-@CopyLongs
-			MOVE.L	(A0)+,(A1)+						; copy 4 bytes
-			MOVE.L	(A0)+,(A1)+						; copy 8 bytes
-			MOVE.L	(A0)+,(A1)+						; copy 12 bytes
-			MOVE.L	(A0)+,(A1)+						; copy 16 bytes
-			SUB.L	D2,D0							; decrement our count by 16 bytes
-			BHI.S	@CopyLongs						; and copy more if nessesary
-			BRA.S	@JumpIntoRAM					; now jump into RAM
-			NOP										; just for the fun of it.
-			
-			ALIGN	16
-			
-InRAM
-			BSR		InitROMVectors					; re - initialize vectorization with new ROM addr
-			; Now that the ROM vectors have been re-initialized from RAM, the actual table entries still	<SM104> rb, start
-			; point to ROM since these were created at compile time.  So now we need to adjust every entry
-			; in the RAM copy of the tables so that it points to its RAM equivalent.  From then on
-			; InitROMVectors can be called and the RAM table entries will be used, as expected.
-			
-			MOVE.L	#$2010,D0						; get start address for ROM vector adjustments			
-			SUB.L	ROMBase,D5						; adjust our saved ROMBase, D5 is now the difference
-@WalkList	
-			MOVE.L	D0,A0							; get vector address in a0
-			MOVE.L	(A0),D1							; get the table address
-			CMPI.L	#-1,D1							; is it an empty table ?
-			BEQ.S	@NextTable						; if so, try the next table
-			
-			MOVE.L	D1,A1							; get the table address in a1
-			MOVE.L	(A1),A2							; get decription table in a2
-			MOVE.L	8(A2),D3						; get vector count for this table in D3
-			
-@AdjustEntry
-			SUB.L	D5,(A1)+						; adjust this entry so it points in the RAM copy of ROM
-			DBRA	D3,@AdjustEntry					; fix all entries in this table
-			
-@NextTable	
-			ADDI.L	#4,D0							; add offset to next vector address
-			CMPI.L	#$2104,D0						; have we reached the current limit ?
-			BNE.S	@WalkList						; if not the limit, keep looking
-			
-			SUB.L	D5,UnivInfoPtr					; adjust the info record so int handlers are in RAM		<SM108> rb
-			
-NoROMinRAM											;														<SM104> rb, end
-			MOVEM.L	(SP)+,D0-D6/A0-A4				; restore Universal info
-													; DONE, WE ARE RUNNING FROM A RAM COPY OF ROM			<SM99> rb, end
 			move.l	UnivInfoPtr,a1					; reload a1 in case the info record was adjusted in RAM	<SM108> rb
 			
 			bsr		SetupHWBases					; setup the hardware base address low mems
 
 			BSR		InitSCC							; init the SCC
 
-			move.w	d2,-(sp)						; save D2 around this call								<T28>
-			BSR		InitIWM
-			move.w	(sp)+,d2						; restore D2											<T28>
-
-		IF NOT hasAsyncSCSI THEN	; we do HW init later with new SCSI Manager
-			bsr.l	InitSCSIHw						;
-		ENDIF
-		
-			BSR.L	InitSndHW						; go initialize the sound hardware
-
 			bsr.l	InitMMUGlobals					; set up MMU globals
 
 			BSR6	 SysErrInit						; Init exception vectors.
 			clr.l	DockingGlobals					; flag for EnableExtCache to know traps don't exist	<H15>
 			
-	IF has040MMU THEN								;														<SM54><SM91> rb
-			cmpi.b	#cpu68040,CPUFlag				; check if we're running on an 040/050					<T12>
-			bne.s	@notAn040						; IF we are running on an 040/050 THEN					<T12>
-			BSR.L	InstallFPSP						;    Initialize 040/050 FP emulation package			<T12>
-@notAn040											; ENDIF													<T12>
-	ENDIF											;														<SM54><SM91> rb
-
-
-;----------------------------------------------------------------
-; Enable Caches, if any.
-;----------------------------------------------------------------
-
-; turn on Bursting for Instruction and Data cache before TimeDBRA and TimeSCCDB
-
-	IF forRomulator THEN
-			Moveq.l	#$0,D0							; Set up to disable the caches if we’re debugging.
-	ELSE
-			cmp.b	#cpu68040,CpuFlag				; check if we're on an 040
-			bne.s	@not040							; NO  ... enable 020/030 cache(s)
-
-			move.l	#(1<<CACR_IE_040),d0			; YES ... turn on IE		  
-			Ori.l	#(1<<CACR_DE_040),D0			; and the DE.
-			bra.s	@EEC							; enable any external caches (?)
-@not040
 			MOVE.L	#(1<<CACR_EI_020_030|\			; WA=1, DBE=1, CD=1, ED=1, IBE=1, CI=1, EI=1
 					  1<<CACR_CI_020_030|\			;
 					  1<<CACR_IBE_030|\				;
@@ -1599,7 +1431,6 @@ NoROMinRAM											;														<SM104> rb, end
 					  1<<CACR_DBE_030|\				;
 					  1<<CACR_WA_030),D0			;
 @EEC												; nothing to do with Europe or Eric Clapton
-	ENDIF		
 			Movec	D0,CACR							; set up the CACR as desired from above
 			BSR.L	EnableExtCache					; enable external cache
 
@@ -1624,6 +1455,7 @@ NoROMinRAM											;														<SM104> rb, end
 *		all Universal variables (i.e., UnivInfoPtr, UnivROMFlags, AddrMapFlags, etc)			*
 *																								*
 *************************************************************************************************
+; 1ce
 
 BootRetry	MOVE	#$2700,SR						; disable interrupts
 
@@ -1643,7 +1475,6 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			MOVE.L	A0,SP							; Set the stack pointer there
 			SUBA.W	#BootStackSize,A0				; Give ourselves some stack space
 
-			BSET.B	#MMStartMode,MMFlags			; set for 32 bit system heap
 			_SetApplLimit							; Don't let the System Heap crash our stack
 
 			BSR.L	InitMemoryDispatch				; go set up the MemoryDispatch globals
@@ -1658,15 +1489,18 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			Move.l	#emRecSize,(a0)					; size													<SM40>
 			ENDWITH									;														<SM40>
 
+			IMPORT	InterC_1cc0_MoveUnivInfoToSysHeap
+			BSR.L	InterC_1cc0_MoveUnivInfoToSysHeap
+			BSR.L	initGestalt						; initialize Gestalt									<SM39>
+			BSR.L	FiddleWithEmulator
 			BSR.L	InitIntHandler					; initialize interrupt vectors and dispatch tables
-			BSR.L	InstallPrivTrap					; setup FPPriv if there's an FPU						<T15>
-
-			BSR.L	InitPmgrVars					; initialize Power Manager variables if on a portable	<T10>
-													; (otherwise disable all of its traps)
 
 			BSR		CheckForEgretOrCuda				; Do we have an Egret/Caboose/Cuda?						<mc2>
 			BNE.S	@EInitDone						; -> Nope, don't be callin' shit
 			BSR.L	InitEgretOrCuda					; Initialize Egret or Cuda Manager
+
+			IMPORT	GestaltCudaFunc
+			BSR.L	GestaltCudaFunc
 @EInitDone
 
 
@@ -1678,18 +1512,66 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 *	able to take off as if we were a generic Macintosh.											*
 *																								*
 *************************************************************************************************
+; 244
 
-			
-			BSR		InitSwitcherTable				; initialize Switcher's table (do we still need this?)
-
-			BSR		GetPRAM							; get 20 bytes PRAM, and TIME
-			BSR		SetPRAM32						; Always set PRAM to 32bit								<SM50><SM62>
 			BSR.L	InitRSRCMgr						; initialize the Resource Manager
 			BSR.L	NMInit							; Initialize the Notification Manager
-			BSR.L	InitTimeMgr						; Initialize the Time Manager
 		
 			CLR.W	-(SP)							; pass the INIT message to ShutDown
 			_ShutDown								;  to initialize the queue
+
+			IMPORT	EXPANSIONBUSMGR_452D0
+			BSR.L	EXPANSIONBUSMGR_452D0
+
+;—————————————————————————————————————————————————————————————————————	<SM101> SAM
+; Install Code Fragment Mangaer (GoNative)								<tcn>
+;—————————————————————————————————————————————————————————————————————
+; 25a
+
+		CASE	ON
+		IMPORT 	GoNative
+			BSR.L	GoNative						; Load all those NCODs!
+		CASE	OFF
+			BPL.S	@noPower						; -> No errors.  Keep booting							<SM132> SAM
+			
+			MOVE.W	#dsGNLoadFail,D0				; Fatal GoNative load error.							
+			_SysError								; Put up a dialog and die.
+@noPower
+
+; 268
+			IMPORT	InterC_1690_CodeRegister
+			BSR.L	InterC_1690_CodeRegister
+
+			IMPORT	InterC_15c0_CodePrepare2
+			BSR.L	InterC_15c0_CodePrepare2
+
+			IMPORT	EXPANSIONBUSMGRFIRSTFUNC
+			BSR.L	EXPANSIONBUSMGRFIRSTFUNC
+
+			BSR.L	CompBootStackOld				; lifted from SetUpSysAppZone
+			MOVE.L	A0,SP
+			SUBA.W	#BootStackSize,A0
+			_SetApplLimit
+
+			IMPORT	InterC_2560
+			BSR		InterC_2560
+
+
+			CLR.L	-(SP)							; who wrote this?
+			MOVE.L	(SP)+, ($D18)
+			MOVE.L	ToolScratch, -(SP)
+			LEA.L	SetUpTimeK, A0
+			MOVE.L	A0, ToolScratch
+
+			IMPORT	InterC_2090_PowerMgr
+			BSR		InterC_2090_PowerMgr
+
+			IMPORT	InterC_2a80_EtherPrintfLib
+			BSR.L	InterC_2a80_EtherPrintfLib
+			MOVE.L	(SP)+, ToolScratch
+
+
+			BSR		GetPRAM							; get 20 bytes PRAM, and TIME
 
 			BSR		InitSlots						; inits slot cards, grays the screen(s)
 
@@ -1704,79 +1586,71 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 
 			MOVE	#$2000,SR						; supervisor state, interrupts on
 
-;------------------------------------------------------------------------									<SM39>
-; Gestalt must now be initialized before IO drivers															<SM39>																<SM39> RLM
-;------------------------------------------------------------------------									<SM39>
+			IMPORT RSETKMAP
+			BSR.L     RSETKMAP
 
-			BSR.L	initGestalt						; initialize Gestalt									<SM39>
+			IMPORT	InterC_2bc0_DebugPrint
+			BSR.L	InterC_2bc0_DebugPrint
 
-			moveq	#10,D0
-			_NewHandle	,Sys,Clear					; Get space for a Heap utilities list
-			move.l	A0,D0							; Did we get it?
-			beq.s	@noHU							; -> Nope
-			move.l	D0,$1E0C						; Stuff it in the magic location
-@noHU
-			
-			Cmpi.b	#cpu68040,CPUFlag				; Are we less than an 040?								<T7><SM9>
-			Blo.s	@no040BM						; Yes? Then use original BlockMove.						<T7><SM9>
-			Move.w	#$A02E,D0						; BlockMove trap.										<T7><SM9>
-			BigLea	BlockMove68040,A0				; New routine.											<T7><SM9>
-			_SetTrapAddress							; Set new routine.										<T7><SM9>
-@no040BM
-
-;—————————————————————————————————————————————————————————————————————	<SM101> SAM
-; Install Code Fragment Mangaer (GoNative)								<tcn>
-;—————————————————————————————————————————————————————————————————————
-
-			MOVE.L	#gestaltSysArchitecture,d0		; Are we running on a PowerPC machine?					<SM101> SAM
-			_Gestalt
-			BNE.S	@NoPower						; Error, assume 68k
-			CMP.W	#gestaltPowerPC,A0				; PowerPC?
-			BNE.S	@NoPower						; -> Nope, assume 68k
-			
-		CASE	ON
-		IMPORT 	GoNative
-			BSR.L	GoNative						; Load all those NCODs!
-		CASE	OFF
-			BPL.S	@noPower						; -> No errors.  Keep booting							<SM132> SAM
-			
-			MOVE.W	#dsGNLoadFail,D0				; Fatal GoNative load error.							
-			_SysError								; Put up a dialog and die.
-@noPower
-
-;----------------------------------------------------------------
-; Install Drivers (Disk, Sound, Video).
-;----------------------------------------------------------------
-
-			LEA 	DrvQHdr, A1 					; Initialize the drive queue.
-			BSR.L 	InitQueue
-
-			BSR		InitIOPStuff					;
-			BSR 	InitDeviceMgr					; Init unit I/O table and install the drivers.
-			BSR		LoadDrivers						; load the standard drivers
-
-			BSR.L	InitSCSIMgr						; Init old and new SCSI Mgrs
+			MOVEQ.L	#10, D0
+			_NewHandle ,Sys,Immed
+			MOVE.L	A0, D0
+			BEQ.B	@fail
+			MOVE.L	D0, $1E0C
+@fail
 
 			BSR.L	INSTALLBASSCOMMON				; Init Bass before anyone calls _InitFonts (like _InitGraf) <SM112>
 			BSR.L	FORCEINITFONTSCALL				; More Bass init stuff										<SM112>
 
+			BSR		InitCrsrMgrMiddle
 			BSR.L	InitCrsrDev						; initialize Cursor globals								<H9>
 													; (InitCrsrDev must preceed InitADB)
+
+			SUBQ	#2, SP
+			MOVEQ.L	#-1, D0
+			_DisplayDispatch
+			ADDQ	#2, SP
+
+;----------------------------------------------------------------
+; Install Drivers (Disk, Sound, Video).
+;----------------------------------------------------------------
+; 300
+
+			LEA		DrvQHdr, A1						; Initialize the drive queue.
+			BSR.L	InitQueue
+
+			BSR		InitDeviceMgr					; Init unit I/O table and install the drivers.
+
+			IMPORT	InitDeviceDispatch
+			BSR.L	InitDeviceDispatch
+
+			BTST.B	#$6, ($2400)
+			BNE.B	@definitely
+			BTst.B	#$0, ($DD0)
+			BEQ.B	@dont
+@definitely
+
+			BSR		NewStartInitFunc
+			BSR.L	InitSCSIMgr						; Init old and new SCSI Mgrs
+@dont
+
+			IMPORT	InitExpansionMgr
+			BSR.L	InitExpansionMgr
+
+			IMPORT	InterC_1980_Drivers
+			BSR.L	InterC_1980_Drivers
+
+			BSR		LoadDrivers						; load the standard drivers
+
 			BSR.L	InitADB							; initialize ADB interface
+
+	import	InterC_1910_USBFamilyExpertLib
+	bsr.l	InterC_1910_USBFamilyExpertLib
 
 			BSR		InitCrsrMgr						; Initialize cursor variables
 
-;----------------------------------------------------------------
-; Initialize Reliability Manager
-;----------------------------------------------------------------
-
-			BSR.L	InitReliability					; initialize the Reliability Manager
-
-			BSR		CheckForEgretOrCuda				; call check routine									<T2>
-			BNE.S	@NoEgret						; Egret not installed
-			BSR.L	EgretDFACandPDM					; install additional Egret features						<SM16>
-@NoEgret
-			BSR		CheckForResetPRAM				; see if PRAM needs to be nuked
+			IMPORT	InitBCScreen
+			BSR.L	InitBCScreen
 
 			BSR.L	TEGlobalInit					; initialize TextEdit vectors
 
@@ -1791,6 +1665,7 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 ; for the sake of its internal side-effects.  After the call, ApplZone, HeapEnd, and HiHeapMark
 ; must be reset.  ApplLimit is set to BufPtr-DefltStack, which is fine for boot time.
 ;----------------------------------------------------------------
+; 35a
 
 			MOVE.L	SysZone,A0						; Point to System Heap
 			MOVE.L	bkLim(A0),A0					; Point to end of System Heap
@@ -1813,36 +1688,23 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 	
 			BSR		DrawBeepScreen					; Horst Beepmanh’s patented gray screen
 			
-; On machines with Civic, check to see if we want to boot off the composite out      						<SM63>
-
-			TestFor	CivicExists
-			Beq.s	@NoCivic						; don't do it for Non-Civic Based cpu's
-			bsr		CheckForTV						; see if we need to set the "Drive CompOut Flag"
-@NoCivic
-			
 			MOVE.L	#WmStConst,WarmStart			; write warm start constant to indicate warm start
 
 			MOVEA.L	BootGlobPtr,A0							; point to bootGlobals
 			move.l	#WmStConst,StartGlobals.sgWarmStart(A0)	; flag warm start in a
 															; place where StarTest can see it w/o an MMU
 
-;----------------------------------------------------------------
-; Initialize the Sound Manager
-;----------------------------------------------------------------
 
-			MOVEM.L	A0-A2/A6/D0-D2,-(SP)			; save our important Address
 
-			case	obj
-			import	InitSoundMgr
-			bsr.l	InitSoundMgr
-			case	off
 
-			MOVEM.L	(SP)+,A0-A2/A6/D0-D2			; restore our important Address
+			import	InterC_2780_FireWire
+			bsr.l	InterC_2780_FireWire
 
 
 ;----------------------------------------------------------------
 ; Initialize the File System.
 ;----------------------------------------------------------------
+; 3b0
 
 			MOVE	#40,D0							; Inital number of file control blocks
 			_InitFS
@@ -1850,20 +1712,33 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 ;----------------------------------------------------------------
 ; <65>, Other Terror changes...
 ;----------------------------------------------------------------
+; 3b6
 
-			BSR.L	SetupDockBases					; initialize docking bar base addresses					<H3><SM16>
-*			BSR.L	SCSIDiskMode					; check if we should be in SCSI Disk Mode				<SM16>
+			BTST	#$1, $2409
+			BEQ.B	@dont_do_mysterious_thing
+			IMPORT	LoadPCCardLib
+			BSR.L	LoadPCCardLib
+@dont_do_mysterious_thing
 
-		IF hasAsyncSCSI THEN						; <SM162> \/  
-			BSR.L	ISITT							; check if we're running SCSI 4.3
-			TST.B	D0								; are we?
-			BEQ.S	@noAsyncSCSI					; -> no, don't don't initialize for new
-													; 	 style boot.
+	IMPORT	InterC_2a20_SCSITargetMode
+	BSR.L	InterC_2a20_SCSITargetMode
+
+	BTst.B	#5, $2408
+	BEQ.B	@nodiskmode
+			BSR.L	SCSIDiskMode					; check if we should be in SCSI Disk Mode				<SM16>
+@nodiskmode
+
 			BSR.L	INITSCSIBOOT					; allocate some memory for SCSI booting
 													; and load third party SIMs (SCSI Interface
 													; modules
-@noAsyncSCSI
-			ENDIF									; <SM162> /\   
+
+			IMPORT	ATAMgr_5dae0
+			BSR.L	ATAMgr_5dae0
+			IMPORT	ATAMgr_5dde0
+			BSR.L	ATAMgr_5dde0
+
+			IMPORT	InterC_2130_CardBus
+			BSR		InterC_2130_CardBus
 
 
 *************************************************************************************************
@@ -1885,7 +1760,7 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 
 ;________________________________________________________________________________________
 ;
-; Routine:	WhichCPU
+; Routine:	WhichCPU 3f2
 ;
 ; Inputs:	none
 ;
@@ -1956,60 +1831,12 @@ WhichCPU
 			MACHINE	MC68020
 
 			moveq.l	#2,d7							; setup index to see if index scaling works
-			jmp		@CheckIndexScale-2(d7.w*2)		; decide if scaling works
-
-@CheckIndexScale
-			bra.s	@NoIndexScale					; 68000/68010 don't have index scaling
-
-@HasIndexScale										; 68020/68030/68040 do have index scaling
-			sub.l	d7,d7							; D7 = 0 (testing for 040)
-
-			bset	#CACR_DE_040,d7					; set DE (data cache enable) in CACR
-			movec	d7,CACR							; enable data cache
-			movec	CACR,d7							; IF CACR != 0 THEN we're on an 040
-			bclr	#CACR_DE_040,d7					; see if the bit exists in CACR
-			movec	d7,CACR							; put it back in cache reg
-			beq.s	@notAn040						; NO  ... check for 020/030
-
-			MACHINE	MC68040							; YES ... needed to execute a 040 CINVA inst.
-
-			cinva	bc								; invalidate both caches, dont push data from d-cache
-													; NOTE - I-cache is still enabled here
-			moveq	#cpu68040,d7					; return that we're running on an 040
-			rts
-
-			MACHINE	MC68020
-@notAn040
-			move.w	#(1<<CACR_EI_020_030|\			; set EI, (enable inst. cache)
-					  1<<CACR_CI_020_030|\			;     CI, (flush inst cache)
-					  1<<CACR_CD_030|\				;     CD, (flush data cache)
-					  1<<CACR_WA_030),d7			; ... in 020/030 CACR
-			movec.l	d7,cacr							; and go for it
-			movec.l	cacr,d7							; read back the actual CACR
-			lsl.w	#3,d7							; ccr.x := write allocate bit (68030 only)
-			moveq.l	#2>>1,d7						; setup to shift in ccr.x
-			addx.l	d7,d7							; d7 := 2 if 68020, d7 := 3 if 68030
 			rts										; all done
-
-@NoIndexScale										; 68000/68010 don't have index scaling
-			move.l	sp,d7							; mark the stack
-			clr.w	-(sp)							; fake a 68010 exception format word
-			bsr.s	@doRTE							; push a return address, sr, and RTE back
-			exg.l	d7,sp							; restore the stack
-			sub.l	sp,d7							; d7 := -2 if 68000, d7 := 0 if 68010
-			addq.l	#2,d7							; d7 :=  0 if 68000, d7 := 2 if 68010
-			lsr.l	#1,d7							; d7 :=  0 if 68000, d7 := 1 if 68010
-			rts										; all done
-
-@doRTE		move.w	sr,-(sp)						; push the SR to complete exception frame
-			rte										; pop the exception frame and return
-
-			SETMACHINE
 
 
 ;________________________________________________________________________________________
 ;
-; Routine:	WhichBoard
+; Routine:	WhichBoard 3f6
 ;
 ; Inputs:	D7.B-	CPU type
 ;
@@ -2029,7 +1856,7 @@ WhichBoard	swap	d7								; get CPU type in hi word
 
 ;________________________________________________________________________________________
 ;
-; Routine:	SetUpTimeK
+; Routine:	SetUpTimeK 402
 ;
 ; Inputs:	D7.B-	CPU type
 ;
@@ -2048,62 +1875,57 @@ WhichBoard	swap	d7								; get CPU type in hi word
 ;________________________________________________________________________________________
 
 SetUpTimeK	
-			cmpi.b	#cpu68040,CPUFlag		; check if running on one of those nasty 040s
-			blt.s	@doIt
+		   MoveM.L   D1-D2/A1-A4, -(A7)
+		   Move      SR, -(A7)
+		   OrI       #$700, SR
+		   Move.L    ($64), -(A7)
+		   BTst.B    #$6, ($2400)
+		   BNE.B     L8
+		   BTst.B    #$1, ($2400)
+		   BNE       L12
+		   Bra       L13
+L8:        MoveQ.L   #$0, D0
+		   Move      ([$68FFEFD0.L],$80), D0
 
-;	If we are 040'ish, check if the Cache Switch has requested to disable processor
-;	caches.  The Cache Switch CDEV sets PRAM location $8A bit 7 if caches will be
-;	disabled.  We are taking the initiative here and THIS is the place we will turn
-;	OFF caches for the duration.  We want to make sure that we do this BEFORE we
-;	calculate the timing values, as they will change depending on whether caches are
-;	on or off.
+		   MoveM.L   D0-D2/A0, -(A7)
+		   MoveA.L   ([$68FFEFD0.L],$18), A0
 
-			movem.l	d0-d3/a0-a3,-(sp)		; save registers before mucking around				<H22>
-			move.l	UnivInfoPtr,a1			; retrieve ProductInfo record pointer				<H22>
-			move.l	a1,a2					; leave A1 alone - call the routine with A2			<H22>
-			move.l	a1,a0					; leave A1 alone - get pointer in A0 for call		<H23>
-			adda.l	ProductInfo.ClockPRAMPtr(a2),a2; get pointer to primitives table			<H22>
-			move.l	4*cpXPRAMIO(a2),d0		; get the offset to the routine						<H22>
-			beq.s	@restore				; if no trap-less routine, then run with caches ON	<H22>
-			add.l	ProductInfo.DecoderInfoPtr(a1),a0; required for the PramIO call				<H23>
-			adda.l	d0,a2					; form trapless _ReadXPram subroutine address		<H22>
-			clr.w	-(sp)					; make room on the stack
-			movea.l	sp,a3					; set up for call to _ReadXPRam						<H22>
-			move.l	UnivROMFlags,d1			; D1, A0, A1, A3 need to set for StandardXPramIO	<H22>
-			move.l	#$0001008A,d3			; 1 byte at $8A
-			jsr		(a2)					; dont have traps yet. go there directly			<H22>
-			move.w	(sp)+,d0				; get the byte
-			tst.w	d0						; check if top bit is set
-			bpl.s	@restore				; top bit not set - run with caches on
+		   Tst.L     A0
+		   BNE.B     L10
+		   MoveA.L   ([$68FFEFF0.L],$100), A0
 
-			MACHINE	MC68040
-			CPUSHA	BC						; make sure return addresses make it to memory
-			MACHINE	MC68020
+		   Move.L    #$80000000, D1
+		   CmpI.L    #$1F, D0
+		   BGT.B     L9
+		   ROR.L     D0, D1
+		   Or.L      D1, $14(A0)
+		   Nop
+		   Bra       L11
+L9:        SubI.L    #$20, D0
+		   ROR.L     D0, D1
+		   Or.L      D1, $4(A0)
+		   Nop
+		   Bra       L11
+L10:       AddA.L    #$10000, A0
+		   LsL.L     #$5, D0
+		   Move.L    $0(A0,D0.W), D1
+		   BClr.L    #$7, D1
+		   Move.L    D1, $0(A0,D0.W)
+		   Nop
+L11:       MoveM.L   (A7)+, D0-D2/A0
+		   Bra.B     L13
+L12:       MoveA.L   ($DD8), A0
+		   AddA.L    (A0), A0
+		   MoveA.L   $E4(A0), A0
+		   OrI.L     #$400, $24(A0)
 
-			moveq.l	#0,d0
-			movec	d0,CACR					; turn OFF all caches
-@restore
-			movem.l	(sp)+,d0-d3/a0-a3		; restore registers after mucking around			<H22>
-@doit		
-			move.l	AutoInt1,-(sp)					; Save current auto interrupt vector.
-			move.w	sr,-(sp)						; Save current interrupt level.
-			ori.w	#HiIntMask,sr					; disable interrupts
-
-			TestFor	GrandCentralExists				; Do we have a Grand Central
-			beq.b	@viaIntsEnabled					; Nope, so carry on
-			movea.l	UnivInfoPtr,a0					; Get the GC base address from
-			adda.l	ProductInfo.DecoderInfoPtr(a0),a0	; the universal info
-			movea.l	DecoderInfo.GrandCentralAddr(a0),a0	; and then
-			ori.l	#1<<gcifDevVia,gcInterruptMask(a0)	; enable Lvl 1 interrupts
-@viaIntsEnabled
-			movea.l	VIA,a1							; Point to the VIA.
-		eieioSTP
-			bclr.b	#5,vACR(a1)						; Set Timer 2 to Timed Interrupt mode.
-		eieioSTP
-			move.b	#$FF,vT2CH(a1)					; Make sure timer won't accidentally trigger.
-		eieioSTP
-			move.b	#(1<<ifIRQ)+(1<<ifT2),vIER(a1)	; Enable Timer 2 interrupts.
-		eieioSTP
+L13:       MoveA.L   ($1D4), A1
+		   BClr.B    #$5, $1600(A1)
+		   Nop
+		   Move.B    #$FF, $1200(A1)
+		   Nop
+		   Move.B    #$A0, $1C00(A1)
+		   Nop
 
 ;	Load timer with number of VIA ticks per millisecond - 3.  There are 3 clocks of overhead
 ;	because it takes 1 clock for the timer to load, and 2 extra clocks because it has to count
@@ -2131,15 +1953,27 @@ SetUpTimeK
 			andi.w	#$F8FF,sr						; enable interrupts
 			jmp		(a0)							; call the routine to time
 @timedOut	not.w	d0								; convert to number of loop executions.
+
+			bne.s	@skip_the_thing
+			move.w	#$ffff, d0
+@skip_the_thing
+
 			movea.w	(a4)+,a0						; get the address of the lowmem
 			move.w	d0,(a0)							; store the result
+
+			btst	#6,$2400          
+			beq.b	@dont
+			MOVE.B   ([$68FFEFD0],$0083),([$68FFEFD0],$008D) ; VIAIntBit+1 -> CompletedInts+1
+@dont
+
 			tst.w	(a4)							; see if any more routines to time
 			bne.s	@nextRoutine					; time all routines in the table
 		eieioSTP
 			move.b	#(0<<ifIRQ)+(1<<ifT2),vIER(a1)	; Disable Timer 2 interrupts.
-		eieioSTP
-			move.w	(sp)+,sr						; Restore previous interrupt level.
-			move.l	(sp)+,AutoInt1					; Restore previous auto interrupt vector.
+			NOP
+			MOVE.L   (A7)+,$0064
+			MOVE     (A7)+,SR
+			MOVEM.L  (A7)+,D1/D2/A1-A4 
 			rts
 
 TimerInt	nop
@@ -2156,11 +1990,8 @@ TimingTable	dc.w	DbraTime-*,TimeDBRA				; simple DBRA loop timing
 
 
 DbraTime	
-		eieioSTP
 			move.b	d1,vT2C(A1)						; load low order byte
-		eieioSTP
 			move.b	d2,vT2CH(A1)					; load high order byte & go.
-		eieioSTP
 @loop		
 			dbra	d0,@loop						; time an empty DBRA loop
 			jmp		(a2)							; return if loop expires
@@ -2168,18 +1999,32 @@ DbraTime
 
 SCCTime		
 			movea.l	SCCRd,a0						; point to SCC base read address
-		eieioSTP
 			move.b	d1,vT2C(A1)						; load low order byte
-		eieioSTP
 			move.b	d2,vT2CH(A1)					; load high order byte & go.
-		eieioSTP
 @loop		
-			btst.b	#0,(A0)							; typical SCC access
-			dbra	d0,@loop						; time the SCC DBRA loop
+			btst.b	#3,$DD3
+			bne.s	@differentloop
+			dbra	d0,*							; time the SCC DBRA loop
 			jmp		(a2)							; return if loop expires
+@differentloop
+			btst.b	#0,(a0)
+			dbra	d0,@differentloop
+			jmp		(a2)
 
 
 SCSITime	
+			TestFor	SCSI96_1Exists
+			bne.s	@normalTest
+
+			btst.b	#6, $2400
+			beq.s	@normalTest
+
+			move.b	d1, vT2C(a1)					; load low order byte
+			move.b	d2, vT2CH(a1)					; load high order byte & go.
+			dbra	d0, *
+			jmp		(a2)
+
+@normalTest
 			movea.l	SCSIBase,a0						; point to SCSI base address
 			move.b	d1, vT2C(a1)					; load low order byte
 		eieioSTP
@@ -2200,7 +2045,7 @@ SCSITime
 
 ; ----------------------------------------------------------------------------------------------------- 	<H11>
 ;
-;	VIATime, in the IIci/IIfx/TERROR/HORROR ROMs, lives at 40x008BC.										<H11>
+;	VIATime 5ca, in the IIci/IIfx/TERROR/HORROR ROMs, lives at 40x008BC.										<H11>
 ;														 --------
 ;	This means that the @loop    btst.b  #0,(A0)    is at 40x008C8, and the    dbra   d0,@loop				<H11>
 ;	is at 40x008CC.  This code, "half cache-line aligned, when run on an 040 and above, will execute		<H11>
@@ -2252,7 +2097,7 @@ VIATime
 
 ;________________________________________________________________________________________
 ;
-; Routine:	JmpTblInit, JmpTbl2
+; Routine:	JmpTblInit 5e0, JmpTbl2 5e2
 ;
 ; Inputs:	A0	-	pointer to table of routine word offsets (A0-relative)
 ;			A1	-	pointer to destination jump table in RAM
@@ -2277,7 +2122,7 @@ JmpTbl2		MOVEQ	#0,D2							; clear high part for arithmetic
 
 ;________________________________________________________________________________________
 ;
-; Routine:	FillWithOnes
+; Routine:	FillWithOnes 5f0
 ;
 ; Inputs:	A0	-	pointer to starting RAM location (must be longword aligned)
 ;			A1	-	pointer to ending RAM location (must be longword aligned)
@@ -2300,7 +2145,7 @@ FillWithOnes
 
 ;________________________________________________________________________________________
 ;
-; Routine:	CompBootStack
+; Routine:	CompBootStack 5fa
 ;
 ; Inputs:	none
 ;
@@ -2312,19 +2157,26 @@ FillWithOnes
 ;________________________________________________________________________________________
 
 CompBootStack
+			btst	#$06,$240B
+			beq.s	CompBootStackOld
+			move.l	#$007EFFE0,A0					; 8 M - 64 K - 32 b
+			rts
+
+CompBootStackOld
 			move.l	BufPtr,d0						; get top useable memory
 			move.l	sysZone,a0						; get start system heap
 			sub.l	a0,d0							; get (top useable - sys heap start)
 			lsr.l	#1,d0							; divide by two
-			andi.w	#$FFFE,d0						; force it to be even									<SM81>
-			add.l	d0,a0							; get sys heap + (top - sysHeap)/2
-			suba.w	#BootGlobalsSize,a0				; leave room for QuickDraw stuff.
+			add.l	a0,d0							; get sys heap + (top - sysHeap)/2
+			sub.w	#BootGlobalsSize,d0				; leave room for QuickDraw stuff.
+			andi.w	#$FFF0,d0						; force it to be even									<SM81>
+			move.l	d0,a0
 			rts
 
 
 ;________________________________________________________________________________________
 ;
-; Routine:	ConfigureRAM
+; Routine:	ConfigureRAM 624
 ;
 ; Inputs:	D2.B-	address decoder kind (from Universal)
 ;			A0	-	pointer to machine's DecoderInfo table (from Universal)
@@ -2391,7 +2243,7 @@ ConfigureRAM
 
 ;________________________________________________________________________________________
 ;
-; Routine:	SetUpSysAppZone
+; Routine:	SetUpSysAppZone 674
 ;
 ; Inputs:	none
 ; Outputs:	none
@@ -2405,17 +2257,6 @@ ConfigureRAM
 
 SetUpSysAppZone
 			lea 	SysHeap,a0						; point at normal system heap template
-
-			move.b	MMFlags,-(sp)					; save the memory Manager flag
-			btst.b	#MMSysHeap,MMFlags				; check type of System Heap
-			beq.s	@do24							; IF we want a 32 bit heap
-			bset.b	#MMStartMode,MMFlags			;   set for 32 bit system heap
-			btst.b	#mmHighSysHeap,MMFlags			;   check for the 'black hole'
-			beq.s	@knowHeap						;   IF we have 'black hole' between lowmem & sysHeap
-			lea		SysHoleHeap,a0					;     get addr 'black hole' zone template
-			bra.s	@knowHeap						;   ENDIF
-@do24		bclr.b	#MMStartMode,MMFlags			;   set for 24 bit system heap
-@knowHeap											; ENDIF
 
 			_InitZone								; set up initial system heap
 			Move.L	theZone,SysZone 				; save pointer to the new zone
@@ -2435,193 +2276,40 @@ SetUpSysAppZone
 			MOVE.L	SP,A0							; Use the current sp when it’s lower
 @3			SUBA.W	#BootStackSize,A0				; Give ourselves some stack space
 			_SetApplLimit							; Don't let the System Heap crash our stack
-			MOVE.B	(SP)+,MMFlags					; restore memory manager flag
-			
-			_MoreMasters							; Create 768 master pointers at the bottom of			<SM132> SAM
-			_MoreMasters							; the heap.  This is approximately the number of
-			_MoreMasters							; relocatable objects in the system heap for
-			_MoreMasters							; System 7.1 and a set of standard inits.
-			_MoreMasters							; (We need 6 calls to MoreMasters to get 768 of them.
-													; _InitZone will create one block of "4*dfltMasters"
-			RTS										; MPs for us.)
+
+
+;			_MoreMasters							; Create 768 master pointers at the bottom of			<SM132> SAM
+;			_MoreMasters							; the heap.  This is approximately the number of
+;			_MoreMasters							; relocatable objects in the system heap for
+;			_MoreMasters							; System 7.1 and a set of standard inits.
+;			_MoreMasters							; (We need 6 calls to MoreMasters to get 768 of them.
+;													; _InitZone will create one block of "4*dfltMasters"
+;			RTS										; MPs for us.)
+
+			move.l	d3,-(sp)
+			moveq.l	#2,d3
+@trap_blk
+			_MoreMasters
+			_MoreMasters
+			_MoreMasters
+			_MoreMasters
+			_MoreMasters
+			_MoreMasters
+			_MoreMasters
+			_MoreMasters
+			dbf		d3,@trap_blk
+			move.l	(sp)+,d3
+			rts
 
 SysHeap		DC.L	HeapStart
 			DC.L	HeapStart+SysZoneSize
 			DC.W	4*dfltMasters					; Master Pointer allocation size = 128 (MPs)
 			DC.L	0
 
-SysHoleHeap	dc.l	HoleSysHeap						; start address
-			dc.l	HoleSysHeap+SysZoneSize			; size
-			dc.w	2*dfltMasters					; # master ptrs
-			dc.l	0								; no growzone proc
-
 
 ;________________________________________________________________________________________
 ;
-; Routine:	CheckForResetPRAM
-;
-; Inputs:	none
-; Outputs:	none
-; Trashes:	D0, A0, A1
-;
-; Function:	if the cmd-option-R-P keys are down, it resets PRAM and then reboots the machine
-;
-; If the byte 76 contains a value of 2 in it then some of the PRAM information will be saved.
-; If the value is any other value (0,1,3) then the value will be set to zero.
-; The information which is saved is:
-;	all PassWord information (address/size)
-;								04/04		PSWD
-;								0E/02		pswd checksum and flags
-;								AB/03		PSWD
-;	All AUX information			40/06		A/UX
-;	Sensitive Boot Parms		76/01		Reserved for StartMgr
-;	Default OS Type				77/01		Default OS
-;	Default Boot Device			78/04		Default Boot Device
-;________________________________________________________________________________________
-
-CheckForResetPRAM
-
-ck4rpRegs	REG		D1-D2
-
-; hi-byte == size, lo-byte == address
-PSWDPRAM	equ		$00040004						; 4 bytes at password location $04
-PSWDChkFlg	equ		$0002000E						; 2 bytes at password location $0E ($0E = Checksum, $0F = Flags)
-AUXPRAM		equ		$00060040						; 6 bytes at A/UX location $40
-OSTypePRAM	equ		$00020076						; 2 bytes at Default OS $76 ($76 = reserved/save PRAM or not, $77 = Default OS)
-ClearPRAM	equ		$00010076						; 1 byte at reserved byte (used if value is 1 or 3)
-DefBoot		equ		$00040078						; 4 bytes at Default Boot Device $78
-PSWDspace	equ		$000400AB						; 4 bytes at password location $AB (only use 3, but I alocate 4 on the stack)
-PSWDmore	equ		$000300AB						; the actual 3 bytes which I use at location $AB
-
-			movem.l	ck4rpRegs, -(sp)				;					<SM139> \/ \/ \/
-			
-			bsr		Ck4LimitPRAMClear				; supposed to allow bypassing security with reset?
-			sne		D2								; D2=true if limit clear
-													;					<SM139> /\ /\ /\
-			lea		@Keys,a1						; keys to check for
-			lea		KeyMap,a0						; compare to the Key Down Map
-			moveq.l	#4-1,d0							; compare loop count
-@loop		cmpm.l	(a0)+,(a1)+						; check for exactly this combo
-			dbne	d0,@loop						; examine the entire key map
-			bne.s	@noMatch						; if not equal, don't reset PRAM
-			
-			tst.b	D2
-			beq.s	@normNuke
-			bra.s	@savesome
-@noMatch
-			movem.l	(sp)+, ck4rpRegs
-			rts										; otherwise, just return
-
-
-; \/ \/ \/ \/  Save security-related items (mainly for AIX)				<SM138> thru next
-
-@savesome
-			subq.w	#PSWDPRAM>>16,sp				; allocate buffer on stack
-			movea.l	sp,a0							; get buffer ptr
-			move.l	#PSWDPRAM,d0					; get #, addr PRAM bytes
-			_ReadXPram								; read the PSWD info
-			
-			subq.w	#PSWDChkFlg>>16,sp				; 
-			movea.l	sp,a0							; 
-			move.l	#PSWDChkFlg,d0					; 
-			_ReadXPram								; read the PSWD checksum & Flags
-			
-			subq.w	#PSWDspace>>16,sp				; 
-			movea.l	sp,a0							; 
-			move.l	#PSWDmore,d0					; 
-			_ReadXPram								; read the PSWD info
-
-			subq.w	#AUXPRAM>>16,sp					; 
-			movea.l	sp,a0							; 
-			move.l	#AUXPRAM,d0						; 
-			_ReadXPram								; read the AUX info
-			
-			subq.w	#OSTypePRAM>>16,sp				; 
-			movea.l	sp,a0							; 
-			move.l	#OSTypePRAM,d0					; 
-			_ReadXPram								; read the Default OS
-			
-			subq.w	#DefBoot>>16,sp					; 
-			movea.l	sp,a0							; 
-			move.l	#DefBoot,d0						; 
-			_ReadXPram								; read the Default Boot Device
-			
-; /\ /\ /\ /\  															<SM138> from prev
-
-@normNuke	subq.w	#RelPram>>16,sp					; 
-			movea.l	sp,a0							; 
-			move.l	#RelPram,d0						; 
-			_ReadXPram								; read the reliability MGR info
-			
-		; kill signatures in extended and old PRAM so that InitUtil writes default values out
-
-			movea.l	a1,a0							; point to table data
-			move.l	(a0)+,d0						; get PRAM len/addr, point to data
-			_WriteXPRam								; kill the extended PRAM signature
-			lea		SysParam,a0						; standard PRAM buffer address
-			moveq.l	#-1,d0							; mask/data to write
-			move.b	d0,(a0)							; kill the signature in the buffer
-			_WriteParam								; write the buffer to PRAM
-			
-			_InitUtil								; Init PRAM
-			
-			movea.l	sp,a0							; 
-			move.l	#RelPram,d0						; 
-			_WriteXPram								; restore the reliability MGR info
-			adda.w	#RelPram>>16,sp					; clean up the stack
-
-			tst.b	D2								; flag set telling us not to clear everything?	<SM139>
-			beq.s	@normNuke3						; no-> don't restore them (we didn't save them earlier)
-			
-; \/ \/ \/ \/  Restore security-related items							<SM138> thru next
-
-			movea.l	sp,a0							; get buffer ptr
-			move.l	#DefBoot,d0						; get #, addr PRAM bytes
-			_WriteXPram								; restore the Default Boot Device
-			adda.w	#DefBoot>>16,sp					; clean up the stack
-			
-			movea.l	sp,a0							; 
-			move.l	#OSTypePRAM,d0					; 
-			_WriteXPram								; restore the Default clean of OS
-			adda.w	#OSTypePRAM>>16,sp				; 
-			
-			movea.l	sp,a0							; 
-			move.l	#AUXPRAM,d0						; 
-			_WriteXPram								; restore the AUX info
-			adda.w	#AUXPRAM>>16,sp					; 
-			
-			movea.l	sp,a0							; 
-			move.l	#PSWDmore,d0					; 
-			_WriteXPram								; restore the PSWD info
-			adda.w	#PSWDspace>>16,sp				; 
-			
-			movea.l	sp,a0							; 
-			move.l	#PSWDChkFlg,d0					; 
-			_WriteXPram								; restore the PSWD Checksum & Flags
-			adda.w	#PSWDChkFlg>>16,sp				; 
-			
-			movea.l	sp,a0							; 
-			move.l	#PSWDPRAM,d0					; 
-			_WriteXPram								; restore the PSWD info
-			adda.w	#PSWDPRAM>>16,sp				; 
-
-; /\ /\ /\ /\  															<SM138> from prev
-
-@normNuke3	bra		Start							; re-boot the machine
-
-
-@Keys		dc.l	$00800000						; R
-			dc.l	$08008004						; P, Cmd, Opt
-			dc.l	$00000000
-			dc.l	$00000000
-
-			dc.l	$0004000C						; XPRAM signature len/addr
-			dc.l	'Gone'							; invalidate XPRam signature with this
-
-
-;________________________________________________________________________________________
-;
-; Routine:	GetPRAM
+; Routine:	GetPRAM 6ce
 ;
 ; Inputs:	none
 ; Outputs:	none
@@ -2665,54 +2353,6 @@ GetPRAM		_InitUtil								; seed low memory PRAM buffer
 			RTS
 
 
-;________________________________________________________________________________________
-;
-; Routine:	SetPRAM32
-;
-; Inputs:	none
-; Outputs:	none
-; Trashes:	none
-;
-; Function:	force Memory Manager start mode to 32-bit mode
-;________________________________________________________________________________________
-
-SetPRAM32	movem.l	a0/d0,-(sp)						; save a0 and d0
-			subq.l	#4,sp							; create space on stack
-			move.l 	sp,a0 							; get pointer to useful buffer							<SM50>
-
-			MOVE.L	#$1008a,d0						; Command to read 1 byte at addr 8a 					<SM50>
-			_ReadXPRam								;														<SM50>
-			
-			move.l 	sp,a0 							; get pointer to useful buffer							<SM50>
-			ori.b	#5,(a0)							; set PRAM to 32 bit mode	
-			MOVE.L	#$1008a,d0						; Command to write 4 bytes at addr 8a					<SM50>
-			_WriteXPRam 							;														<SM50>
-			addq.l	#4,sp							; dispose space on stack
-			movem.l	(sp)+,a0/d0						; restore a0/d0
-			rts
-
-;________________________________________________________________________________________
-;
-; Routine:	InitNonMMU
-;
-; Inputs:	A6	-	pointer to memory table in high memory
-;
-; Outputs:	A4	-	points to memory table
-;			A5	-	points to top of useable RAM
-;			A6	-	points to top of total RAM
-;
-; Trashes:	none
-;
-; Function:	sets up A4, A5, A6 for non-MMU based machines and points jSwapMMU to an RTS.
-;________________________________________________________________________________________
-
-InitNonMMU 	move.l	a6,a4							; get ptr to memory table
-			move.l	(a4),a6
-			add.l	4(a4),a6						; calculate top of all memory
-			move.l	a6,a5							; top useable memory = top all memory
-			rts
-
-
 
 *************************************************************************************************
 *																								*
@@ -2723,7 +2363,7 @@ InitNonMMU 	move.l	a6,a4							; get ptr to memory table
 
 ;________________________________________________________________________________________
 ;
-; Routine:	InitHiMemGlobals
+; Routine:	InitHiMemGlobals 70c
 ;
 ; Inputs:	none
 ; Outputs:	none
@@ -2753,7 +2393,7 @@ InitHiMemGlobals
 
 ;________________________________________________________________________________________
 ;
-; Routine:	InitGlobalVars
+; Routine:	InitGlobalVars 73c
 ;
 ; Inputs:	none
 ; Outputs:	none
@@ -2804,18 +2444,7 @@ InitGlobalVars
 ; jump table.
 ;
 			Move.l	ROMBase,A0						; Get ROMBase
-			TestFor	ASCExists						; Do we really have an ASC?
-			Beq.s	@noASC							; -> No. Set SoundBase = ROMBase
-			Move.l	ASCBase, A0						; We do have an ASC. Get its base from universal
-@noASC
 			Move.l	A0,SoundBase					; Set up SoundBase
-
-	IF ROMinRAM THEN
-			CMPI.L	#$40800000,SoundBase			; if running from RAM, Set sound base to ROM		<LW5> rb
-			BHI.S	@BaseOK							; if SoundBase points to higher than 40800000		<LW5> rb
-			MOVE.L	#$40800000,SoundBase			; is ok, otherwise point to real ROM				<LW5> rb
-@BaseOK												;													<LW5> rb
-	ENDIF
 ;--------------------------------------
 
 			LEA 	VBLQueue,A1
@@ -2870,7 +2499,7 @@ InitGlobalVars
 
 ;________________________________________________________________________________________
 ;
-; Routine:	InitCrsrVars
+; Routine:	InitCrsrVars 81e
 ;
 ; Inputs:	none
 ; Outputs:	none
@@ -2890,7 +2519,7 @@ InitCrsrVars
 
 ;________________________________________________________________________________________
 ;
-; Routine:	InitCrsrMgr
+; Routine:	InitCrsrMgr 82e
 ;
 ; Inputs:	none
 ; Outputs:	none
@@ -2938,6 +2567,11 @@ InitCrsrMgr	MOVE.L	#$000F000F,D0
 			move.l	(a1)+,(a0)+						;   move the bytes in
 			move.l	(a1),(a0)
 
+			RTS
+
+MouseBytes	dc.b		4,10,15,255,255,83,77,72
+
+InitCrsrMgrMiddle
 			LEA 	GrafEnd,A1						; end of cursor globals
 			BigLea	CrsrDevHandleVBL,A0				; install cursor VBL task							<H9>
 			MOVE.L	A0,-(A1)						; JCrsrTask
@@ -2962,119 +2596,12 @@ InitCrsrMgr	MOVE.L	#$000F000F,D0
 			MOVE.W	D0,CrsrNew						; flag cursor as changed, turn on tracking
 			MOVE.L	D0,MouseMask					; No jerkiness with $FFFFFFFF mask
 
-		IF forTNTDebug THEN
-; set up a Time Manager task to call jVBLTask
-			
-initDummyVBL
-			moveq.l	#tmXQSize, d0					; allocate a block in the system heap
-			_NewPtr	,SYS,CLEAR						;  to hold the Time Manager task structure
-			lea		dummyVBL, a1
-			move.l	a1, tmAddr(a0)
-			move.l	#'eada', (a0)					; identify queue type to VM
-			_InsXTime
-			move.l	#-16626, d0
-			move.l	jPrimeTime, a1
-			jmp		(a1)
-			
-			RTS
-
-dummyVBL	
-			movea.l a1, a0
-			move.l	#-16626,d0			; 60.15 Hz
-			movea.l jPrimeTime, a1
-			move.l	jCrsrTask,-(sp)		; return address from PrimeTime to CrsrTask
-			jmp		(a1)				; restart time manager task
-		ENDIF
-			
-			RTS
-
-MouseBytes	dc.b		4,10,15,255,255,83,77,72
-
-
-;________________________________________________________________________________________
-;
-; Routine:	InitSwitcherTable
-;
-; Inputs:	none
-; Outputs:	none
-; Trashes:	A0,A1
-;
-; Function:	Installs a table telling Switcher what low memory locations to save/restore
-;			between applications in addition to the Switcher's own table (but always
-;			including the dispatch table).  The Switcher's table:
-;
-;				$100:	$02 bytes		(monkey lives)
-;				$108:	$14 bytes		(MemTop, BufPtr, StkLowPt, HeapEnd, TheZone)
-;				$130:	$04 bytes		(ApplLimit)
-;				$15C:	$04 bytes		(SEvtEnb, DSWndUpdate, FontFlag, IntFlag)
-;				$2AA:	$04 bytes		(ApplZone)
-;				$31E:	$22 bytes		(MinStack, DefltStack, mmDefFlags, GZRootHnd, GZRootPtr,
-;											GZMoveHnd, DSDrawProc, EjectNotify, IAZNotify).
-;				$800:	$2FC bytes		(ToolBox globals)
-;
-;			Table defining our additional switchables
-;
-;			Format is:
-;				address (word), byte count (word)	; save bytecount bytes at address
-;				.
-;				.
-;				0 (longword)						; terminates list
-;________________________________________________________________________________________
-
-OurSwitch	DC.W	OSTable,	4*numOStrap			; OS dispatch table
-			DC.W	ToolTable,	4*numTBtrap			; Toolbox dispatch table
-			DC.W	$0B80,		$26					; new switchables
-			DC.W	$0BAE,		$52					; new switchables
-			DC.W	HFSFlags,	2					; TFS flags (PMSP status) & Cache flags
-			DC.W	DefVRefNum,	2					; Default VRefNum/WDRefNum
-			DC.W	DefVCBPtr,	4
-			DC.W	ScrDmpEnb,	2
-			DC.W	CurDirStore,4
-			DC.W	MBProcHndl,	4
-
-			DC.W	$0100,		$0002				; SysCom//MonkeyLives
-			DC.W	$0108,		$0014				; memtop,bufptr,stklowpt,etc.
-			DC.W	$015C,		$0004				; SEvtEnb,DSWndUpdate,FontFlag,IntFlag
-			DC.W	$031E,		$0022				; MinStack,DefltSTack,mmDefFlags,etc.
-			DC.W	$0800,		$02FC				; toolbox globals,etc.
-			DC.W	ApplLimit,	$0004
-			DC.W	ApplZone,	$0004
-			DC.W	AuxWinHead,	$0004
-			DC.W	AuxCtlHead,	$0004
-			DC.W	BNMQHd,		$0004
-			DC.W	MenuCInfo,	$0004
-			DC.W	MenuDisable,$0008
-			DC.W	theGDevice,	$0004
-
-WDCBSwitch	DC.W	0,0,0 							; WDCB table
-PMSPSwitch	DC.W	0,0,SPHdrSize-2					; PMSP hook
-			DC.W	0,0 							; terminate with a long of zeroes
-SwitchLen	EQU 	*-OurSwitch
-
-;----------------------------------------------------------------
-; These constant values are stored in ROM rather than defined as EQUs for
-; use at compile time simply because we have a brain-damaged (c.f. Jobs on HP)
-; development system.
-;----------------------------------------------------------------
-WDCBSwOS	DC.W	WDCBSwitch-OurSwitch
-PMSPSwOS	DC.W	PMSPSwitch-OurSwitch
-
-
-InitSwitcherTable
-			MOVEQ	#SwitchLen,D0					; allocate a switcher table in
-			_NewPtr ,SYS,CLEAR						;  the system heap
-			MOVE.L	A0,A1							; make it the destination
-			LEA 	OurSwitch,A0					; template table
-			MOVEQ	#SwitchLen,D0					; copy it - needs to be updated with
-			_BlockMove								;  WDCBSwitch, PMSPSwitch later
-
-			MOVE.L	A1,SwitcherTPtr 				; Set the pointer up for Switcher
 			RTS
 
 
 ;________________________________________________________________________________________
 ;
-; Routine:	SetupHWBases
+; Routine:	SetupHWBases 8be
 ;
 ; Inputs:	none
 ; Outputs:	none
@@ -3121,7 +2648,9 @@ SetupHWBases
 			lsl.w	#2,d3							; setup index into bases table
 			move.l	(4*64,a0,d3.w),(a3)				; initialize the low mem
 			bra.s	@loop							; go on to next low mem
-			
+
+
+
 @BaseInitTable
 			dc.w	VIA1Exists,VIA					; init VIA1 base address
 			dc.w	SCCRdExists,SCCRd				; init SCC read base address
@@ -3181,6 +2710,11 @@ SetupMiscSCSI
 			bra.s	@SCSIHskDone
 @80based
 		ENDIF
+
+
+			btst.b	#6, ($2400)
+			bne.b	@SCSIHskDone
+
 			btst.l	#SCSIDackExists,d0				; see if we have SCSI Dack
 			bne.s	@SCSIDackDone					; if we do, it's setup ok
 			move.l	SCSIHsk,SCSIDMA					; if not, use hsk instead
@@ -3200,7 +2734,7 @@ SetupMiscSCSI
 
 ;________________________________________________________________________________________
 ;
-; Routine:	InitSlots
+; Routine:	InitSlots 992
 ;
 ; Inputs:	none
 ; Outputs:	none
@@ -3224,38 +2758,7 @@ InitSlots	BSR.L	InitSDTbl						; init slot int dispatch table
 
 ;________________________________________________________________________________________
 ;
-; Routine:	InitIOPStuff
-;
-; Inputs:	none
-; Outputs:	none
-; Trashes:	???
-;
-; Function:	initializes the I/O system by building the Unit Table and issuing initialization
-;			calls to all the component drivers.
-;________________________________________________________________________________________
-
-InitIOPStuff
-		IF IopADB | hasIopScc | hasIopSwim THEN
-			BSR.L	InitIOPMgr						; fire up the IOP manager
-		  IF hasIopSWIM THEN
-			TestFor	SWIMIOPExists					; see if we have a SWIM IOP
-			beq.s	@noSwimIOP						; if not, skip it
-			BSR.L	EnableSwimIOPInts				; Enable SWIM IOP interrupts
-@noSwimIOP
-		  ENDIF
-		  IF hasIopScc THEN
-			TestFor	SCCIOPExists					; see if we have a SCC IOP
-			beq.s	@noSCCIOP						; if not, skip it
-			BSR.L	SCCIOPBypass
-@noSCCIOP
-		  ENDIF
-		ENDIF
-			rts
-
-
-;________________________________________________________________________________________
-;
-; Routine:	InitDeviceMgr
+; Routine:	InitDeviceMgr 9b0
 ;
 ; Inputs:	none
 ; Outputs:	none
@@ -3269,7 +2772,7 @@ InitDeviceMgr	; Compute the size of the unit table and allocate it.
 			MOVEQ	#UnitEntries,D0 				; get number of entries in unit table
 			MOVE.W	D0,UnitNtryCnt					; save for IOCore checking
 
-			MOVE.L	#MaxUTEntries*4,D0				; reserve more memory so table can grow					<SM84>
+			MOVE.L	#MaxUTEntries*2,D0				; reserve more memory so table can grow					<SM84>
 			_NewPtr ,SYS,CLEAR						; allocate it and zero out the memory
 			MOVE.L	A0,UTableBase					; and save its address
 
@@ -3278,7 +2781,7 @@ InitDeviceMgr	; Compute the size of the unit table and allocate it.
 			
 ;________________________________________________________________________________________
 ;
-; Routine:	LoadDrivers
+; Routine:	LoadDrivers 9c4
 ;
 ; Inputs:	none
 ; Outputs:	none
@@ -3295,55 +2798,6 @@ LoadDrivers
 			MOVE.L	SP,A0
 			CLR.B	IOPermssn(A0)					; r/w permissions
 
-		IF hasNewAge THEN
-			TestFor	NewAgeExists					; do we have a NewAge?									<SM16>
-			Beq.S	@NoNewAge						; no ? then try old floppy								<SM16>
-
-			move.l	SP,A0							; iopb on stack
-			clr.b	IOPermssn(A0)					; clear r/w permissions
-			lea		NewAgeName,a1					; get new age driver name								<SM16>
-			move.l	a1,IOFileName(a0)				; set it up												<SM16>
-			_Open									; and open the driver									<SM16><SM21>
-@NoNewAge
-		ENDIF
-
-			TestFor	IWMExists						; do we have an IWM or SWIM?
-		IF hasIopSwim THEN
-			BNE.S	@OpenSony						; -> yes, open the driver
-			TestFor	SWIMIOPExists					; how about an IOP-based version?
-		ENDIF
-
-		IF hasSwim3 THEN
-			BNE.S	@OpenSony						; -> yes, open the driver
-			TestFor	SWIM3Exists						; how about a SWIM3 based version?
-		ENDIF
-			BEQ.S	@NoFloppy						; -> nope, no floppy controller
-
-@OpenSony
-			MOVE.L	SP,A0							; iopb on the stack
-			CLR.B	IOPermssn(A0)					; r/w permissions
-			LEA 	DiskName,A1						
-			MOVE.L	A1,IOFileName(A0)				
-			_Open									;OPEN Floppy disk driver
-
-;
-;—————————  NetBoot Driver  —————————
-;
-@NoFloppy	
-		IF hasNetBoot	THEN
-			SUBQ.W	#4,SP
-			MOVE.L	#'DRVR',-(SP)					; resource type
-			PEA		NetBootName						; resource name
-			_GetNamedResource						; try to get the handle to the .netBoot driver
-			TST.L	(SP)+							; does the driver exist?
-			BEQ.S	@NoNetBoot						; -> no, try don't open it
-
-			LEA		NetBootName, A1
-			MOVE.W	#49,D2							;  and resource ID										<SM84>
-			BSR		InstallDriver					; go install the driver									<SM84>
-@NoNetBoot
-		ENDIF
-
 ;
 ;—————————  RAM Disk Driver  —————————
 ;
@@ -3351,42 +2805,78 @@ LoadDrivers
 ; to enable the EDisk, make sure that it is included in the rom resources
 
 		IF hasEDisk THEN
-			LEA 	EDiskName,A1					
-			MOVE.W	#48,D2							;  and resource ID										<SM84>
+			LEA.L 	EDiskName,A1					
+			MOVEQ.L	#$30,D2							;  and resource ID										<SM84>
 			BSR		InstallDriver					; go install the driver									<SM84>
 		ENDIF
 
-	IF NOT forTNTDebug THEN
-;
-;—————————  Sound Driver  —————————
-;
-		IF hasDSP THEN
-			TestFor	DSPExists						; If we have a DSP, we assume we're doing sound through it. <SM57>
-			BNE.s	@DoneSoundDriver				; if we have a Cyclone/DSP then don't load sound driver	<SM53>
-		ENDIF
 
-			MOVE.L	SP,A0							; iopb on the stack
-			CLR.B	IOPermssn(A0)					; r/w permissions
-			LEA 	SndName,A1
-			MOVE.L	A1,IOFileName(A0)
-			_Open									; OPEN sound driver
-@DoneSoundDriver
-	ENDIF
+;
+;—————————  LAN Disk Driver  —————————
+;
 
-			MOVE.L	SP,A0							; iopb on the stack <sm125>
-			CLR.B	IOPermssn(A0)					; r/w permissions   <sm125>
-			BSR		FROVideo						; open the default video driver and setup video globals	<SM19>
-			LEA	 	IOQElSize(SP),SP				; deallocate parameter block for device manager calls.
+			IMPORT	InterC_1890_InitLANDisk
+			BSR		InterC_1890_InitLANDisk
+
+
+;
+;—————————  BCScreen Driver  —————————
+;
+
+
+			IF		hasBCScreen THEN
+
+			SubQ.L	#$2, sp
+			Move.L	sp, -(sp)
+			Move.L	#$3FF, -(sp)
+			Move.L	#$36, -(sp)
+			Clr.L	-(sp)
+			Pea.L	BCScreenName
+			Move.L	#$FFFFBF7D, -(sp)
+
+			IMPORT	Interstix208c_1
+			BSR.L	Interstix208c_1
+
+			dc.w	$defc, $001a
+			;AddA	#$1A, A7
+
+			ENDIF
+
+
+;
+;—————————  Backlight Driver  —————————
+;
 
 		IF hasPwrControls THEN
-			TestFor	hwCbPwrMgr						; <61>, is this a Power Mgr mac ?
-			beq.s	@noBacklight					; <61>, if not, skip
-			LEA		BacklightName,A1				; get the backlight driver's name						<SM84>
+			BTst.B    #$0, (HWCfgFlags)
+			BEQ.B     @noBacklight
+			BTst.B    #$6, ($2409)
+			BNE.B     @noBacklight
+			Move.L    #'only', -(A7)
+			LEA.L	BacklightName,A1				; get the backlight driver's name						<SM84>
 			MOVE.W	#-16511,D2						;  and resource ID										<SM84>
 			BSR		InstallDriver					; go install the driver									<SM84>
+			AddQ      #$4, A7
 @noBacklight
-		ENDIF
 	
+			  MoveA.L   A7, A0
+			  Clr.B     $1B(A0)
+			  Bsr       (* + $128)
+			  Lea.L     $32(A7), A7
+			  BTst.B    #$6, ($2409)
+			  BEQ.B     @skipALine
+			  import	InterC_1f40_Backlight
+			  Bsr.L     InterC_1f40_Backlight
+@skipALine
+
+			  BTst.B    #$3, ($DD3)
+			  BEQ       @exitDrivers
+		ENDIF
+
+
+
+
+
 
 ;
 ;—————————  Serial Drivers  —————————
@@ -3398,29 +2888,36 @@ LoadDrivers
 ; table, remaining closed and inactive until opened by a client.
 
 			subq	#4,sp							; allocate space for return value
-			move.l	#'SERD',-(sp)					; push serial driver resource type
-
-			TestFor	SerialDMA
-			bne.b	@SerialDMA
-			clr.w	-(sp)							; classic serial driver is 'SERD' (0)
-			bra.b	@CallSERD
-@SerialDMA	move.w	#1,-(sp)						; SerialDMA driver is 'SERD' (1)
-
-@CallSERD	move.w	#mapTrue,ROMMapInsert			; get resource from ROM
+			move.l	#'nsrd',-(sp)					; push serial driver resource type
+			move.w	#1,-(sp)						; SerialDMA driver is 'SERD' (1)
+			move.w	#mapTrue,ROMMapInsert			; get resource from ROM
 			_GetResource
 			move.l	(sp)+,d0						; did it get the handle?
 			beq.b	@exitDrivers
-			movea.l	d0,a0
-			movea.l	(a0),a0
-			jsr		(a0)							; call the install code
+			movea.l	d0,a2
+			movea.l	(a2),a1
+			SubQ      #$4, A7
+			Move.L    A2, -(A7)
+			dc.w $a9a5 ; _SizeResource
+			Move.L    (A7)+, D1
+			Move.L    D1, D0
+			dc.w $A440 ; _ResrvMemSys
+			Move.L    D1, D0
+			_NewHandle ,Sys
+			Move.L    A0, D0
+			BEQ.B     (* + $E)
+			_HLock
+			Move.L    D1, D0
+			MoveA.L   (A0), A1
+			MoveA.L   (A2), A0
+			_BlockMove
+			jsr		(a1)							; call the install code
 
 @exitDrivers
 			rts
 
 
 			STRING	PASCAL
-
-DiskName	DC.W	'.Sony'
 
 SndName 	DC.W	'.Sound'						;														<SM83>
 
@@ -3439,6 +2936,13 @@ BacklightName
 			DC.W	'.Backlight'
 		ENDIF
 
+
+		IF hasBCScreen THEN
+BCScreenName
+			DC.W	'.BCScreen'
+		ENDIF
+
+
 			STRING	ASIS
 
 
@@ -3451,7 +2955,7 @@ BacklightName
 
 ;________________________________________________________________________________________
 ;
-; Routine:	DrawBeepScreen
+; Routine:	DrawBeepScreen ab0
 ;
 ; Inputs:	A5	-	pointer to QuickDraw globals in boot globals space
 ;
@@ -3480,11 +2984,24 @@ DrawBeepScreen
 ;	of the menu bar (because the screen background is white on LCD screens vs black on CRTs)
 
 			BSR.L	LCDScreenChk					; is this an LCD screen ? 								<SM16><SM68>
-			BEQ.S	@DoNormalBeepScreen				; -> no, do the normal stuff							<SM16><SM68>
+			BEQ.B	@DoNormalBeepScreen				; -> no, do the normal stuff							<SM16><SM68>
 			
-			PEA 	ScreenBits+bounds(A2)			;  screen rectangle										<SM84>
-			PEA		gray(A2)						;  fill pattern
-			_FillRect								; fill the screen with 50% gray
+	Clr.B     ($B3E)
+	Pea.L     -$74(A2)
+	Clr.B     -(A7)
+	Jsr       (* + $204A)
+	Tst.B     (A7)+
+	BNE.B     (* + $8)
+	Pea.L     -$18(A2)
+	Bra.B     (* + $14)
+	MoveA.L   ($2b6), A0
+	ST.B      $341(A0)
+	Pea.L     (* + $62)
+	_RGBForeColor
+	Pea.L     -$10(A2)
+	_FillRect
+	MoveQ.L   #$5, D0
+	DC.W      $ABE0
 			RTS
 @DoNormalBeepScreen
 		ENDIF										;														<SM81>
@@ -3510,15 +3027,23 @@ DrawBeepScreen
 
 			_PenNormal								; restore the pen
 
-			MOVE.L	#$00100010, -(SP)				;  rounding factor
-			PEA 	gray(A2)						;  fill pattern
-			_FillRoundRect							; fill the screen with 50% gray
+	Pea.L     (* + $24)
+	_RGBForeColor
+	Move.L    #$100010, -(A7)
+	Pea.L     -$10(A2)
+	Bra.B     (* + $C)
+	DC.L      $2F3C0010       ; '/<  '
+	DC.L      $0010486A       ; '  Hj'
+	DC.W      $FFE8           ; '  '
+	_FillRoundRect
+	MoveQ.L   #$5, D0
+	DC.W      $ABE0
 			RTS
 
 
 ;________________________________________________________________________________________
 ;
-; Routine:	FROVideo
+; Routine:	FROVideo b54
 ;
 ; Inputs:	A0	-	pointer to ioParamBlock
 ;
@@ -3529,6 +3054,8 @@ DrawBeepScreen
 ; Function:	finds, reads parameters for, and opens the driver for a video sRsrc
 ;________________________________________________________________________________________
 
+			DC.W	$8888, $8888, $8888
+
 			WITH	spBlock,seBlock,vpBlock
 
 FROVideo	MOVE.L	A0,A1							; save the param block pointer for _Open
@@ -3536,8 +3063,33 @@ FROVideo	MOVE.L	A0,A1							; save the param block pointer for _Open
 			LINK	A6,#-spBlockSize				; allocate space for a slot parameter block
 			MOVE.L	SP,A0							;  and point to it
 
-			BSR.S	OpnVidDeflt						; open the default video device, set video params
-			BEQ.S	@End							; -> got it
+			BTST.B	#6, ($240B)
+			BEQ.B	@TryDefault
+
+			MoveM.L   D0-D7/A0-A4, -(A7)
+			Move.L    ($1FB8), -(A7)
+			MoveA.L   ($2b6), A3
+			MoveA.L   $1E0(A3), A3
+			Move.L    $C(A3), -(A7)
+			Lea.L     (* + $28A), A2
+			Move.L    A2, ($1FB8)
+			Move.L    A2, $C(A3)
+			SubQ      #$2, A7
+			Clr.L     -(A7)
+			Move      #$2EB, D0
+			_DisplayDispatch
+			Move      (A7)+, D0
+			MoveA.L   ($2b6), A3
+			MoveA.L   $1E0(A3), A3
+			Move.L    (A7)+, $C(A3)
+			Move.L    (A7)+, ($1FB8)
+			Tst       D0
+			MoveM.L   (A7)+, D0-D7/A0-A4
+			BNE.B     @End
+
+@TryDefault
+			BSR		OpnVidDeflt						; open the default video device, set video params
+			BEQ		@End							; -> got it
 
 ;	the default video device is bad, so go search for a video sRsrc...
 
@@ -3553,27 +3105,30 @@ FROVideo	MOVE.L	A0,A1							; save the param block pointer for _Open
 
 @NextVidsRsrc
 			_sNextTypesRsrc							; search for a video sRsrc
-			BNE.S	@FakeIt							; -> couldn't find one, so allocate a dummy screen
-
-			BSR		RdVidParam						; read the video parameters
-			BNE.S	@NextVidsRsrc					; -> error, so go search some more
+			BNE		@End							; -> couldn't find one, so allocate a dummy screen
 
 			BSR		OpensDrvr						; open the video driver
 			BNE.S	@NextVidsRsrc					; -> couldn't do it, so go look some more
 
+			MOVE	$18(A1), -(SP)
+			BSR		RdVidParam						; read the video parameters
+			TST		D0
+			BNE.S	@NextVidsRsrc					; -> error, so go search some more
+
 			BSR		InitVidDeflt					; initialize the default video device
 			BNE.S	@NextVidsRsrc					; -> error during initialization, so go looking
+
+			BRA.S	@End
+
+			BSR		InitDummyScreenWrapper
 
 @End		UNLK	A6								; get rid of the slot parameter block
 			RTS
 
-@FakeIt		BSR		InitDummyScreen					; allocate a dummy screen, GDevice
-			BRA.S	@End							;  and return
-
 
 ;________________________________________________________________________________________
 ;
-; Routine:	OpnVidDeflt
+; Routine:	OpnVidDeflt bfa
 ;
 ; Inputs:	A0	-	pointer to Slot Manager parameter block
 ;			A1	-	pointer to ioParamBlock
@@ -3604,11 +3159,13 @@ OpnVidDeflt	MOVE.L	A0,A2							; save A0
 			CMP.W	#DrSwApple,spDrvrSW(A0)			; does it have an Apple driver interface (software only)?
 			BNE.S	@Error							; -> no, keep on searching
 
-			BSR.S	RdVidParam						; a video sRsrc was found, so read the video parameters
-			BNE.S	@Error							; -> error during the read
-
 			BSR		OpensDrvr						; open the video driver
 			BNE.S	@Error							; -> couldn't do it
+
+			MOVE	$18(A1), -(SP)
+			BSR		RdVidParam						; a video sRsrc was found, so read the video parameters
+			TST		D0
+			BNE.S	@Error							; -> error during the read
 
 			BSR		InitVidDeflt					; initialize the default video device
 @Error		RTS
@@ -3616,7 +3173,7 @@ OpnVidDeflt	MOVE.L	A0,A2							; save A0
 
 ;________________________________________________________________________________________
 ;
-; Routine:	RdVidParam
+; Routine:	RdVidParam c42
 ;
 ; Inputs:	A0	-	pointer to Slot Manager parameter block
 ;			A1	-	pointer to ioParamBlock
@@ -3629,7 +3186,8 @@ OpnVidDeflt	MOVE.L	A0,A2							; save A0
 ;			then saved in low memory as needed.
 ;________________________________________________________________________________________
 
-RdVidParam	MOVEM.L	A1-A2/D3,-(SP)
+RdVidParam	LINK	A6, #-$94
+			MOVEM.L	A0-A2/D3,-(SP)
 			MOVE.B	spId(A0),D3						; save the ID
 
 			CLR.B	spExtDev(A0)					;	no external devices
@@ -3651,6 +3209,7 @@ RdVidParam	MOVEM.L	A1-A2/D3,-(SP)
 @gotBase	MOVE.L	spResult(A0),ScreenBytes		; save it
 
 			MOVE.B	D3,spId(A0)						; restore the sRsrc ID
+			MOVE	$18(A1), -(SP)
 			BSR		GetDefVidMode					; get the default video mode
 			MOVE.B	D0,spId(A0)						;  and save it
 
@@ -3686,9 +3245,9 @@ RdVidParam	MOVEM.L	A1-A2/D3,-(SP)
 			MOVEQ	#0,D0							; no errors
 
 @End		MOVE.B	D3,spId(A0)						; restore ID for caller
-			MOVEM.L	(SP)+,A1-A2/D3
-			TST.W	D0
-			RTS
+			MOVEM.L	(SP)+,A0-A2/D3
+			UNLK	A6
+			RTD		#2
 
 @Error		MOVEQ	#1,D0							; bad video card (woof)
 			BRA.S	@End
@@ -3696,7 +3255,7 @@ RdVidParam	MOVEM.L	A1-A2/D3,-(SP)
 
 ;________________________________________________________________________________________
 ;
-; Routine:	OpensDrvr
+; Routine:	OpensDrvr d0a
 ;
 ; Inputs:	A0	-	pointer to Slot Manager parameter block
 ;			A1	-	pointer to ioParamBlock
@@ -3755,31 +3314,73 @@ OpensDrvr	MOVE.L	A2,-(SP)
 ;________________________________________________________________________________________
 
 InitVidDeflt
-			MOVEM.L	D1-D2/A0-A1,-(SP)				; save all registers
-			CLR.L	-(SP)							; make room for GDevice handle
-			MOVE	ioRefNum(A1),-(SP)				; push the device's refNum
-
-			BSR.S	GetDefVidMode					; get the default video mode
-			MOVE.L	D0,-(SP)						;  and push it
-
-			_NewGDevice								; allocate a new GDevice (in the system heap)
-													;strips refNum and video mode
-			MOVE.L	(SP)+,A0						;save current device in A0
-
-;	install default video card as primary display device
-
-			MOVE.L	A0,TheGDevice					; make this the default destination
-			MOVE.L	A0,DeviceList					; make this device head of list
-			MOVE.L	A0,MainDevice					; make it the main device
-			MOVE.L	A0,SrcDevice					; make it the default source for copyBits
-			MOVE.L	A0,CrsrDevice					; make it the one owning the cursor
-			MOVE.L	(A0),A1							; point to this device
-			ORI.W	#$B800,GDFlags(A1)				; set flags: ScrnActive,MainScrn,ScreenDevice,Allinit
+			MOVEM.L	D1-D2/A0-A3,-(SP)				; save all registers
+			SubQ      #$4, A7
+			MoveA.L   A7, A2
+			Move      $18(A1), -(A7)
+			Bsr       GetDefVidMode
+			Move.L    ($1FB8), -(A7)
+			MoveA.L   ($2b6), A3
+			MoveA.L   $1E0(A3), A3
+			Move.L    $C(A3), -(A7)
+			Lea.L     InitVidDeflt_RTS, A3
+			Move.L    A3, ($1FB8)
+			Move.L    A3, (12)
+			SubQ      #$4, A7
+			MoveA.L   A7, A3
+			SubQ      #$2, A7
+			Move.L    A3, -(A7)
+			Move      $18(A1), -(A7)
+			Move.L    D0, -(A7)
+			Clr.L     -(A7)
+			Clr.L     -(A7)
+			Clr.L     -(A7)
+			Clr.L     -(A7)
+			Move      #$D23, D0
+			_DisplayDispatch
+			Move      (A7)+, D0
+			MoveA.L   (A7)+, A3
+			Tst       D0
+			BNE.B     @skip
+			SubQ      #$2, A7
+			Move.L    A3, -(A7)
+			Move.L    A2, -(A7)
+			Clr.B     -(A7)
+			Move      #$51F, D0
+			_DisplayDispatch
+			Tst       (A7)+
+			BNE.B     @skip
+			SubQ      #$2, A7
+			Move.L    A3, -(A7)
+			Clr.L     -(A7)
+			Move      #$40B, D0
+			_DisplayDispatch
+			Tst       (A7)+
+			BNE.B     @skip
+			SubQ      #$2, A7
+			Move.L    (A2), -(A7)
+			Move.L    A2, -(A7)
+			Clr.B     -(A7)
+			Move      #$520, D0
+			_DisplayDispatch
+			Tst       (A7)+
+			BNE.B     @skip
+			MoveA.L   (A2), A0
+@skip
+			MoveA.L   ($2b6), A3
+			MoveA.L   $1E0(A3), A3
+			Move.L    (A7)+, $C(A3)
+			Move.L    (A7)+, ($1FB8)
+			AddQ      #$4, A7
 
 			BSR		InitDefGamma					; initialize gamma correction for this device
 
-			MOVEM.L	(SP)+,D1-D2/A0-A1				;restore all registers
+			MOVEM.L	(SP)+,D1-D2/A0-A3				;restore all registers
 			MOVEQ	#0,D0							;no error
+			RTS
+
+
+InitVidDeflt_RTS
 			RTS
 
 
@@ -3797,14 +3398,15 @@ InitVidDeflt
 ;________________________________________________________________________________________
 
 GetDefVidMode
+			LINK	A6, #-$58
+
 			MOVE.L	spsPointer(A0),-(SP)			; save the sPointer,
 			MOVE.B	spId(A0),-(SP)					;  the id,
-			MOVE.L	A1,-(SP)						;  and registers
+			MOVEM.L	A1-A2,-(SP)						;  and registers
 
-			LEA		-SizesPRAMRec(SP),SP			; make room for parameter RAM info
-			MOVE.L	SP,A1							;  and point to it
+			LEA		-SizesPRAMRec*3(A6),A1			; make room for parameter RAM info
+			MOVE.L	A1,(A0)							;  and point to it
 
-			MOVE.L	A1,spResult(A0)					; pass the pointer to the buffer
 			_SReadPRAMRec							; get parameter RAM record
 			BNE.S	@OneBit							; -> it's invalid, so default to one bit mode
 
@@ -3819,11 +3421,11 @@ GetDefVidMode
 			MOVEQ	#0,D0
 			MOVE.B	2(A1),D0						; get the default mode
 
-@ValidMode	LEA		SizesPRAMRec(SP),SP				; clean up the stack
-			MOVE.L	(SP)+,A1						; restore registers,
+@ValidMode	MOVEM.L	(SP)+,A1-A2						; restore registers,
 			MOVE.B	(SP)+,spId(A0)					;  the id,
 			MOVE.L	(SP)+,spsPointer(A0)			;  and the sPointer
-			RTS
+			UNLK	A6
+			RTD		#2
 
 @OneBit		MOVE.B	#OneBitMode,2(A1)				; Set default to OneBitMode
 			MOVE.L	A1,spsPointer(A0)				; Pass pointer to buffer
@@ -3834,7 +3436,7 @@ GetDefVidMode
 
 ;________________________________________________________________________________________
 ;
-; Routine:	InitDefGamma
+; Routine:	InitDefGamma e64
 ;
 ; Inputs:	A0	-	handle to GDevice
 ;
@@ -3952,9 +3554,17 @@ InitDefGamma
 			BRA.S	@SetIt							; set it
 
 
+InitDummyScreenWrapper ; f52
+			MOVE.L	(DeviceList), D0
+			BEQ.B	InitDummyScreen
+			CMPI.L	#$FFFFFFFF, D0
+			BEQ.B	InitDummyScreen
+			RTS
+
+
 ;________________________________________________________________________________________
 ;
-; Routine:	InitDummyScreen
+; Routine:	InitDummyScreen f62
 ;
 ; Inputs:	none
 ; Outputs:	none
@@ -4048,7 +3658,7 @@ InitDummyScreen
 
 ;________________________________________________________________________________________
 ;
-; Routine:	AddVidDevice
+; Routine:	AddVidDevice 101c
 ;
 ; Inputs:	A0	-	pointer to Slot Manager parameter block
 ;			A1	-	pointer to ioParamBlock
@@ -4081,6 +3691,7 @@ AddVidDevice
 			MOVE	ioRefNum(A1),-(SP)				; push the device's refNum
 
 			BSR.S	GetDefVidMode					; D0 <- the default video mode
+			MOVE	$18(A1), -(SP)
 			MOVE.L	D0,-(SP)						; Push it
 
 			_NewGDevice								; allocate a new GrafDevice (in system heap)
@@ -4109,7 +3720,7 @@ AddVidDevice
 
 ;________________________________________________________________________________________
 ;
-; Routine:	InitSCC
+; Routine:	InitSCC 1066
 ;
 ; Inputs:	none
 ; Outputs:	none
@@ -4130,6 +3741,10 @@ InitSCC
 			bsr.l	SCCIOPHwInit					; initialize the IOP hardware registers
 @NoIOP												; fall thru -- IOP boots in bypass mode
 		ENDIF
+
+			btst.b	#3, ($DD3)
+			beq.b	@dontInitSCC
+
 			movea.l	SCCWr,a0						; point to SCC base write address (chan B)
 			movea.l	SCCRd,a1						; point to SCC base read address (chan B)
 			tst.b	(a1)							; synchronize SCC accesses
@@ -4141,90 +3756,7 @@ InitSCC
 
 ;________________________________________________________________________________________
 ;
-; Routine:	InitIWM
-;
-; Inputs:	none
-; Outputs:	none
-; Trashes:	D0, D2, A0
-;
-; Function:	initializes the IWM/SWIM/SWIM2 floppy disk controller
-;________________________________________________________________________________________
-
-InitIWM		TestFor	IWMExists						; see if we really have an IWM
-			beq		ExitInitIWM						; if not, nothing to init
-
-			MOVEA.L	IWM,A0							; get floppy controller base address
-
-InitSWIM2	MOVE.L	BusErrVct,-(SP)					; save the old bus error vector							<H5>
-			PEA		@Resume							;  and point it to ours									<H5>
-			MOVE.L	(SP)+,BusErrVct					;														<H5>
-			MOVE.L	SP,D2							; save the stack pointer in case we bus error			<H5>
-
-			MOVEQ	#noDriveErr,D0					; assume the chip isn't there							<H5>
-			TST.B	q6L|rPhase(A0)					; access the chip (may bus error!)						<H5>
-			MOVEQ	#noErr,D0						; if we got here, the chip may be connected				<H5>
-			
-@Resume		MOVEA.L	D2,SP							; trash the exception frame if we bus errored			<H5>
-			MOVE.L	(SP)+,BusErrVct					; restore the previous bus error vector					<H5>
-			TST.W	D0								; set the CCR											<H5>
-			BNE		ExitInitIWM						; -> IWM/SWIM/SWIM2 is not currently connected			<H5>
-
-;  If we got here, at least we didn't bus error.  That doesn't mean we really have
-;  a IWM/SWIM, though, so lets do some more checking...
-
-			MOVE.B	#$F8,wZeroes(A0)				; try to switch to the IWM register set					<H7>
-		IF nonSerializedIO THEN						;
-			nop										; allow write to complete								<SM55>
-		ENDIF
-			MOVEQ	#$F5-256,D2						;														<H7>
-			MOVE.B	D2,wPhase(A0)					; write a value to the phase register					<H7>
-		IF nonSerializedIO THEN						;
-			nop										; allow write to complete								<SM55>
-		ENDIF
-			MOVE.B	D0,rPhase(A0)					; drive the bus in case the chip's not there			<H7>
-		IF nonSerializedIO THEN						;
-			nop										; allow write to complete								<SM55>
-		ENDIF
-			CMP.B	rPhase(A0),D2					; did we get back what was originally written?			<H7>
-			BEQ.S	ExitInitIWM						; -> yes, we've got a SWIM2								<H7>
-
-;  At this point, we know we don't have a SWIM2 connected.  We either have an IWM/SWIM or no chip...
-
-@NotSWIM2	TST.B	q7L(A0)							; select "Read Handshake"								<H7>
-			TST.B	q6L(A0)							;														<H7>
-			MOVE.B	D0,q7H(A0)						;														<H7>
-			MOVEQ	#%00111111,D2					; mask to just the low 6 bits							<H7>
-			AND.B	q6L(A0),D2						;  and read the register								<H7>
-			TST.B	q7L(A0)							; back into a read mode									<H7>
-			CMPI.B	#%00111111,D2					; did we get what we expected?							<H7>
-			BNE.S	ExitInitIWM						; -> no, it's isn't IWM or SWIM							<H7>
-
-			MOVEQ	#IWMInitMode,D0 				; initial mode setting
-@1			MOVE.B	#$BE,wZeroes(A0)				; disable enabled if in ISM mode
-			MOVE.B	#$F8,wZeroes(A0)				; switch SWIM to the IWM register set
-			TST.B	Q7L(A0)							; and get out of write mode
-			TST.B	MtrOff(A0)						; change the IWM mode now
-			TST.B	Q6H(A0) 						; set IWM to sense state
-			MOVE.B	Q7L(A0),D2						; sense the mode register
-			BTST	#5,D2							; no disks should be enabled
-			BNE.S	@1								; keep waiting
-
-			AND.B	D0,D2							; see if low bits match mode we want
-			CMP.B	D0,D2
-			BEQ.S	@2								; if so, we are done
-
-			MOVE.B	D0,Q7H(A0)						; set to twiggy mode
-			TST.B	Q7L(A0) 						; set IWM back to sense state
-			BRA.S	@1								; loop back just to check
-
-@2			TST.B	Q6L(A0) 						; and back to read mode
-
-ExitInitIWM	RTS
-
-
-;________________________________________________________________________________________
-;
-; Routine:	InstallDriver
+; Routine:	InstallDriver 1082
 ;
 ; Inputs:	A1	-	pointer to driver name string (pascal)
 ;			D2	-	driver's resource ID
@@ -4250,7 +3782,7 @@ InstallDriver
 			move.l	UTableBase,a0					; point to utable array
 			move.l	(a0,d1),a0						; get handle to dce in a3
 			move.l	(a0),a0							; get pointer to dce
-			move.l	a1,dCtlDriver(a0)				; load driver
+			move.l	(a1),dCtlDriver(a0)				; load driver
 
 			move.l	(a1),a1							; get pointer to driver
 			move.w	drvrFlags(a1),dCtlFlags(a0)		; copy data to dce
@@ -4258,7 +3790,9 @@ InstallDriver
 			move.w	drvrEMask(a1),dCtlEMask(a0)
 			move.w	drvrMenu(a1),dCtlMenu(a0)
 
-			bset.b	#dNeedLock,dCtlFlags+1(a0)		; set the handle bit
+			bclr.b	#dNeedLock,dCtlFlags+1(a0)		; set the handle bit
+			cmpi.l	#'only', $4(sp)
+			beq.b	@exit
 
 @openDrvr	move.l	a2,a1							; load pointer to driver name
 			bra.s	OpenDRVR						; open the driver (a1/)
@@ -4271,7 +3805,7 @@ InstallDriver
 
 ;________________________________________________________________________________________
 ;
-; Routine:	GetDetachDrvr, GetDetachRes
+; Routine:	GetDetachDrvr 10ce, GetDetachRes 10d4
 ;
 ; Inputs:	D1	-	resource type (GetDetachRes)
 ;			D2	-	driver's resource ID
@@ -4305,7 +3839,7 @@ GetDetachRes
 
 ;________________________________________________________________________________________
 ;
-; Routine:	FirstEntryFree
+; Routine:	FirstEntryFree 10f2
 ;
 ; Inputs:	none
 ;
@@ -4339,7 +3873,7 @@ FirstEntryFree
 
 ;________________________________________________________________________________________
 ;
-; Routine:	OpenDRVR
+; Routine:	OpenDRVR 1112
 ;
 ; Inputs:	A1	-	pointer to driver name string (pascal)
 ;
@@ -4367,7 +3901,7 @@ OpenDRVR	LEA		-ioQElSize(SP),SP				; Allocate IO stack frame
 		IF hasEgret THEN
 ;________________________________________________________________________________________
 ;
-; Routine:	CheckForEgretOrCuda
+; Routine:	CheckForEgretOrCuda 1132
 ;
 ; Inputs:	none
 ;
@@ -4391,126 +3925,66 @@ CheckForEgretOrCuda									;														<T2>
 		ENDIF
 
 
-;___________________________________________________________________________								<SM63>		
-; CheckForTV: Checks for the Cmd-Option-T-V keys down, and if so, set 
-; the PRAM bit that specifies we do that and Re-Boot
-;
-; Destroys	A0-A1/D0/D1.
-;___________________________________________________________________________
-		WITH 		spBlock,SP_Params
-CheckForTV
-			lea		@TVKeys,a1						; keys to check for								
-			lea		KeyMap,a0						; compare to the Key Down Map					
-			moveq.l	#4-1,d0							; compare loop count
-@loop		cmpm.l	(a0)+,(a1)+						; check for exactly this combo
-			dbne	d0,@loop						; examine the entire key map
-			beq.s	@tvmatch						; if equal, reset PRAM
-			rts										; otherwise, just return
-			
-@tvmatch	SUBA		#spBlockSize,SP				; make an slot parameter block on stack
-			MOVE.L		SP,A0						; get pointer to parm block now
-			MOVE.B		#0,spSlot(A0)				; put slot in pBlock
-			CLR.B		spExtDev(A0)				; external device = 0
-
-; Read the slot pRAM to determine what the currently saved mode is.  
-; The flag are in SP_FLAGS, which are in VendorUse5 byte.
-			
-			SUBA		#SizesPRAMRec,SP			; allocate block for pRAM record
-			MOVE.L		SP,spResult(A0)				; point to it
-			_sReadPRAMRec							; read it
-			Bne			@ErrorReturn				; should not fail, but if so...
-			Move.b		SP_Flags(SP),D0				; Get the current flags
-			Bset		#spCompOut,D0				; Set it, which means to enable
-			Move.b		D0,SP_Flags(SP)				; write out the sp_flags byte
-			MOVE.L		SP,spsPointer(A0)			; set up parameter block
-			_sPutPRAMRec							; write the new record out
-			Bne			@ErrorReturn				; any errors?
-			Adda		#SizesPRAMRec+spBlockSize,SP; Deallocate buffer and
-			jmp			Start														
-@ErrorReturn			
-			Adda		#SizesPRAMRec+spBlockSize,SP; Deallocate buffer and
-			rts
-			
-@TVKeys		dc.l	$00020200						; V, T
-			dc.l	$00008004						; Cmd, Opt
-			dc.l	$00000000
-			dc.l	$00000000
-		ENDWITH	
-
-;________________________________________________________________________________________	<SM121>
-;
-; Routine:	DynamicBoxFlag
-;
-; Inputs:	D7.w	BoxFlag from the Universal tabke
-;
-; Outputs:	D7.w	Adjusted BoxFlag for this machine
-;
-; Trashes:	D0-D1, A0-A1
-;
-; Function:	Calculates the boxflag based on box type and CPU clock rates.
-;			Look Ma! We have only one Universal table entry per family!
-;
-;________________________________________________________________________________________
-
-DynamicBoxFlag
-			TestFor	HMCDecoder						; do we have an HMC decoder?
-			beq.s	@rts							; -> Nope, just use the boxflag from the uTables.
-			
-			MOVEM.L	D0-D6/A0-A4/A6,-(SP)			; save Universal info
-;			CMPI.B	#boxPDMEvt1,D7					; Is this an Evt1?						; removing evt1 suprt
-;			BEQ.S	@Done							; -> Yes, never muck with the boxflag	; <mc2>
-	
-			BigBSR6	GetCPUIDReg						; Get the CPU id
-			BNE.S	@Done							; -> Failed (can't happen)
-
-			AND.W	#%00000011,D0					; Just look at bits 0 & 1
-
-			MOVE.L	([ProcessorInfoPtr],\
-					  ProcessorInfo.CPUClockRateHz),D1 ; Get the CPU clock rate
-						
-			MOVEQ	#-1,D2							; Clear the  counter
-			LEA		@SpeedTable,A0					; Point to the list of clock rates
-@Lupe		CMP.L	(A0)+,D1						; Is the bus clock rate less than the entry?
-			BLS.S	@GotIt							; -> Yes, go with the current delay factor
-			ADDQ	#1,D2
-			BRA.S	@Lupe
-			
-@GotIt		LSL.W	#2,D0							; Mult the box bit by the size of the table
-			LEA		(@BoxTable,D0),A0
-			MOVE.B	(A0,D2),D7						; Get the boxflag
-
-@Done		MOVEM.L	(SP)+,D0-D6/A0-A4/A6			; save Universal info
-@rts		RTS										; Return
-
-@SpeedTable											; PDM CPU clock rate mapping table
-			DC.L	10000000						; 50.001 MHz
-			DC.L	60000000						; 66.001 MHz
-			DC.L	73000000						; 80.001 MHz
-			DC.L	100000000						; 100.001 MHz
-			DC.L	-1								; end of table
-
-@BoxTable	EQU		*
-@WLCDboxes	DC.B	boxPDM50WLCD					; QFC
-			DC.B	boxPDM66WLCD
-			DC.B	boxPDM80WLCD
-			DC.B	boxPDM
-
-@notboxes	DC.B	boxPDM50WLCD					; QFC (wlcd post evt1)
-			DC.B	boxPDM66WLCD
-			DC.B	boxPDM80WLCD
-			DC.B	boxPDM
-
-@shitboxes	DC.B	boxPDM50L						; Lego
-			DC.B	boxPDM66L
-			DC.B	boxPDM80L
-			DC.B	boxPDM
-			
-@FridgBoxes	DC.B	boxPDM							; Fridge
-			DC.B	boxPDM66F
-			DC.B	boxPDM80F
-			DC.B	boxPDM100F
-
-			ENDPROC									; {MyROM}
 
 
-		END
+NewStartInitFunc
+; 1148
+			SubQ.L    #$2, A7
+			MoveA.L   A7, A0
+			Move.L    #$20002, D0
+			_ReadXPRam
+			Move      (A7), D0
+			AndI      #$808, D0
+			CmpI      #$808, D0
+			BEQ.B     @skipwrite
+			Move      #$4F48, (A7)
+			MoveA.L   A7, A0
+			Move.L    #$20002, D0
+			_WriteXPRam
+@skipwrite
+			Move      (A7)+, D0
+			LsR       #$8, D0
+			AndI      #$7, D0
+			MoveQ.L   #$1, D1
+			LsL.B     D0, D1
+			Move.B    D1, (SCSIDrvrs)
+			Rts
+
+
+
+
+FiddleWithEmulator
+; 1180
+			Move.L    #'ppcf', D0
+			_Gestalt
+			BNE.B     @done
+			Move.L    A0, D0
+			AndI.L    #$10, D0
+			BEQ.B     @done
+			Move.L    #$2000, D0
+			_NewPtrSysClear
+			BNE.B     @done
+			Lea.L     ($68FFF000).L, A2
+			Move.L    A0, D0
+			AddI.L    #$FFF, D0
+			AndI.L    #$FFFFF000, D0
+			Move.L    D0, $E0(A2)
+			Move.L    #$FE000000, $E8(A2)
+			Clr.L     $EC(A2)
+
+			MoveA.L   D0, A0
+			MoveA     #$1000, A1
+			MoveQ.L   #$2, D0
+			_MemoryDispatch
+
+			import	GETREALPROC
+			bsr.l	GETREALPROC
+			BMI.B     @done
+			Move.L    A0, $E4(A2)
+@done
+			Rts
+
+
+
+			align 16
+			end

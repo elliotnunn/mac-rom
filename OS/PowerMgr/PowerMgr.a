@@ -615,7 +615,7 @@ PowerMngr	PROC		EXPORT
 				
 ;________________________________________________________________________________________
 ;
-; Routine:	InitPMgrVars
+; Routine:	InitPMgrVars c3c0
 ;
 ; Inputs:	none
 ;
@@ -982,7 +982,7 @@ InitPmgrGlobals
 
 ;________________________________________________________________________________________
 ;
-; Routine:	InitPMgrOp
+; Routine:	InitPMgrOp c446
 ;
 ; Inputs:	A3 -- pointer to Power Manager's variables
 ;
@@ -1004,7 +1004,7 @@ InitPMgrOp	LEA		cmdCounts,A0			; save pointers to the PMgrOp send/receive count 
 
 ;________________________________________________________________________________________
 ;
-; Routine:	SetupPMgrOpInterface
+; Routine:	SetupPMgrOpInterface c45e
 ;
 ; Inputs:	none
 ;
@@ -1046,7 +1046,7 @@ SetupPMgrOpInterface
 
 ;________________________________________________________________________________________
 ;
-; Routine:	DoPmgrCommands
+; Routine:	DoPmgrCommands c49c
 ;
 ; Inputs:	A3 -- Pointer to PmgrVars
 ;
@@ -1109,7 +1109,7 @@ DoPmgrCommands
 
 ;________________________________________________________________________________________
 ;
-; Routine:	DoDynamicSpeedChange
+; Routine:	DoDynamicSpeedChange c540
 ;
 ; Inputs:	A3 -- Pointer to PmgrVars
 ;
@@ -1233,7 +1233,7 @@ GetPmgrPRAM
 
 ;________________________________________________________________________________________
 
-; Routine:	InstallVBLs
+; Routine:	InstallVBLs c6de
 ;
 ; Inputs:	A3 -- Pointer to PmgrVars
 ;
@@ -1401,7 +1401,7 @@ BatWatch
 
 ;________________________________________________________________________________________
 ;
-; Routine:	RemoveMsg
+; Routine:	RemoveMsg c780
 ;
 ; Inputs:	A2	-	pointer to Power Manager's variables
 ;
@@ -1464,7 +1464,7 @@ InstallMsg
 
 ;________________________________________________________________________________________
 ;
-; Routine:	PMGRInt
+; Routine:	PMGRInt c79e
 ;
 ; Inputs:	A1	-	pointer to VIA1 base
 ;
@@ -2249,7 +2249,7 @@ SetHDState
 
 ;________________________________________________________________________________________ <K16>
 ;																							|
-; Routine:	PmgrOp																			v
+; Routine:	PmgrOp ceb2																		v
 ;
 ; Inputs:	D1	-	trap word
 ;
@@ -2291,7 +2291,7 @@ PmgrOp
 
 ;________________________________________________________________________________________
 ;
-; Routine:	PmgrTrap
+; Routine:	PmgrTrap cef6
 ;
 ; Inputs:	A0 -- pointer to Power Manager parameter block
 ;					[word] command/reply
@@ -2569,7 +2569,7 @@ pmgrPollRegs REG	D3/D4/D5/D6/A0/A1/A2/A4
 ;________________________________________________________________________________________
 
 ;
-; Routine:	Wait4AckLo
+; Routine:	Wait4AckLo d09e
 ;
 ; Inputs:	D2 -- timeout count
 ;			A1 -- pointer to VIA1 base
@@ -2599,7 +2599,7 @@ Wait4AckLo	MOVEA.L	(SP)+,A4				; save the return address
 ;________________________________________________________________________________________
 
 ;
-; Routine:	Wait4AckHi
+; Routine:	Wait4AckHi d0b8
 ;
 ; Inputs:	D2 -- timeout count
 ;			A1 -- pointer to VIA1 base
@@ -2629,7 +2629,7 @@ Wait4AckHi	MOVEA.L	(SP)+,A4				; save the return address
 ;________________________________________________________________________________________
 
 ;
-; Routine:	ReceiveByte
+; Routine:	ReceiveByte d0d2
 ;
 ; Inputs:	D6 -- interface type
 ;					0=parallel
@@ -2704,7 +2704,7 @@ SendRcvDone	BSET	#PMreq,(A2)				; be sure /req is not asserted
 			
 ;________________________________________________________________________________________
 ;
-; Routine:	SendByte
+; Routine:	SendByte d136
 ;
 ; Inputs:	D1 -- byte to send
 ;			D2 -- timeout count
@@ -2769,7 +2769,7 @@ DisableBuf	BRA.S	@Buf2Input				; [0] parallel interface
 ;________________________________________________________________________________________
 
 ;
-; Routine:	UnloadPollstack
+; Routine:	UnloadPollstack d180
 ;
 ; Inputs:	D7 -- pointer to top of poll stack
 ;			A1 -- pointer to VIA1 base
@@ -3378,7 +3378,7 @@ replyCounts	DC.B	 0						; [$00] -
 
 ;________________________________________________________________________________________	<K11>
 ;
-;	_CommsPower			 - Communications' port power control
+;	_CommsPower			 - Communications' port power control d3a8
 ;	_SerialPower ($A685) - Serial port power control
 ;
 ;	Enter with:	D0 = bit pattern
@@ -3493,7 +3493,7 @@ SerialPower
 
 
 ;ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ			<t28> djw
-;	Modem Sound Interrupt Handlers
+;	Modem Sound Interrupt Handlers d3f4
 ;
 ;	Modem sound on Tim is implemented through DFAC's aux channel.  The modem demands
 ;	and releases the sound path through the MODEM_SND_ENABLE signal (on VIA1 CB2).  The
@@ -3524,7 +3524,7 @@ ModemSndOnInt
 			rts
 
 ;ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ			<H59>
-;	Modem Sound Interrupt Handlers																	  |
+;	Modem Sound Interrupt Handlers d464																  |
 ;																									  V
 ;	Modem sound on Tim is implemented through DFAC's aux channel.  The modem demands
 ;	and releases the sound path through the MODEM_SND_ENABLE signal (on VIA1 CB2).  The
@@ -3555,7 +3555,7 @@ ModemSndOffInt
 
 ;________________________________________________________________________________________
 ;
-;	IdleState ($A485) - Increments/decrements the idle enable flag count and returns
+;	IdleState d4d2 ($A485) - Increments/decrements the idle enable flag count and returns
 ;	the current speed.
 ;
 ;	Enter with: D0 < 0, read speed
@@ -4350,7 +4350,7 @@ SlpQRemove	CMP.W	#slpQType,SleepqType(A0)
 
 ;________________________________________________________________________________________
 ;
-; Routine:	ResetPMGRInts
+; Routine:	ResetPMGRInts c752
 ;
 ; Inputs:	A1	-	VIA1 base address
 ;
@@ -4456,7 +4456,7 @@ SetSupervisorMode
 			JMP		(A1)					; Get out of here
 
 ;ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
-; Routine:	PMGRsend/recv
+; Routine:	PMGRsend/recv d504/d506
 ;
 ; Inputs:	A0 - data buffer
 ;			D0 - command

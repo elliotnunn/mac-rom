@@ -59,7 +59,7 @@ DTCORE	 	PROC	EXPORT
 
 ;_______________________________________________________________________
 ;
-; Routine:		InitDTQueue
+; Routine:		InitDTQueue 98c0
 ;
 ; Arguments:	none
 ;
@@ -78,7 +78,7 @@ InitDTQueue	LEA		DTQueue,A1						; init deferred task queue
 
 ;_______________________________________________________________________
 ;
-; Routine:		DTINSTALL
+; Routine:		DTINSTALL 98d4
 ;
 ; Arguments:	A0 (input) :	address of deferred task queue element
 ;				D0 (output):	error code -	0  no error
@@ -135,9 +135,11 @@ TypeErr			MOVEQ.L	#VTypErr,D0 			; else flag the error
 ;
 ;______________________________________________________________________
 
+; 9906
 DisptchTsk		MOVE.L	jDisptch,-(SP)			; get jump vector
 				RTS								; and use it
 				
+; 990c
 vDisptch		BTST.B	#INVBL,QFLAGS+VBLQUEUE 	; doing VBL tasks?
 				BNE.S	@Exit					; if so, keep deferring
 				BSET.B	#InDTQ,DTQFlags			; already in dispatcher?
@@ -151,13 +153,21 @@ vDisptch		BTST.B	#INVBL,QFLAGS+VBLQUEUE 	; doing VBL tasks?
 				MOVEA.L	DTParm(A0),A1			; get optional parameter
 				ANDI.W	#$F8FF,SR				; enable all ints
 				JSR		(A2)					; and go do task
+
+				MOVEA.L	ExpandMem,A1
+				MOVEA.L	$26a(A1),A2
+				TST.L	(A2)
+				BNE.S	@otherThing
+
 @DspStart		ORI.W	#HiIntMask,SR			; disable all ints
 				MOVE.L	DTskQHdr,D0				; get queue head
 				BNE.S	@DspLoop				; loop if tasks	exist
 				
-				BCLR.B	#InDTQ,DTQFlags			; clear indicator
+@backwards		BCLR.B	#InDTQ,DTQFlags			; clear indicator
 				RTS								; and exit
 
+@otherThing		ORI		#$0700,SR
+				BRA.S	@backwards
 
 				END 
 

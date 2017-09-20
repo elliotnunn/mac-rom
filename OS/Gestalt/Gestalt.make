@@ -18,8 +18,8 @@ GestaltObjs		=					"{ObjDir}GestaltFunction.a.o"					¶
 									"{ObjDir}GestaltLookup.c.o"						¶
 									"{ObjDir}GestaltExtensions.a.o"
 									
-"{LibDir}Gestalt.lib"			Ä	{GestaltObjs}
-	Lib {StdLibOpts} -o "{Targ}" {GestaltObjs}
+# "{LibDir}Gestalt.lib"			Ä	{GestaltObjs}
+# 	Lib {StdLibOpts} -o "{Targ}" {GestaltObjs}
 
 
 "{ObjDir}GestaltFunction.a.o"	Ä 	"{ObjDir}StandardEqu.d"		 					¶

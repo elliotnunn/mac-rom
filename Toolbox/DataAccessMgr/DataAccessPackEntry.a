@@ -47,7 +47,8 @@ Pack13Globals	EQU			ExpandMemRec.emPack13Globals
 @globalsOK		MOVE.L		Pack13Handle,A0					; A0 = handle to PACK
 				MOVE.L		ExpandMem, A1					; A1 = expanded memory area
 				ADD.W		#Pack13Globals,A1				; A1 = pointer to PACK use count
-				_ProcHelper									; let ProcHelper take over
+				MOVE.L		$668, -(SP)
+				RTS
 
 ;
 ;				Attempt to call Database Access Manager before InitDBPack

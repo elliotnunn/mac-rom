@@ -24,8 +24,8 @@ ExpansionBusObjs = 	"{ObjDir}ExpansionBusMgr.a.o" ¶
 ExpansionBusMgrCOpts =	-b2 {StdCOpts} -i {ExpansionBusMgrDir}
 ExpansionBusMgrAOpts =	{StdAOpts}
 
-"{ExpansionBusMgrLibDir}ExpansionBusMgr.lib" 	Ä	{ExpansionBusObjs}
-	Lib {LibWarnings} -o {Targ} {ExpansionBusObjs}
+# "{ExpansionBusMgrLibDir}ExpansionBusMgr.lib" 	Ä	{ExpansionBusObjs}
+# 	Lib {LibWarnings} -o {Targ} {ExpansionBusObjs}
 
 "{ObjDir}ExpansionBusMgr.a.o" Ä		"{ObjDir}StandardEqu.d"					¶
 									"{ExpansionBusMgrDir}ExpansionBusMgr.a"

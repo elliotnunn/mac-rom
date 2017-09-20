@@ -90,6 +90,8 @@ denom				ds.w	1					; Private: fraction of the errors to use next time
 spread				ds.w	1					; Private: Number of samples to spread errors over
 newData				ds.b	1					; Private: set when deltas are new
 					ds.b	1					;  align
+					
+					ds.b	4					; new
 
 CrsrDevSize			EQU		*
 					ENDR

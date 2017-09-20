@@ -17,21 +17,20 @@
 
 FigmentDir = {MemoryMgrDir}FigmentSources:
 
-#include {FigmentDir}Figment.Make
-
-
 MemoryMgrObjs 					=	"{ObjDir}MemoryMgr.a.o"							¶
 									"{ObjDir}MemoryMgrExtensions.a.o"				¶
 									"{ObjDir}MemoryMgrInternal.a.o"					¶
 									"{ObjDir}BlockMove.a.o"
 
 
-"{LibDir}MemoryMgr.lib"			Ä	"{LibDir}Figment.lib" {MemoryMgrObjs}
-	If "{FeatureSet}" =~ /Å'hasNewHeapMgr=True'Å/
-	 	Lib {StdLibOpts} -o "{Targ}" "{LibDir}Figment.lib" {MemoryMgrObjs}
-	Else
-	 	Lib {StdLibOpts} -o "{Targ}" {MemoryMgrObjs}
-	End
+#include {FigmentDir}Figment.Make
+
+# "{LibDir}MemoryMgr.lib"			Ä	"{LibDir}Figment.lib" {MemoryMgrObjs}
+# 	If "{FeatureSet}" =~ /Å'hasNewHeapMgr=True'Å/
+# 	 	Lib {StdLibOpts} -o "{Targ}" "{LibDir}Figment.lib" {MemoryMgrObjs}
+# 	Else
+# 	 	Lib {StdLibOpts} -o "{Targ}" {MemoryMgrObjs}
+# 	End
 
 
 "{ObjDir}BlockMove.a.o"			Ä	"{ObjDir}StandardEqu.d"							¶

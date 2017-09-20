@@ -231,7 +231,7 @@ ErrEgretInit	equ		$0030			; TEMPORARY definition of error equate defined in STEQ
 
 			WITH 	EgretGlobals,EgretPB,RespHeader			; <60> rb
 ;===============================================================================================
-;	Routine:	InitEgret
+;	Routine:	InitEgret 9bb0
 ;
 ;	Function:	Allocates globals, sets vACR to shift in mode, sets up globals for an auto-response
 ;				packet (ADB/Ticks).
@@ -243,7 +243,7 @@ ErrEgretInit	equ		$0030			; TEMPORARY definition of error equate defined in STEQ
 ;	Destroys:	a0-a2, d0-d2
 ;________________________________________________________________________________________________
 InitEgretOrCuda
-			moveq.l #EgretGlobSize,D0			; get size of globals
+			move.l	#EgretGlobSize,D0			; get size of globals
 			_NewPtr ,SYS,CLEAR					; allocate space on heap and clear
 
 			move.l	a0,EgretBase				; save ptr to it
@@ -264,16 +264,19 @@ InitEgretOrCuda
 			movea.l	VIA,a1						; point to the VIA
 		eieioSTP
 			bclr.b	#SRdir,vACR(a1)				; shift reg direction = input
+			nop
 		eieioSTP
 			move.b	#(1<<ifIRQ)|\
 						(1<<ifSR),vIER(a1)		; enable shift register interrupts
+			nop
 		eieioSTP
 			move.w	(sp)+,sr					; restore interrupts
+			bsr		NewEgretFunc
 			rts
 
 
 ;________________________________________________________________________________________________
-;	Routine:	EgretDispatch
+;	Routine:	EgretDispatch 9bfa
 ;
 ;	Function:	This is the Egret manager trap routine.  It waits for Egret to be idle, sends
 ;				the first byte of the command packet.  If Egret didn't abort, then it sets up
@@ -336,12 +339,16 @@ EgretDispatch
 @sendPackType									; interrupts masked here
 		eieioSTP
 			bset.b	#sysSes,vBufB(a1)			; assert System Session (we're starting command packet)
+			nop
 		eieioSTP
 			bset.b	#SRdir,vACR(a1)				; switch to output
+			nop
 		eieioSTP
 			move.b	pbCmdType(a0),vSR(a1)		; send command packet to shift reg
+			nop
 		eieioSTP
 			bset.b	#viaFull,vBufB(a1)			; tell Egret we sent it
+			nop
 		eieioSTP
 
 ;<SM4><SES> Rolled in from PatchIIciROM.a
@@ -356,7 +363,7 @@ EgretDispatch
 ;		When the shift register irq comes in call the PollProc
 ;		then process the shift register irq data
 ;
-			movem.l	d0/d1/a0-a4/a6,-(sp)		; save some registers
+			movem.l	d0-d3/a0-a4/a6,-(sp)		; save some registers
 
 			move.l	sp,PollStack				; Pointer to buffer for polled bytes
 
@@ -403,7 +410,7 @@ EgretDispatch
 
 			beq.s	@NoPollWait
 
-@NoSCCData	movem.l	(sp)+,d0/d1/a0-a4/a6		; restore work registers
+@NoSCCData	movem.l	(sp)+,d0-d3/a0-a4/a6		; restore work registers
 
 @VsrIrq
 		eieioSTP
@@ -411,8 +418,10 @@ EgretDispatch
 		eieioSTP
 			bne.s	@accepted					; no, then it will accept our packet
 			bclr.b	#SRdir,vACR(a1)				; yes, switch back to input
+			nop
 		eieioSTP
 			bclr.b	#sysSes,vBufB(a1)			; ack the abort
+			nop
 		eieioSTP
 			bsr		CallShiftRegIRQ				; handle it
 		eieioSTP
@@ -460,6 +469,7 @@ EgretDispatch
 _________________________________________________________________________________________________
 
 CheckPacket
+; 9ce2
 			cmp.b	#SpecialPkt,pbCmdType(a0)	; could be an ADB initialization packet
 			beq.s	@OkExit
 			
@@ -503,7 +513,7 @@ CheckPacket
 ;	Destroys:	d0,d1
 ;________________________________________________________________________________________________
 PollByte
-
+; 9d26
 			move.w	sr,d0						; get 68xxx interrupt mask
 			andi.w	#hiIntMask,d0				; are we at interrupt level?
 			beq.s	@exit						; no, just exit
@@ -529,19 +539,24 @@ PollByte
 ;	Destroys:	d1
 ;________________________________________________________________________________________________
 SendByte
+; 9d3a
 		eieioSTP
 			bclr.b	#viaFull,vBufB(a1)			; negate via full
+			nop
 		eieioSTP
 			bsr.s	Delay100					; give Egret time to see it
 		eieioSTP
 			move.b	d0,vSR(a1)					; send the byte to the shift reg
+			nop
 		eieioSTP
 			bset.b	#viaFull,vBufB(a1)			; let Egret know it's there
+			nop
 		eieioSTP
 			rts
 
 ;________________________________________________________________________________________________
 CallShiftRegIRQ
+; 9d50
 			movem.l	a0-a3/d0-d3,-(sp)			; save regs like interrupt handler does
 			movea.l  Lvl1DT+8,a0	        	; get the shift reg IRQ handler
 			jsr		(a0)						; call it
@@ -550,15 +565,43 @@ CallShiftRegIRQ
 
 ;________________________________________________________________________________________________
 viaFullAck
+; 9d60
 		eieioSTP
 			bset.b	#viaFull,vBufB(a1)			; acknowlege the byte
+			nop
 		eieioSTP
 			bsr.s	Delay100					; give Egret time to see it
 		eieioSTP
 			rts									; gets cleared on exit from IRQ handler
 
 ;________________________________________________________________________________________________
+NewDelay100
+; 9d6a
+			tst.l	$13e
+			beq.s	Delay100
+
+			btst.b	#0, $bfe
+			beq.s	Delay100
+
+			MoveM.L   D0-D3/A0-A4/A6, -(SP)
+			Move.L    SP, (PollStack)
+			MoveA.L   (SCCRd), A3
+			Move      (TimeSCCDB), D1
+			LsR       #$3, D1
+			BTst.B    #$0, $2(A3)
+			BEQ.B     (* + $6)
+			Move.B    $6(A3), -(SP)
+			DBF       D1, (* + -$C)
+			Nop
+			CmpA.L    (PollStack), SP
+			BEQ.B     (* + $C)
+			Lea.L     $6(A3), A6
+			Jsr       ([$13E])
+			MoveM.L   (SP)+, D0-D3/A0-A4/A6
+			Rts
+
 Delay100
+; 9db2
 			move.l	d1,-(sp)					; save d1
 			move.w	timeViaDB,d1				; 1 ms loop count
 			lsr.w	#3,d1						; / 8 = 125 us
@@ -575,7 +618,7 @@ Delay100
 			rts
 
 ;________________________________________________________________________________________________
-;	Routine:	ShiftRegIRQ
+;	Routine:	ShiftRegIRQ 9dc8
 ;
 ;	Function:	This routine is called in response to a VIA shift reg interrupt.  It will transfer
 ;				the next byte in the current packet.  When the packet is complete, the globals are
@@ -598,10 +641,12 @@ ShiftRegIRQ
 		eieioSTP
 
 			btst.b	#SRdir,vACR(a1)				; see if VIA direction is output
+			nop
 		eieioSTP
 			beq.s	@input						; no, then we're receiving..
 
 			tst.b	vSR(a1)						; clear the shift reg interrupt
+			nop
 		eieioSTP
 			tst.w	sendHdrCnt(a2)				; any bytes left in header?
 			ble.s	@ckSendData					; no, see if any send bytes left...
@@ -627,10 +672,12 @@ ShiftRegIRQ
 		eieioSTP
 
 			bclr.b	#SRdir,vACR(a1)				; now switch to input
+			nop
 @sendCmd
 		eieioSTP
 			andi.b	#~((1<<viaFull) | \			; negate VIA full bit
 					   (1<<sysSes)),vBufB(a1)	; negate System Session
+			nop
 		eieioSTP
 			bsr.s	Delay100					; give Egret time to see System Session
 			move.w	d3,sr						; restore interrupts							<SM5><SES>
@@ -639,6 +686,7 @@ ShiftRegIRQ
 @input		;-----------------------------------------------------------------------------
 		eieioSTP
 			move.b	vSR(a1),d0					; read the byte from shift reg into D0
+			nop
 		eieioSTP
 			tst.w	rcvHdrCnt(a2)				; any bytes left in response packet header?
 			ble.s	@ckRcvData					; if not then must be data byte
@@ -663,6 +711,7 @@ ShiftRegIRQ
 		eieioSTP
 			bne.s	@done						; yes, we're through...
 			bset.b	#sysSes,vBufB(a1)			; make sure System Session is asserted			<5>
+			nop
 		eieioSTP
 			bra		@exitRd						; not done with header yet... exit
 
@@ -679,6 +728,7 @@ ShiftRegIRQ
 			bsr.s	viaFullAck					; acknowlege the byte using via full <8>
 		eieioSTP
 			bclr.b	#sysSes,vBufB(a1)			; yes, let Egret know we don't want more <8>
+			nop
 @wait
 		eieioSTP
 			btst.b	#xcvrSes,vBufB(a1)			; wait for egret to acknowledge termination <8>
@@ -717,10 +767,12 @@ ShiftRegIRQ
 @done	
 		eieioSTP
 			bclr.b	#viaFull,vBufB(a1)			; make sure via full is low
+			nop
 		eieioSTP
 			bclr.b	#sysSes,vBufB(a1)			; let Egret know we're done
+			nop
 		eieioSTP
-			bsr		delay100					; Give Egret time to see transitions & Poll SCC <13>
+			bsr		newdelay100					; Give Egret time to see transitions & Poll SCC <13>
 
 			movea.l	curPb(a2),a0				; a0 points to current param block
 			lea		rcvHeader(a2),a1			; a1 points to header buffer <11>
@@ -864,6 +916,7 @@ ShiftRegIRQ
 @exitRd	
 		eieioSTP
 			bclr.b	#viaFull,vBufB(a1)			; make sure via full is low
+			nop
 		eieioSTP
 			move.w	d3,sr						; restore interrupts							<SM5><SES>
 @exit		rts
@@ -872,7 +925,7 @@ ShiftRegIRQ
 
 
 ;________________________________________________________________________________________________
-;	Routine:	SetTransferParams
+;	Routine:	SetTransferParams 9fee
 ;
 ;	Function:	This routine sets up transmit/receive ptrs (globals) for the packet pointed to by A0,
 ;				for use by the Shift Reg interrupt handler.
@@ -984,7 +1037,7 @@ SetTransferParams
 			rts
 
 ;________________________________________________________________________________________________
-;	Routine:	SetResponseParams
+;	Routine:	SetResponseParams a0ac
 ;
 ;	Function:	This routine sets up transmit/receive ptrs (globals) for an auto response packet
 ;				(e.g. ticks, ADB autopoll data), for use by the Shift Reg interrupt handler.
@@ -1015,7 +1068,7 @@ SetResponseParams
 
 ; <SM4><SES> put back function banner
 ;________________________________________________________________________________________________
-;	Routine:	tickHandler
+;	Routine:	tickHandler a0da
 ;
 ;	Function:	This is the completion routine for tick response packets.
 ;
@@ -1093,6 +1146,7 @@ TickHandler
 ;________________________________________________________________________________________________
 
 PseudoCntTable
+; a0f8
 			dc.b	$00,	$00			; 00 NoOperation		send 0 bytes, 	receive 0 data bytes
 			dc.b	$01,	$00			; 01 StartStopAutopoll	send 1 byte, 	receive 0 data bytes
 			dc.b	$02,	$FF			; 02 Read6805			send 2 bytes, 	receive n data bytes
@@ -1132,9 +1186,12 @@ PseudoCntTable
 			dc.b	$00,	$00			; 22 RdWrIIC			send n bytes, 	receive n data bytes	<S2> [rbm]
 			dc.b	$01,	$00			; 23 Set WakeUpMode		send 1 bytes, 	receive 0 data bytes	<T2><SM7> rb
 			dc.b	$01,	$00			; 24 Tickle PDM Timer	send 1 bytes, 	receive 0 data bytes	<T2><SM7> rb
+			dc.b	$00,	$00
+			dc.b	$01,	$00
 
 
 ADBCntTable
+; a142
 			dc.b	$00,	$00			; 0000	SendReset	send 0 bytes, 	receive 0 data bytes
 			dc.b	$00,	$00			; 0001	Flush		send 0 bytes, 	receive 0 data bytes
 			dc.b	$00,	$00			; 0010				send 0 bytes, 	receive 0 data bytes
@@ -1158,669 +1215,8 @@ ADBCntTable
 
 
 			Eject
-;=========================================================================
-; Routines: 	EgretInit
-;
-; This routine sends a NOP/WarmStart command to Egret.  This routine is
-; called early during rom Startup to stop autopoll and 1 sec irq.  Also,
-; the routine will issue a Send DFAC command to Egret to initialize the
-; the DFAC hardware to a known state.  The routine does not use ANY
-; memory it is register driven only.
-;
-; NOTE:	This routine actually sends a STOP AUTO POLL, SET ONE SECOND
-;		INTERRUPT MODE 0 call and a SEND DFAC command to Egret.
-;		The Stop Autopoll and set one second interrupt modes calls will
-;		be changed to a single NOP/WarmStart when Egret 3 becomes
-;		available (S/B 4/6/90).
-;
-; Inputs:	NONE
-;
-; Outputs:	NONE
-;
-; Destroys:	D0, D1, D2, D3, A1, A5, A6, A4	(Egret 2 implementation)
-; Destroys:	D0, D3, A1, A5, A6				(Egret 3 implementation)
-;
-;	NOTE: This routine is called via a BSR6 and returns via a RTS6
-;-------------------------------------------------------------------------
-			EXPORT	EgretInit
-
-EgretInit	movea.l	DecoderInfo.VIA1Addr(a0),a1		; get VIA 1 base address
-		eieioSTP
-			bclr.b	#vSyssesbit,vBufB(a1)	; kill any pending transactions <8> <13>
-		eieioSTP
-			bclr.b	#vViafullbit,vBufB(a1)	; <8> <13>
-		eieioSTP
-			moveq	#$28,d0					; we want to delay 4 millisecs
-@killtime	bsr5	delay100us				; in 100 usec increments
-			dbra	d0,@killtime
-			move.l	a6,a4					; save the return address
-
-		if		rayFix	then
-;
-;	Send the Stop autopoll pseudo command
-;
-			move.l	#(APoll << 16) + PseudoPkt,d0	; first command to send is Stop Auto Poll
-			moveq	#0,d1					; sending one byte of data $00 = stop autopoll
-			moveq	#1,d2
-			bsr6	SendEgretCmd			; send the command to Egret
-			tst.w	d0						; check for an error
-			bne.s	@exit					; failed to send the command (hang timeout expired)
-;
-;	Send the mode 0 1 second interrupt pseudo command
-;
-			move.l	#(Wr1SecMode << 16) + PseudoPkt,d0	 ; mode 0 1 sec interrupts (stop 1 second irq)
-			moveq	#0,d1					; sending one byte of data
-			moveq	#1,d2
-			bsr6	SendEgretCmd			; send the command to Egret
-			tst.w	d0						; negative if error
-			bne.s	@exit					; failed to send the command (hang timeout expired)
-
-		else
-;
-;	Send the NOP/WarmStart command
-;
-			move.w	#NopCmd,d0				; Nop/WarmStart stops autopoll and 1 sec irq
-			swap	d0						; packet type Pseudo
-			move.w	#pseudopkt,d0
-			moveq	#0,d2					; no data to send
-			bsr6	SendEgretCmd			; send the command to Egret
-			tst.w	d0						; nonzero if error
-			bne.s	@exit					; failed to send the command (hang timeout expired)
-
-		endif
-
-;
-;	Send Elsie/Erickson initial DFAC setting
-;
-		with	ProductInfo
-
-			moveq	#0,d2						; force full scan of hardware features <10>
-			bsr6	GetHardwareInfo				; get the ProductInfo Record <9>
-			btst.b	#v8chipbit,ExtValid+3(a1)	; See if system has a VISA chip (bit7)<9><10>
-			beq.s	@Erickson					; 0 = No Visa (Erickson) 1 = Visa (Elsie) <9>
-
-			move.l	#ElsieDFAC,d1				; Assume running on Erickson (Not Elsie) <9>
-			bra.s	@sendit
-
-@Erickson	move.l	#EricksonDFAC,d1				; Erickson DFAC setting <9>
-@sendit		move.l	#(WrDFAC << 16) + PseudoPkt,d0	; Send DFAC command
-			moveq	#1,d2							; One byte to send
-			bsr6	SendEgretCmd					; send the command to Egret
-			tst.w	d0								; negative if error
-@exit		move.l	a4,a6							; restore return address
-			rts6									; return to the caller
-
-			endwith
-
-				eject
-************************************************************************************************************
-* SendEgretCmd:	This register based routine will send up to four bytes of data to Egret.  The
-*				packet type, command, byte count and data are passed in registers.  The routine
-*				will return with d0.w = $0000 if it sent the command successfully.  A value of
-*				$FFFF signifies that the command did not get through.  The system and Egret hung
-*				and the system aborted the transaction.
-*
-*	WARNING:	This routine will not error check the transaction requested.  It is  the responsibility of
-*	WARNING:	the caller to make sure that the packet type, command, data and data byte count are valid
-*	WARNING:	for the transaction requested.  Failure to follow the rules will make this routine fail and
-*	WARNING:	CRASH the system.
-*
-*		Input:
-*				a0.l	Pointer to Base address table
-*
-*				d0.l =  High word PACKET Command
-*						Low word PACKET Type
-*
-*				d1.l =	Up to four bytes of data to send
-*						Long word data byte assigment = byte 4, byte 3, byte 2, byte 1
-*						Byte 1 sent out first
-*
-*				d2.l = 	Byte count to send. (0-4 bytes)
-*						Byte count > 4 will send four bytes only
-*
-*		Output:	d0.w	$0000 if call succeeded, Nonzero if failed
-*
-*				d1.l	high word = flags, low word packet type returned by Egret
-*
-*		Destroys:	D2.l, D3.l, D4.l, A5.l, A4.l, A1.l
-*
-************************************************************************************************************
-
-			Export	SendEgretCmd
-SendEgretCmd
-			movea.l	DecoderInfo.VIA1Addr(a0),a1			; get VIA 1 base address				<P2> <SM7> rb, start
-			move.l	#((MaxTout<<16) OR MaxRetries),d4	; number of retries before giving up with Egret <13>
-			bsr5	Delay100us
-		eieioSTP
-			btst.b	#vsysSesBit,vBufB(a1)	; check for a transaction in progress
-		eieioSTP
-			beq.s	@AllOK
-
-@Timeout
-		eieioSTP
-			bclr.b	#vsysSesBit,vBufB(a1)	; kill the rest of the transaction <8>
-		eieioSTP
-			bclr.b	#vViaFullBit,vBufB(a1)	; <8>
-		eieioSTP
-			bsr5	Delay100us				; in progretss <8>
-  			bsr5	Delay100us				; <8>
-
-@AllOK		swap.w	d4						; timeout in low word of d4 Retry count in high word <13>
-		eieioSTP
-			btst.b	#vxcvrSesBit,vBufB(a1)	; check for abort pending
-		eieioSTP
-			beq		IrqMissed				; MIssed Vsr Irq because of INITVIAS
-			bset	#vsysSesBit,vBufB(a1)	; assert sysSesBit
-		eieioSTP
-			bsr5	@SendPtype				; send the packet type
-			beq		RealAbort				; Discard Aborting transaction					<SM7> rb, end
-;
-;	If not abort transaction in progress then send the command byte
-;
-			swap	d0
-			bsr5	sendByte1				; send the command byte
-			bsr5	delay100us				; give Egret time to see viaEmpty
-;
-;	Now send number of bytes contained in d1 based on
-;	byte count contained in d2.w
-;
-			move.l	d1,d0					; get the data to send
-			subq	#1,d2					; adjust for DBRA
-			cmp.w	#3,d2					; if count out of range quit
-			bhi.s	@EndCmd					; if count valid then adjust for dbra
-@sendloop	bsr5	sendByte1
-			bsr5	delay100us
-			lsr.l	#8,d0					; move data byte to low byte of register
-@loopEntry	dbra	d2,@sendloop			; decrement byte count
-;
-;	Wait for the response packet header
-;
-@EndCmd		
-		eieioSTP
-			bclr.b	#SRdir,vACR(a1)			; shift in
-		eieioSTP
-			bclr.b	#vSyssesbit,vBufB(a1)	; negate vSyssesbit
-		eieioSTP
-			bsr5	Delay100us
-;
-;	Now receive the Standard Response packet Header
-;
-			bsr5	readAttn				; get the Attention byte
-		eieioSTP
-			bsr5	Delay100us
-		eieioSTP
-			bset.b	#vSyssesbit,vBufB(a1)	; assert vSyssesbit
-		eieioSTP
-			bsr5	readByte				; get the packet type
-			and		#$00FF,d0				; keep low byte only
-			swap	d0						; save the packet type
-			bsr5	readByte				; get the flags byte
-			and.w	#$00FF,d0				; keep low byte only
-			swap	d0						; keep the flags byte as an error code
-			exg		d0,d1					; save the packet type and flags returned
-			bsr5	readByte				; get the command
-		eieioSTP
-			bclr.b	#vSyssesbit,vBufB(a1)	; negate vSyssesbit
-		eieioSTP
-			bsr5	Delay100us
-;
-;	Check for an error packet returned by Egret
-;
-			move.l	d1,d0					; save the packet type and flags
-			cmp.b	#errorpkt,d0			; check for error packet
-			beq.s	@Exit					; error pkt then just exit
-			sub.w	d0,d0					; zero for success
-@exit		rts6
-
 ;--------------------------------------------------------------------------
-@SendPtype									;												<2>
-		eieioSTP
-			bset.b	#SRdir,vACR(a1)			; shift out
-		eieioSTP
-			btst.b	#vXcvrsesbit,vbufB(a1)	; check for abort
-		eieioSTP
-			beq.s	@AbortReq				; go away if abort requested
-			move.b	d0,vSR(a1)				; load byte into shift reg
-		eieioSTP
-			bset.b	#vViafullbit,vBufB(a1)	; indicate shift reg is full
-		eieioSTP
-;
-;	Check Vsr Irq until timeout.  If timeout then check the retry count
-;	and Call Death Chimes if Retry count exausted.
-;
-@PollDelay		
-		eieioSTP
-			btst.b	#ifSR,vIFR(a1)			; wait for shift to complete
-		eieioSTP
-			bne.s	@VsrIrq					; Go service Shift register Irq <13>
-			dbra.w	d4,@PollDelay			; try again if timed out <13><SM7> rb
-			move.w	#MaxTout,d4				; Reset the Timeout <13><SM7> rb
-			swap.w	d4						; get the Retry count <13><SM7> rb
-			subq.w	#1,d4					; Try again if Retry count not Exausted <13><SM7> rb
-			beq.s	@Timeout				; <13>
-
-@DeadEgret	move.w	#ErrEgretInit,d7		; Egret failed <13>
-			move.l	#0001,d6				; d6.l must be nonzero <13>
-			bigjmp	Error1Handler,a3		; Play death chimes <13>
-
-@VsrIrq	
-		eieioSTP
-			tst.b	vSR(a1)					; clear the interrupt
-		eieioSTP
-			bclr.b	#vViafullbit,vBufB(a1)	; now indicate shift reg empty
-		eieioSTP
-;
-;		Delay 100 usec
-;
-			move.w	#DelayCnt,d3
-@wait20		
-		eieioSTP
-			tst.b	(a1)					; sync to VIA clock
-		eieioSTP
-			dbra	d3,@wait20				; delay at least 100 us (very rough)
-		eieioSTP
-			btst.b	#vXcvrsesbit,vbufB(a1)	; check for abort
-		eieioSTP
-@AbortReq	rts5
-
-;--------------------------------------------------------------------------
-; DumpAbort	This routine will read all the data for an abort transaction and
-;			discard it.  When done it will jump back to SendNopCmd entry point
-;			to retry our command.  This command will eventually complete...
-
-RealAbort
-		eieioSTP
-			bclr.b	#vSyssesbit,vBufB(a1)	; deassert system session
-		eieioSTP
-IrqMissed	bsr5	Delay100us				; Let Egret see SysSes. │ 125╡sec
-		eieioSTP
-			bclr.b	#SRdir,vACR(a1)			; shift in
-		eieioSTP
-			tst.b	vSR(a1)					; discard the byte
-		eieioSTP
-			bset	#vSyssesbit,vBufB(a1)	; assert vSyssesbit
-		eieioSTP
-
-DumpAbort
-
-		eieioSTP
-		bclr	#vViafullbit,vBufB(a1)	; then negate VIA full bit
-		eieioSTP
-
-@loop
-		eieioSTP
-			btst.b	#ifSR,vIFR(a1)			; wait for shift to complete
-		eieioSTP
-			beq.s	@loop
-			bset.b	#vViafullbit,vBufB(a1)	; acknowlege byte
-		eieioSTP
-			tst.b	vSR(a1)					; discard the byte
-		eieioSTP
-;
-;		Delay 100 usec
-;
-			move.w	#DelayCnt,d3 
-@wait
-		eieioSTP
-			tst.b	(a1)					; sync to VIA clock 
-			dbra	d3,@wait				; delay at least 100 us (very rough)
- 		eieioSTP
-			btst.b	#vXcvrsesbit,vBufB(a1)	; check for last byte
-		eieioSTP
-			beq.s	DumpAbort				; Clock Tick Packets only 2 bytes
-;
-;		Last byte was read
-;
-			bclr	#vViafullbit,vBufB(a1)	; then negate VIA full bit
-		eieioSTP
-			bclr.b	#vSyssesbit,vBufB(a1)	; negate vSyssesbit
-		eieioSTP
-			bsr5	Delay100us				; delay 200 usec
-			bra.s	SendEgretCmd			; go try sending our command again
-
-;--------------------------------------------------------------------------
-sendByte1									;												<2>
-		eieioSTP
-			bset.b	#SRdir,vACR(a1)			; shift out
-		eieioSTP
-			move.b	d0,vSR(a1)				; load byte into shift reg
-		eieioSTP
-			bset.b	#vViafullbit,vBufB(a1)	; indicate shift reg is full
-		eieioSTP
-@poll	
-		eieioSTP
-			btst.b	#ifSR,vIFR(a1)			; wait for shift to complete
-		eieioSTP
-			beq.s	@poll
-			tst.b	vSR(a1)					; clear the interrupt
-		eieioSTP
-			bclr.b	#vViafullbit,vBufB(a1)	; now indicate shift reg empty
-		eieioSTP
-			rts5
-
-;--------------------------------------------------------------------------
-readByte	
-		eieioSTP			
-			btst.b	#ifSR,vIFR(a1)			; wait for shift to complete
-		eieioSTP
-			beq.s	readByte
-			bset.b	#vViafullbit,vBufB(a1)	; Tell Egret we saw the byte
-		eieioSTP
-			move.b	vSR(a1),d0				; read the byte
-;
-;		Delay 100 usec
-;
-		eieioSTP
-			move.w	#DelayCnt,d3
-@wait
-		eieioSTP
-			tst.b	(a1)					; sync to VIA clock
-		eieioSTP
-			dbra	d3,@wait				; delay at least 100 us (very rough)
-		eieioSTP
-			bclr	#vViafullbit,vBufB(a1)	; then negate VIA full bit
-		eieioSTP
-			rts5
-
-;--------------------------------------------------------------------------
-readAttn
-		eieioSTP
-
-			btst.b	#ifSR,vIFR(a1)			; wait for shift to complete
-		eieioSTP
-			beq.s	readAttn
-		eieioSTP
-			tst.b	vSR(a1)					; clear the interrupt
-		eieioSTP
-			rts5
-
-;--------------------------------------------------------------------------
-delay100us	
-		move.w	#DelayCnt,d3
-;	add.w	d3,d3						; let's make it even rougher
-@wait
-		eieioSTP
-			tst.b	(a1)					; sync to VIA clock
-		eieioSTP
-			dbra	d3,@wait				; delay at least 100 us (very rough)
-		eieioSTP
-			rts5
-
-;_______________________________________________________________________
-;
-;  Routine:		EclipsePDMPatch
-;
-;  Desc:		Patch for ECLIPSE PowerDown Messsage Handler Install
-;				and PowerDown Message Enable
-;_______________________________________________________________________
-
-			EXPORT	EclipsePDMPatch
-EclipsePDMPatch	
-			WITH	EgretPB
-;
-;		Initialize the Eclipse PowerDown Message handler.
-;
-			movem.l	a0-a1,-(sp)						; work registers
-			suba.l	#EgretPbSize,sp					; make room for PB
-			move.l	sp,a0							; point a0 to pbBuffer									<T3>
-			move.w	#(PDMVectPkt << 8),pbCmdType(a0); InitPDM Vector Packet (Cmd ignored)
-			clr.l	pbCompletion(a0)				; No Completion
-			lea		KeySwitchHandler,a1				; address of keyswitch sense handling					<T5>
-			move.l	a1,PbParam(a0)
-			_EgretDispatch
-
-; еееееееееееееееееееееееееееееееееееееееееееееееее
-;	We don't want to enable messages where we set up the Power Down Message Handler.  This is because		<T10>
-;	up until the time a system is located to boot from, when the user turns the keyswitch OFF, there		<T10>
-;	are no files to flush, no volumes to unmount and Caboose can safely turn the machine off with us		<T10>
-;	getting in the way.  Once we get a system loaded, we'll enable Power Down Messages with the other		<T10>
-;	routine, EclipsePDEPatch() (see below).																	<T10>
-; еееееееееееееееееееееееееееееееееееееееееееееееее
-
-;	We need to allocate a TimeMgr TMTask record that we can use once we enable power down messages so		<T15>
-;	we can power the machine down even if UnMounts fail or hang.  ExpandMemRec has JUST been initialized	<T15>
-;	when this patch gets called, so this is safe to do.														<T15>
-
-		WITH	ExpandMemRec
-
-			movea.l	expandMem,a1					; get base of ExpandMemRec								<T15>
-			moveq.l	#(tmQSize+dtQElSize),d0			; request a TimeMgr TMTask+Deferred Task-sized record in SysHeap		<T15>
-			_NewPtr	,SYS,CLEAR						;														<T15>
-			move.l	a0,emKeyTMTaskPtr(a1)			; save pointer to TMTask record in ExpandMemRec			<T15>
-		ENDWITH
-			adda.l	#EgretPbSize,sp					; discard the parameter block
-			movem.l	(sp)+,a0-a1						; restore registers
-@EgretDone
-			
-			rts										; Return to Caller
-
-;_______________________________________________________________________
-;
-;	Eclipse Keyswitch Handler
-;	-------------------------
-;
-;		This routines either
-;			(1) turns off Eclipse, or
-;			(2) catches and ignores keyswitch changes interrupts
-;			from Caboose, since we look directly at the keyswitch
-;			position values on VIA2[PB][v2Keyswitch] or [v2PowerOff].
-;
-;		As of DVT hardware, the values of these keyswitch positions
-;		should be available on VIA2 and no longer need to be maintained
-;		in SW.
-;_______________________________________________________________________
-;
-;		PowerDown Message Handler
-;
-			export	KeySwitchHandler				;														<T5>
-			import	EgretPowerOff					; from EgretPatches.a									<T14>
-			
-KeySwitchHandler									; Handler of Power Down / Keyswitch Sense messages		<T5>
-
-;	Caboose sends a message whenever the keyswitch sense changes.											<T5> thru next <T5>
-;
-;	Input:  D0.B		Keyswitch position
-;
-;				0			OFF
-;				1			Secure
-;				2			Insecure or ON ("normal")
-;	
-
-			tst.b	d0								; check for PowerOff message							<T10>
-			bne.s	@rts							; IF Message == PowerDOWN THEN							<T10>
-
-			movem.l	a0-a1,-(sp)						; save A0, A1											<T15> thru next <T15>
-
-;	First, install a time manager task that will forcefull shut us down in 5 seconds.  That way,
-;	in case something goes wrong with the deferred task, we will shut off anyway.
-
-		WITH	ExpandMemRec
-
-			movea.l	expandMem,a1					; get base address of ExpandMemRec
-			movea.l	emKeyTMTaskPtr(a1),a0			; retrieve "final" Time Mgr queue element
-			movea.l	a0,a1							; use A1 to clear the record
-			moveq.l	#((tmQSize+dtQElSize)/2)-1,d0	; clear the TimeMgr+DeferredTask queue elements
-@clrRec		clr.w	(a1)+							; just in case someone has crapped them up
-			dbra	d0,@clrRec
-			lea		PullThePlug,a1					; get address of where to go when timer expires
-			move.l	a1,tmAddr(a0)					; tell the TimeMgr about it
-			_InsTime								; go install the Turn Off The Power Time Mgr task
-			move.l	#(5*1000),d0					; set timeout to be 5 SECONDS
-			_PrimeTime								; activate the task
-
-;	Now install the Deferred Task that will attempt to unmount all mounted volumes.
-;
-;	The ExpandMemRec Ptr points at an area that is tmQSize+dtQSize bytes big.
-;
-;	Initialize the Deferred Task queue element to point at our Unmount Volumes Deferred Task.
-
-			adda.w	#tmQSize,a0						; move A0 to point at the Deferred Task Queue Element
-			move.w	#dtQType,dtType(a0)				; and initialize the record
-			lea		EclipseAdios,a1
-			move.l	a1,dtAddr(a0)
-			jsr		([jDTInstall])					; go install our Unmount and Shutdown deferred task
-			movem.l	(sp)+,a0-a1						; restore A0, A1
-			tst.w	d0								; see whether or not deferred task install was done
-			bne.s	PullThePlug						; if it failed, shut down RIGHT NOW
-@rts		rts										; if it was successful, return to the int. handler
-
-		ENDWITH
-
-;_______________________________________________________________________
-;
-;	Routine:	EclipseAdios
-;
-;	Desc:		Deferred Task installed when the keyswitch is turned
-;				to the OFF position.  This attempts to Unmount all
-;				volumes.  Once that attempt has been made, the system
-;				is powered down.
-;
-;	Inputs:		None.
-;	Returns:	None.
-;	Trashes:	The System.  Power to Eclipse is turned off.  G'night.
-;
-;_______________________________________________________________________
-
-EclipseAdios
-
-;	Try and unmount any mounted volumes before we power down.
-
-			move.l	VCBQHdr+qHead,a1				;   Start at the head of the VCBQ
-			bra.s	@checkVCB						;   Check if valid
-@UMloop
-			tst.w	vcbFSID(a1)						;   Make sure it╒s FSID = 0
-			bne.s	@nextQEntry						;   ... i.e. not a server
-
-; Try to unmount the volume.
-
-			sub.w	#ioQElSize,a7					;   get an I/O param block
-			movea.l	a7,a0
-	
-			move.w	vcbVRefNum(a1),ioVRefNum(a0)	;   stuff VCB VRefNum into PB
-			move.l	#0,ioFileName(a0)
-			move.l	#0,ioCompletion(a0)				;   no completion routine
-			move.l	a1,-(sp)						;   save A1 (queue link ptr)
-			_HUnmountVol							;   attempt to forcefully unmount volume
-			movea.l	(sp)+,a1						;   restore A1
-			adda.w	#ioQElSize,a7					;   get rid of PB.  we'll reallocate the PB if needed
-
-@nextQEntry	movea.l	qLink(a1),a1					;   get next queue entry
-@checkVCB	move.l	a1,d0							;   at EOQ yet?
-			bne.s	@UMloop							;   nope, try this one
-
-PullThePlug											; ENDIF
-			bsr.l	EgretPowerOff					; power junkies go into sudden withdrawl				<T16>
-			bra.s	PullThePlug						; with no hope of recovery								<T16>
-
-;_______________________________________________________________________
-;
-;  Routine:		EclipseDFACPatch
-;
-;  Desc:		Patch for ECLIPSE send default DFAC Messsage
-;_______________________________________________________________________
-			EXPORT	EclipseDFACPatch
-
-EclipseDFACPatch
-;
-;		Build a Parameter block for the default DFAC message
-;
-			movem.l	a0-a1,-(sp)						; work register
-			suba.l	#EgretPbSize,sp					; make room for PB
-			move.l	sp,a0							; point a0 to pbBuffer									<T4>
-			move.w	#(pseudoPkt << 8) \
-					+ SetDefDFAC,pbCmdType(a0)		; InitPDM Vector Packet (Cmd ignored)
-			clr.l	pbCompletion(a0)				; No Completion
-;
-;	Build the DFAC message issue the call and clean up
-;
-			move.w	#$0100,-(sp)					; byte count and one DFAC byte in buffer
-			move.l	sp,pbBufPtr(a0)					; Buffer pointer
-			move.w	#$0002,pbByteCnt(a0)			; byte count includes the byte count byte in the buffer
-			_EgretDispatch
-			adda.l	#EgretPbSize+2,sp				; discard the parameter block and data buffer
-			movem.l	(sp)+,a0-a1
-@EgretDone
-			rts										; Return to Caller
-
-;_______________________________________________________________________									<T16> thru next <T16>
-;
-;  Routine:		DebugUtilRunKbdPatch
-;
-;  Desc:		Checks to see if the machine we're running on has a
-;				keyswitch, and if so, if it's in the OFF position.
-;				If so, then we probably don't have any choice as to
-;				whether volumes can be flushed and unmounted, so we
-;				go directly to the PowerOff routine.  Do not pass Go,
-;				do not collect $200.  (is that 200 hex dollars?)
-;
-;  NOTE:		This handles both the DebugEnter _and_ DebugPoll cases.
-;_______________________________________________________________________
-
-			EXPORT		DebugUtilRunKbdPatch		; provide address to InterruptHandlers.and anyone else
-DebugUtilRunKbdPatch
-
-			TestFor	KeyswCabooseBit					; do we have a caboose?			<21>
-			beq.s	@justDoIt						;  nope							<21>
-
-;	If you made it here, you're a Caboose-flavor keyswitch.
-;
-;	VIA2 has v2PowerOff and v2Keyswitch (SECURE mode) wired, with 0=TRUE.
-
-			move.l	a1,-(sp)						;     save A1 temporarily
-			movea.l	VIA2RBV,a1						;     retrieve address of VIA2
-		eieioSTP
-			btst.b	#v2PowerOff,VBufB(a1)			;     is the keyswitch OFF?
-		eieioSTP
-			move.l	(sp)+,a1						;     restore A1
-			beq.s	@powerOff						;     IF Keyswitch != OFF THEN
-@justDoIt
-			bra		DebugPwrMgrADBPatch2			;         check for PowerMgr stuff
-@powerOff											;     ELSE
-			bra.s	PullThePlug						;         administer the death blow						<T16>
-
-DebugPwrMgrADBPatch2
-			TestFor	hwCbPwrMgr				; see if we have a power manager
-			beq.s	@noPmgrADB				; if not, skip it
-
-			movea.l	VIA,a1					; point to the VIA
-			movea.l	Lvl1DT+(ifCB1*4),a0		; get the handler address
-			jsr		(a0)					; call the interrupt handler
-			addq.l	#4,SP					; clean up stack from bsr			
-			movem.l	(sp)+,d3/a3				; restore registers
-			rts
-@noPmgrADB
-			rts	
-
-;_______________________________________________________________________
-;
-;  Routine:		EgretDFACandPDM			formerly:	EclipseEgretPatches				<P4><MC2>
-;
-;  Desc:		Calls egret patches for Eclipse with Caboose, keyswitch
-;				Calls Egret patches for Anyone with Cuda, SoftPower Off
-;_______________________________________________________________________
-
-				EXPORT	EgretDFACandPDM
-				IMPORT	CudaPDMPatch
-
-EgretDFACandPDM	
-
-			move.l	#EgretFWMask, d0				; get productInfo record mask for Egret FW
-			and.l	UnivRomFlags,d0					; isolate the field
-			sub.l	#Caboose,d0						; Do we have an Egret/Caboose?
-			bne.s	@Done							; -> Nope. Don't do nothing!
-
-	; Instead of calling EclipseDFACPatch, this should more generally initialize DFAC
-	; for all machines that care about it (or even if we don't but it needs it anyway).
-	;	-- bg/djw, 12/6/90
-
-@EgretCaboose
-			bsr		EclipseDFACPatch				; call the Eclipse DFAC control patch
-			bsr		EclipsePDMPatch					; call the Eclipse keyswitch/PowerDown Msgs patch
-@Done		rts										; Return to Caller
-
-
-;--------------------------------------------------------------------------
-;ChkFirmware																		<P2>
+;ChkFirmware a166																		<P2>
 ;
 ;	This routine will determine if the Egret Chip is using Egret 8 or Caboose
 ;	firmware or the new Cuda firmware.  Based on this result, the IRQ handler,
@@ -1837,16 +1233,6 @@ EgretDFACandPDM
 ChkFirmware											;								<P2>
 			movem.l	a2/d0-d2, -(sp)					; preserve used regs
 
-			move.l	#EgretFWMask,d0					; mask for EgretFW				<MC2>
-			and.l	UnivRomFlags,d0					; isolate the field
-			sub.l	#Egret8,d0						; see if we have EgretFW
-			beq.s	@haveEgret						; set Zero flag, exit
-
-	; If we dont have Egret FW, we still might have an Caboose FW
-
-			sub.l	#Egret8,d0						; see if we have CabooseFW
-			beq.s	@haveCaboose					; if we do, chk for Cuda
-
 @haveCuda											;								
 			biglea	CudaDispatch, a0				; Cuda FW dispatcher			
 			move.l	#$92,d0							; set $92 trap					
@@ -1854,210 +1240,80 @@ ChkFirmware											;								<P2>
 			
 			biglea 	CudaShiftRegIRQ,a0				; stuff Cuda IRQ handler in	
 			biglea	CudaTickHandler,a1				; stuff Cuda tick handler in
-			bra.s	@chkDone						;								
 
-@haveEgret
-@haveCaboose
-			lea		EgretDispatch, a0				; Egret FW dispatcher	
-			move.l	#$92,d0							; set $92 trap			
-			_SetTrapAddress	,NEWOS							;				
-													;							
-			lea 	ShiftRegIRQ,a0					; stuff Egret IRQ handler in
-			lea		tickHandler,a1					; stuff Egret tick handler in
 @chkDone
 			movem.l	(sp)+, a2/d0-d2					; restore used regs
 			rts
 			
 
-
-;--------------------------------------------------------------------------			<P2>
-;SendEgretCmdPatch
-;
-;	This routine will determine if the Egret Chip is using Egret 8 or Caboose
-;	firmware or the new Cuda firmware.  From the firmware type, determine what
-;	routine to use, SendEgretCmd for Egret or Caboose, and SendCudaCmd for Cuda
-;
-;	NOTE:  This routine is REGISTER based, there isn't a stack						<P4>
-;	SendEgretCmd is called via BSR6, so must Preserve A6, as the return address		<P4>
-;	SendEgretCmdPatch is called via a BSR5 return is in A5							<P4>
-;		Input:
-;				a0.l	Pointer to Base address table
-;
-;				d0.l =  High word PACKET Command
-;						Low word PACKET Type
-;
-;				d1.l =	Up to four bytes of data to send
-;						Long word data byte assigment = byte 4, byte 3, byte 2, byte 1
-;						Byte 1 sent out first
-;
-;				d2.l = 	Byte count to send. (0-4 bytes)
-;						Byte count > 4 will send four bytes only
-;
-;--------------------------------------------------------------------------			<P2>
-
-SendEgretCmdPatch
-		move.l	a5, a3						; preserve patch return addr
-		move.l	a6, a4						; preserve EgretInit rtn addr
-		bigbsr6	GetHardwareInfo,a1			;							
-		move.l	a4, a6						; restore EgretInitrtn addr	
-		move.l	a3, a5						; restore patch rtn addr	
-		moveq.l	#ProductInfo.ADBMask,d0		;mask for ADB kind					<23>
-		and.l	d1,d0						;isolate the field					<23>
-		subq.l	#ProductInfo.ADBEgret,d0	;see if we have Egret ADB			<23>
-		
-		and.l	#EgretFWMask,d4				; isolate the field			
-		sub.l	#Egret8,d4					; see if we have Egret8 FW	
-		beq.s	@patchdone					; if we do, zero flag set	
-;
-;	If we dont have Egret FW, we still might have an Caboose			
-;
-		sub.l	#Egret8,d1					; see if we have Caboose FW	
-@haveEgret										; if we do, zero flag set
-		beq.s	@patchdone					; its Egret or Caboose, just exit...
-@haveCuda									;							
-		bigjmp	SendCudaCmd,a3				; jump to Cuda Send routine	
-@patchdone									;							
-		movea.l	DecoderInfo.VIA1Addr(a0),a1			; get VIA 1 base address
-		move.l	#((MaxTout<<16) OR MaxRetries),d4	; number of retries before giving up with Egret <13>
-		rts5
-		
-;--------------------------------------------------------------------------
-;EgretInitPatch															
-;																		
-;	This routine will determine if the Egret Chip is using Egret 8 or Caboose		<P4> 
-;	firmware or the new Cuda firmware.  From the firmware type, determine what
-;	routine to use, EgretInit for Egret or Caboose, and CudaInit for Cuda	
-;																		
-;	NOTE:  This routine is REGISTER based, there isn't a stack
-;	EgretInit is called via BSR6, so must Preserve A6, as the return address
-;	EgretInitPatch is called via a BSR5 return is in A5					
-;	
-EgretInitPatch								;							
-		move.l	a5, a3						; preserve patch return addr
-		move.l	a6, a4						; preserve EgretInit rtn addr
-		bigbsr6	GetHardwareInfo,a1			;							
-		move.l	a4, a6						; restore EgretInitrtn addr	
-		move.l	a3, a5						; restore patch rtn addr	
-		
-		and.l	#EgretFWMask,d1				; isolate the field			
-		sub.l	#Egret8,d1					; see if we have Egret8 FW	
-		beq.s	@patchdone					; if we do, zero flag set	
-;
-;	If we dont have Egret FW, we still might have an Caboose			
-;
-		sub.l	#Egret8,d1					; see if we have Caboose FW				
-@haveEgret										; if we do, zero flag set			
-		beq.s	@patchdone					; its Egret or Caboose, just exit...	
-@haveCuda									;										
-		bigjmp	CudaInit,a3					; jump to CudaInit routine in CudaMgr.a 
-@patchdone									;										
-		movea.l	DecoderInfo.VIA1Addr(a0),a1	; get VIA 1 base address				
-	eieioSTP
-		bclr.b	#vsysSesBit,vBufB(a1)		; kill any pending transactions <8> <13> <P2>
-	eieioSTP
-		bclr.b	#vViaFullBit,vBufB(a1)		; 								<8> <13> <P4>
-	eieioSTP
-		rts5
-
-TerrorEgret		
-
-				IMPORT	ExplicitRequestDone, ImplicitRequestDone
-;_______________________________________________________________________
-;
-;  Routine:		StartReqEgret
-;  Inputs:		D2 - length of transmit buffer data
-;				D3 - command byte / implicit flag (bit 31)
-;				A2 - pointer to buffer containing transmit data
-;				A3 - pointer to ADBBase
-;
-;  Outputs:		A3 - pointer to ADBBase
-;				
-;  Destroys:	A0-A2/D0-D2
-;  Calls:		exits through _EgretDispatch
-;
-;  Function:	Sends an ADB request to the Egret, and asynchronously waits for a reply.
-;
-;_______________________________________________________________________
-
-			with	ADBVars,EgretPB
-
-
-jEgretDispatch	equ	OSTable+($92*4)		; OS trap table entry for _EgretDispatch
-
-StartReqEgret
-			tst.l	d3					; see if explicit/implicit
-			bmi.s	@implicit			; if implicit, we generally don't need to do anything
-
-;_______________________________________________________________________
-;	Process Explicit Requests
-
-@explicit	bset.b	#fDBExpRunning,fDBAuFlag(a3); explicit command starting, exclude new ones
-			bne.s	@ignoreExplicit				; if already in progress, don't run it twice
-			move.b	d3,ExplicitEPB.pbCmd(a3)	; setup the ADB command
-			move.w	d2,ExplicitEPB.pbByteCnt(a3); setup byte count
-			move.l	a2,ExplicitEPB.pbBufPtr(a3)	; setup buffer pointer
-
-			bset.b	#fDBExpInited,fDBAuFlag(a3)	; see if explicit command initialization has occured
-			bne.s	@expInited					; if already inited, no need to change anything
-
-			lea		@ExplicitCompleted,a0			; explicit request completion routine address
-			move.l	a0,ExplicitEPB.pbCompletion(a3)	; setup buffer pointer
-
-			lea		ImplicitEPB(a3),a0	; point to the param block used to wait for autopoll data
-			clr.l	pbCompletion(a0)	; remove the handler
-			bsr.s	@SendToEgret		; remove the auto poll handler
-
-			move.l	#(pseudoPkt<<24)\	; pcCmdType := pseudoPkt
-					+(aPoll<<16)\		; pbCmd := aPoll
-					+($00<<8),d0		; pbParam := $00 (only high byte is used)
-			bsr.s	@syncReq			; send command to stop auto polling
-@expInited
-
-			lea		ExplicitEPB(a3),a0	; point to the param block
-@SendToEgret
-			moveq.l	#0,d1				; zero the trapword flag bits (in case they ever get used)
-			movea.l	jEgretDispatch,a2	; get the OSTrap table entry
-			jmp		(a2)				; _EgretDispatch, issue the request (asynchronously), return
-
-
-;_______________________________________________________________________
-;	Process Implicit Requests
-
-@implicit	btst.b	#fDBInit,fDBFlag(a3); see if initialization is happening
-			bne.s	@impDone			; if so, implicit commands are ignored
-			bset.b	#fDBImpInited,fDBAuFlag(a3)	; see if implicit command initialization has occured
-			beq.s	@InitImplicit		; if not inited, do initialization to allow autopolling
-@ignoreExplicit
-@impDone	rts							; auto-polling/srq data will arrive unsolicited from now on
-
-@InitImplicit
-			lea		ImplicitEPB(a3),a0	; point to the param block used to wait for autopoll data
-			lea		@ImplicitCompleted,a1	; handler address
-			move.l	a1,pbCompletion(a0)	; install the handler
-			bsr.s	@SendToEgret		; install the auto poll handler
-
-			move.l	#(pseudoPkt<<24)\	; pcCmdType := pseudoPkt
-					+(wrDevList<<16),d0	; pbCmd := wrDevList
-			move.w	DevMap(a3),d0		; pbParam := DevMap (in first 2 bytes)
-			bsr.s	@syncReq			; send command to specify auto polling addresses
-
-			move.l	#(pseudoPkt<<24)\	; pcCmdType := pseudoPkt
-					+(aPoll<<16)\		; pbCmd := aPoll
-					+($FF<<8),d0		; pbParam := $FF (only high byte is used)
-										; send command to start auto polling
-
-@syncReq	suba.w	#EgretPBSize,sp		; allocate a param block on the stack for a sync call
-			movea.l	sp,a0				; point to the param block
-			move.l	d0,pbCmdType(a0)	; init pcCmdType, pbCmd, and high word of pbParam
-			clr.l	pbCompletion(a0)	; no completion routine, sync call
-			bsr.s	@SendToEgret		; call send the request off to the ADB micro
-			adda.w	#EgretPBSize,sp		; deallocate the param block
-			rts							; auto-polling/srq data will arrive unsolicited from now on
-			Title	'KbdADB - ADB Manager  -  ExplicitCompleted'
+NewEgretFunc
+; a196
+			Link      A6, #-$14
+			Move.L    #$7000000, D0
+			And.L     (UnivROMFlags), D0
+			CmpI.L    #$3000000, D0
+			BNE.B     (* + $42)
+			MoveA.L   A7, A0
+			Move.B    #$1, (A0)
+			Move.B    #$2, $1(A0)
+			Clr.L     $2(A0)
+			Move      #$A1, $2(A0)
+			Move      #$1, $6(A0)
+			Lea.L     $4(A0), A1
+			Move.L    A1, $8(A0)
+			Clr       $C(A0)
+			Clr       $E(A0)
+			Clr.L     $10(A0)
+			_EgretDispatch
+			Move.B    #$8, $1(A0)
+			BClr.B    #$5, $4(A0)
+			_EgretDispatch
+			Unlk      A6
+			Rts
+			Tst.L     D3
+			BMI.B     (* + $44)
+			BSet.B    #$2, $15E(A3)
+			BNE.B     (* + $4C)
+			Move.B    D3, $171(A3)
+			Move      D2, $176(A3)
+			Move.L    A2, $178(A3)
+			BSet.B    #$0, $15E(A3)
+			BNE.B     (* + $1C)
+			Lea.L     @ExplicitCompleted, A0
+			Move.L    A0, $180(A3)
+			Lea.L     $184(A3), A0
+			Clr.L     $10(A0)
+			Bsr.B     (* + $E)
+			Move.L    #$1010000, D0
+			Bsr.B     (* + $40)
+			Lea.L     $170(A3), A0
+			MoveQ.L   #$0, D1
+			MoveA.L   ($648), A2
+			Jmp       (A2)
+			BTst.B    #$5, $15D(A3)
+			BNE.B     (* + $A)
+			BSet.B    #$1, $15E(A3)
+			BEQ.B     (* + $4)
+			Rts
+			Lea.L     $184(A3), A0
+			Lea.L     (* + $9A), A1
+			Move.L    A1, $10(A0)
+			Bsr.B     (* + -$26)
+			Move.L    #$1190000, D0
+			Move      $14E(A3), D0
+			Bsr.B     (* + $8)
+			Move.L    #$101FF00, D0
+			SubA      #$14, A7
+			MoveA.L   A7, A0
+			Move.L    D0, (A0)
+			Clr.L     $10(A0)
+			Bsr.B     (* + -$46)
+			Lea.L     $14(A7), A7
+			Rts
 
 ;_______________________________________________________________________
 ;
-;  Routine:		@ExplicitCompleted
+;  Routine:		@ExplicitCompleted a27c
 ;  Inputs:		A0 - Pointer to the EgretPB of the Explicit Request
 ;
 ;  Outputs:		D2 - length of receive buffer data
@@ -2071,6 +1327,10 @@ StartReqEgret
 ;  Function:	Completion routine for servicing explicit ADB requests.
 ;
 ;_______________________________________________________________________
+
+		with	ADBVars,EgretPB
+
+		import	ExplicitRequestDone, ImplicitRequestDone
 
 @ExplicitCompleted						; A0 := pointer to EgretPB
 		if EgretDebug then
@@ -2145,7 +1405,7 @@ StartReqEgret
 
 ;_______________________________________________________________________
 ;
-;  Routine:		@ImplicitCompleted
+;  Routine:		@ImplicitCompleted a2ec
 ;  Inputs:		A0 - Pointer to the EgretPB of the Implicit Request
 ;				D0 - Number of data bytes returned (word, 0..8)
 ;				A1 - Pointer to Flags, Command, Data Buffer
@@ -2185,6 +1445,7 @@ StartReqEgret
 			Export		DebugEnterCont
 	
 DebugEnterCont
+a2fc
 			with ProductInfo
 
 			move.l	UnivRomFlags,d0		; get the Universal system flags
@@ -2233,6 +1494,7 @@ DebugEnterCont
 			Export		DebugExitCont
 	
 DebugExitCont
+; a346
 			with ProductInfo
 
 			move.l	UnivRomFlags,d0		; get the Universal system flags

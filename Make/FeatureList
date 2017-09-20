@@ -13,6 +13,12 @@
 #
 #	Change History (most recent first):
 #
+#				 1/29/17	HQX		Add conditionals for "Custer" (Mirrored Drive Door G4 ROM v10.2.1)
+#									resources, change TNTPlus to hasPCI.
+#				  1/9/17	HQX		Add Classic flag
+#				12/28/16	HQX		Finally realise how this works. Patch to emulate the missing
+#									"ParseFeatures" command. Added NewWorld and TNTPlus flags.
+#
 #	  <SM25>	12/13/93	PN		Roll in KAOs and Horror changes to support Malcom and AJ
 #									machines
 #	  <SM24>	11/10/93	fau		Update from SuperMunggio <SMG2-3>.
@@ -64,7 +70,28 @@
 #
 #
 
-Set	AvailableFeatures  "hasROMGibbly			¶
+Set cdg5Features "¶
+	Vanilla					¶
+	LatestHack				¶
+	hasPCI					¶
+	BlueBox					¶
+	NewWorld				¶
+	CusterBacklightParcel	¶
+	CusterUSBShimKeyboard	¶
+	cdg5HappyMac			¶
+	NKDebugShim				¶
+	NKShowLog				¶
+	ExtraNKLogging			¶
+	DebugAlways				¶
+	SkipTbxiValidation		¶
+	TbxiPatchG4Version		¶
+	TbxiDisableAppleKiwi	¶
+	Wedge					¶
+"
+
+Set	AvailableFeatures  "{cdg5Features}			¶
+						hasBCScreen				¶
+						hasROMGibbly			¶
 						hasManEject				¶
 						hasCacheTypeCPU			¶
 						forPDMProto				¶
@@ -197,12 +224,25 @@ Set	AvailableFeatures  "hasROMGibbly			¶
 						useROMFonts				"
 
 
-	If	"` ParseFeatures -a "{AvailableFeatures}" -f ": ROM {1}" `" =~ /': ROM '(Å)¨1/
-		Set Defines "{¨1}"
-	Else
-		Exit 1
-	End
 
+
+#	# ParseFeatures is lost to the ages...
+#	If	"` ParseFeatures -a "{AvailableFeatures}" -f ": ROM {1}" `" =~ /': ROM '(Å)¨1/
+#		Set Defines "{¨1}"
+#	Else
+#		Exit 1
+#	End
+	
+#	Set Defines "-d "
+	
+	# This block of code replaces it...
+	For Feature in {AvailableFeatures}
+		Set Defines "{Defines} -d {Feature}=`Evaluate " {1} " =~ /Å {Feature} Å/`"
+	End
+	
+	# Ugh!
+	Set Defines "`Echo {Defines} | StreamEdit -e '¥,° Replace /=1/ "=TRUE" -c °' -e '¥,° Replace /=0/ "=FALSE" -c °'`"
+	
 	For Override in {2}
 
 		If "{Override}" =~ /(Å)¨1=(Å)¨2/
@@ -214,9 +254,9 @@ Set	AvailableFeatures  "hasROMGibbly			¶
 		End
 
 		If {Value} =~ /true/
-			Set Value TRUE
+			Set Value 1 #TRUE # to allow overrides to work right!
 		Else If {Value} =~ /false/
-			Set Value FALSE
+			Set Value 0 #FALSE
 		End
 
 		If "{Defines}" =~ /(Å)¨3{Name}=[Â ¶t]+(Å)¨4/
