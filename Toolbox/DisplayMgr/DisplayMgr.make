@@ -52,8 +52,8 @@ DisplayMgrCOpts =	-b2 {StdCOpts} -i {DisplayMgrDir} -i {ProcessMgrDir}
 DisplayMgrAOpts =	{StdAOpts}
 
 
-"{DispalyMgrLibDir}DisplayMgr.lib" 	Ä		{DisplayObjs}
-	Lib {LibWarnings} -o {Targ} {DisplayObjs}
+# "{DispalyMgrLibDir}DisplayMgr.lib" 	Ä		{DisplayObjs}
+# 	Lib {LibWarnings} -o {Targ} {DisplayObjs}
 
 
 "{DispalyMgrLibDir}DisplayMgrExtensionLib.o" 	Ä		{DisplayExtensionObjs}

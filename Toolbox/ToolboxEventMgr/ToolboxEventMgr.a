@@ -503,20 +503,6 @@ HandBySys								;											<09Apr85>
 DoneGNE
 
 
-; The following is a one-time check to see if the internal drive (SCSI ID in low
-; memory) is up to speed by now.  If so, then clear high bit of PRAM startup
-; device timeout value (PRAM address $01, byte length) to indicate that device
-; 0 is there (and the startup code will wait for it at the next boot).
-
-				BTST.B	#7,SCSIPoll		; bit 7 is cleared by InitSCSIMgr			<C613/12Jan87>
-				BNE.S	@1				; don't poll if we've already done it once	<C613/12Jan87>
-				CMP.L	#20*60,Ticks	; have we been running for 20 seconds?		<A349/04Nov86>
-				BLO.S	@1				; no, too early yet							<A300/29Oct86>
-				BSET.B	#7,SCSIPoll		; set it so we don't do it again			<C613/12Jan87>
-				BSR		TryDevice		; see if that device is out there			<C613/12Jan87>
-
-@1
-
 ; see if there was no event, if so do a get mouse to tickle tracking
 ; Historical note: by this time, an FKey is made to look like "no event", in which	<13Jan86  JTC>
 ; case the mouse update is done...
@@ -615,75 +601,6 @@ ClearDAct
 
 GotDActive		CLR 	D2				;flag the deactivate
 				BRA.S	GotActCommon	;go use common code
-
-
-;--------------------------------------------------------------------------
-;
-; TryDevice -- we do a one-time check of the SCSI ID for the internal hard
-;	disk some number of seconds after bootup.  Since the internal disk is
-;	powered from the CPU's power supply, it is likely that the startup code
-;	will be ready to boot off a floppy before the disk has spun up to full
-;	speed.  Unless we have some way to know if there is an internal drive,
-;	the start code won't know whether or not to wait for the device.  This
-;	'lightning bolt' happens once per bootup, setting a field in parameter
-;	RAM that the startup code looks at.  If we find a SCSI device ready that
-;	corresponds to the internal disk SCSI ID stored in parameter RAM, then
-;	we set a field in parameter RAM so the startup code will wait for it
-;	at the next bootup.  This introduces some hysteresis in the process if the
-;	user changes the ID of his internal drive, but it was deemed to be more
-;	preferable than the alternative of a Control Panel setting to enable and
-;	disable waiting for the internal hard disk.  The default ID to check is
-;	0, but can be changed in parameter RAM (which gets stored into the SCSIPoll
-;	variable by InitSCSIMgr).
-;
-
-TryDevice								; This subroutine new <A300/29Oct86>
-				CLR.L	-(SP)			; 6-byte Test Unit Ready command block
-				CLR.L	-(SP)			;   (6 zeroes) and 2-byte return value
-				_SCSIGet				; arbitrate for the SCSI bus
-				TST.W	(SP)			; success?
-				BNE.S	TryDevDone		; if arbitrate failed, don't change PRAM
-				MOVE.B	SCSIPoll,D0		; get SCSI ID of the int. drive		<C613>
-				AND.B	#$07,D0			; mask off ID bits					<C613>
-				MOVE.W	D0,-(SP)		; push SCSI ID for the select		<C613>
-
-				_SCSISelect				; try to select (max. wait 250 ms.)
-				TST.W	(SP)			; success?
-				BEQ.S	SelectOK		; branch if select succeeded
-
-				_DisableDynWait			; don't wait for that id on bootup	<A349/04Nov86>
-				BRA.S	TryDevDone		; exit
-
-SelectOK
-				PEA		2(SP)			; address of Test Unit Ready command
-				MOVE.W	#6,-(SP)		; length of Test Unit Ready command
-				_SCSICmd				; do the command
-		;
-		;	If something went wrong with the command, then we need to do
-		;	SCSIComplete anyway, so it isn't necessary to check the
-		;	return value.  Since we don't need the space for the command
-		;	block any more, we just reuse it for the status and message
-		;	values (each a word) returned by SCSIComplete.  Before pushing
-		;	anything else, these EA's are 2(sp) and 4(sp), so we PEA 2(sp)
-		;	for the first (which adds 4 bytes to the stack), and PEA 8(sp)
-		;	for the second [PEA 4+4(sp)].
-		;
-				PEA		2(SP)			; address for status value
-				PEA		8(SP)			; address for message value
-				MOVEQ.L	#60,D0			; maximum number of ticks to wait	<A349/04Nov86>
-				MOVE.L	D0,-(SP)		; push it
-				_SCSIComplete			; wrap things up, ignore return code
-		;
-		;	If we got this far, then there is a device 0, so enable timeout
-		;
-				_EnableDynWait			; startup code will wait for dev. 0	<A349/04Nov86>
-
-TryDevDone
-				ADDQ.L	#8,sp			; clean up local variables
-				RTS
-
-
-				ENDPROC
 
 
 ;____________________________________________________________________________________

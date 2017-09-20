@@ -314,33 +314,6 @@ DspTable	PROC	EXPORT
 		endif
 		endm
 
-	If hasNewHeapMgr Then
-;------------------------------------------------------------------------------
-; <SM46> BT: Second OS table macro for Figment.  This is temporary
-; until figment is fully approved.
-;------------------------------------------------------------------------------
-		macro
-		OS2		&num,&name,&cond
-		if (*-SecondOS)/4 <> &Eval(&num) then
-		aerror	'Trap Number out of sequence'
-		endif
-		if &name = '' then
-		dc.l	0		; unused
-		elseif &cond = '' then
-		import	&name
-		dc.l	&name-BaseOfRom
-		elseif &Eval(&cond) then
-		import	&name
-		dc.l	&name-BaseOfRom
-		else
-		dc.l	0		; not used in this configuration
-		endif
-		endm
-;------------------------------------------------------------------------------
-; <SM46> BT: End second OS table macro
-;------------------------------------------------------------------------------
-	endif
-
 
 	EXPORT	DispTable
 	IMPORT	BaseofRom
@@ -353,13 +326,13 @@ DispTable
 
 FirstTool
 	ToolBox	$000								; toolbox trap $000 (ALWAYS LEAVE AS ZERO) <SM39> rb
-	ToolBox	$001,__SNDDISPOSECHANNEL			; toolbox trap $001
-	ToolBox	$002,__SNDADDMODIFIER				; toolbox trap $002
-	ToolBox	$003,__SNDDOCOMMAND					; toolbox trap $003
-	ToolBox	$004,__SNDDOIMMEDIATE				; toolbox trap $004
-	ToolBox	$005,__SNDPLAY						; toolbox trap $005
-	ToolBox	$006,__SNDCONTROL					; toolbox trap $006
-	ToolBox	$007,__SNDNEWCHANNEL				; toolbox trap $007
+	ToolBox	$001 ;,__SNDDISPOSECHANNEL			; toolbox trap $001
+	ToolBox	$002 ;,__SNDADDMODIFIER				; toolbox trap $002
+	ToolBox	$003 ;,__SNDDOCOMMAND				; toolbox trap $003
+	ToolBox	$004 ;,__SNDDOIMMEDIATE				; toolbox trap $004
+	ToolBox	$005 ;,__SNDPLAY					; toolbox trap $005
+	ToolBox	$006 ;,__SNDCONTROL					; toolbox trap $006
+	ToolBox	$007 ;,__SNDNEWCHANNEL				; toolbox trap $007
 	ToolBox	$008,InitProcMenu					; toolbox trap $008 (new menu mgr)	<C175>
 	ToolBox	$009,GetCVariant					; toolbox trap $009 				<C496>
 	ToolBox	$00A,GetWVariant					; toolbox trap $00A					<C496>
@@ -374,8 +347,8 @@ FirstTool
 	ToolBox	$013,TEAutoView						; toolbox trap $013
 	ToolBox	$014,SetFractEnable					; toolbox trap $014 (font mgr) 		<C560>
 ;	ToolBox	$015,SCSIMgr						; toolbox trap $015
-	ToolBox	$015,SCSIDispatchCommon				; toolbox trap $015 <RLM>
-	ToolBox	$016,Pack8							; toolbox trap $016
+	ToolBox	$015, ;SCSIDispatchCommon			; toolbox trap $015 <RLM>
+	ToolBox	$016, ;Pack8						; toolbox trap $016
 	ToolBox	$017,CopyMask						; toolbox trap $017
 	ToolBox	$018,FixAtan2						; toolbox trap $018
 	ToolBox	$019,XMunger						; toolbox trap $019
@@ -396,13 +369,13 @@ FirstTool
 	ToolBox	$028,ShowDItem						; toolbox trap $028
 	ToolBox	$029,LayerDispatch					; toolbox trap $029 (LayerDispatch) (v1.1)
 	ToolBox	$02A,MainComponent					; toolbox trap $02A (ComponentDispatch) (v1.1)
-	ToolBox	$02B,Pack9							; toolbox trap $02B
+	ToolBox	$02B ;,Pack9						; toolbox trap $02B
 	ToolBox	$02C,Pack10							; toolbox trap $02C
-	ToolBox	$02D,Pack11							; toolbox trap $02D
+	ToolBox	$02D ;,Pack11						; toolbox trap $02D
 	ToolBox	$02E,Pack12							; toolbox trap $02E
 	ToolBox	$02F,Pack13							; toolbox trap $02F
-	ToolBox	$030,Pack14Entry					; toolbox trap $030
-	ToolBox	$031,Pack15							; toolbox trap $031
+	ToolBox	$030 ;,Pack14Entry					; toolbox trap $030
+	ToolBox	$031 ;,Pack15						; toolbox trap $031
 	ToolBox	$032								; toolbox trap $032 (unimplemented) (v1.1)
 	ToolBox	$033,ScrnBitMap						; toolbox trap $033
 	ToolBox	$034,SetFScaleDisable				; toolbox trap $034
@@ -819,7 +792,7 @@ FirstTool
 	ToolBox	$1C5,RsrcMapEntry					; toolbox trap $1C5
 	ToolBox	$1C6,Secs2Date						; toolbox trap $1C6
 	ToolBox	$1C7,Date2Secs						; toolbox trap $1C7
-	ToolBox	$1C8,__SYSBEEP						; toolbox trap $1C8
+	ToolBox	$1C8 ;,__SYSBEEP						; toolbox trap $1C8
 	ToolBox	$1C9,SystemError					; toolbox trap $1C9
 	ToolBox	$1CA,PutIcon						; toolbox trap $1CA
 	ToolBox	$1CB,TEGetText						; toolbox trap $1CB
@@ -958,11 +931,11 @@ FirstTool
 	ToolBox	$250,SeedCFill						; toolbox trap $250		<31Jan89 BAL>
 	ToolBox	$251,KopyMask						; toolbox trap $251 	<SM40>
 	ToolBox	$252,HighLevelFSDispatch			; toolbox trap $252 (unknown)		<C146>
-	ToolBox	$253,DictionaryDispatch				; toolbox trap $253 (DictionaryDispatch) <SM41> CSS
-	ToolBox	$254,TSMDispatch					; toolbox trap $254 (TMSDispatch)		<C146>
+	ToolBox	$253 ;,DictionaryDispatch			; toolbox trap $253 (DictionaryDispatch) <SM41> CSS
+	ToolBox	$254 ;,TSMDispatch					; toolbox trap $254 (TMSDispatch)		<C146>
 	ToolBox	$255								; toolbox trap $255 (unknown)		<C146>
 	ToolBox	$256								; toolbox trap $256 (unknown)		<C146>
-	ToolBox	$257,DockingDispatch				; toolbox trap $257 (unknown)		<SM38>
+	ToolBox	$257 ;,DockingDispatch				; toolbox trap $257 (unknown)		<SM38>
 	ToolBox	$258								; toolbox trap $258 (unknown)		<C146>
 	ToolBox	$259								; toolbox trap $259 (unknown)		<C146>
 	ToolBox	$25A								; toolbox trap $25A (unknown)		<C146>
@@ -983,13 +956,14 @@ FirstTool
 	ToolBox	$268,DialogMgrDispatch				; toolbox trap $268 <RLM>
 
 	ToolBox	$269								; toolbox trap $269 (unknown)		<C146> <C413>
-	ToolBox	$26A								; toolbox trap $26A (unknown)		<C146> <C413>
+	ToolBox	$26A,__AA6A
 	ToolBox	$26B								; toolbox trap $26B (unknown)		<C146> <C413>
 	ToolBox	$26C								; toolbox trap $26C (unknown)		<C146> <C413>
 	ToolBox	$26D								; toolbox trap $26D (unknown)		<C146> <C413>
 	ToolBox	$26E								; toolbox trap $26E (unknown)		<C146> <C413>
 	ToolBox	$26F								; toolbox trap $26F (unknown)		<C146> <C413>
-	DCB.L	16,0								; toolbox trap $270-$27F (unknown)		<C146>
+	DCB.L	15,0								; toolbox trap $270-$27E (unknown)		<C146>
+	ToolBox	$27F,NKLog
 	DCB.L	16,0								; toolbox trap $280-$28F (unknown)		<C146>
 	ToolBox	$290,InitPalettes					; toolbox trap $290		<02Jun87 DAF>
 	ToolBox	$291,NewPalette						; toolbox trap $291		<02Jun87 DAF>
@@ -1045,7 +1019,7 @@ FirstTool
 
 	DCB.L	16,0								; toolbox trap $2E0-$2EF (unknown)		<C146>
 	ToolBox	$2F0								; toolbox trap $2AF (unknown)		<C146>
-	ToolBox	$2F1								; toolbox trap $2AF (unknown)		<C146>
+	ToolBox	$2F1,ATAManager
 	ToolBox	$2F2								; toolbox trap $2AF (unknown)		<C146>
 	ToolBox	$2F3,ExpansionBusDispatch			; toolbox trap $2F3 (Expansion Bus Mgr)
 	ToolBox	$2F4								; toolbox trap $2AF (unknown)		<C146>
@@ -1262,7 +1236,7 @@ FirstTool
 	ToolBox	$3C6								; quickdraw hook $3C6
 	ToolBox	$3C7								; quickdraw hook $3C7
 	ToolBox	$3C8								; quickdraw2 hook $3C8
-	ToolBox	$3C9,IconDispatch					; quickdraw _IconDispatch $3C9
+	ToolBox	$3C9 ;,IconDispatch					; quickdraw _IconDispatch $3C9
 	ToolBox	$3CA,DeviceLoop						; quickdraw _DeviceLoop <20> PN
 	ToolBox	$3CB								; quickdraw hook $3CB
 	ToolBox	$3CC								; quickdraw hook $3CC
@@ -1270,7 +1244,8 @@ FirstTool
 	ToolBox	$3CE								; quickdraw hook $3CE
 	ToolBox	$3CF								; quickdraw hook $3CF
 	DCB.L	16,0								; toolbox trap $3D0-$3DF (unknown)		<C146>
-	DCB.L	11,0								; toolbox trap $3E0-$3EA (unknown)		<C146>
+	ToolBox	$3E0,QDExtensions2
+	DCB.L	10,0								; toolbox trap $3E1-$3EA (unknown)		<C146>
 		IF hasDisplayMgr THEN					;	Only install if we have we are flagged
 	ToolBox	$3EB,DisplayDispatch				; toolbox trap $3EB (DisplayManager)	(IH)
 		ELSE
@@ -1278,7 +1253,7 @@ FirstTool
 		ENDIF
 	DCB.L	4,0									; toolbox trap $3EC-$3EF (unknown)		<C146>
 	ToolBox	$3F0								; toolbox trap $3F0 (unknown)		<C146>
-	ToolBox	$3F1								; toolbox trap $3F1 (unknown)		<C146>
+	ToolBox	$3F1,GestaltValueDispatch
 	ToolBox	$3F2								; toolbox trap $3F2 (unknown)		<C146>
 	ToolBox	$3F3								; toolbox trap $3F3 (unknown)		<C146>
 	ToolBox	$3F4								; toolbox trap $3F4 (unknown)		<C146>
@@ -1384,14 +1359,14 @@ FirstOS
 	OS		$50,RelStringTrap					; OS trap $50
 	OS		$51,ReadXPRam						; OS trap $51
 	OS		$52,WriteXPRam						; OS trap $52
-	OS		$53,ClkNoMem						; OS trap $53
+	OS		$53 ;,ClkNoMem						; OS trap $53
 	OS		$54,UprStringTrap					; OS trap $54
 	OS		$55,__StripAddress					; OS trap $55 (new memory mgr)	<C172>
 	OS		$56,NewLwrString					; OS trap $56 ;in-ROM script manager
 	OS		$57,SetApplBase						; OS trap $57
-	OS		$58,__InsTime						; OS trap $58
-	OS		$59,__RmvTime						; OS trap $59
-	OS		$5A,__PrimeTime						; OS trap $5A
+	OS		$58 ;,__InsTime						; OS trap $58
+	OS		$59 ;,__RmvTime						; OS trap $59
+	OS		$5A ;,__PrimeTime					; OS trap $5A
 	OS		$5B,PowerOff						; OS trap $5B (poweroff trap)	<11apr86>/<C68>
 	OS		$5C,MemoryDispatch,hasMMU			; OS trap $5C (MemoryDispatch trap) <v1.8>
 	OS		$5D									; OS trap $5D (MMU trap, set up later) <2.7>
@@ -1408,7 +1383,7 @@ FirstOS
 	OS		$68,HNoRSRC							; OS trap $68
 	OS		$69,HGetFlags						; OS trap $69
 	OS		$6A,HSetFlags						; OS trap $6A
-	OS		$6B,TestManager						; OS trap $6B (test trap)		<C17/27may86>
+	OS		$6B ;,TestManager					; OS trap $6B (test trap)		<C17/27may86>
 	OS		$6C,InitFS							; OS trap $6C
 	OS		$6D,InitEvents						; OS trap $6D
 	OS		$6E,SlotManager,hasSlotMgr			; OS trap $6E					<C90>
@@ -1434,13 +1409,13 @@ FirstOS
 	OS		$82,DTInstallTrap					; OS trap $82 (deferred task)	<C489>
 	OS		$83,SetOSDefault,hasSlotMgr			; OS trap $83 (which os to use)	<C508>
 	OS		$84,GetOSDefault,hasSlotMgr			; OS trap $84 (which os to use)	<C508>
-	OS		$85,PmgrOp,hasPwrControls|PwrMgrADB|hasPwrMgrClock	; OS trap $85
+	OS		$85 ;,PmgrOp,hasPwrControls|PwrMgrADB|hasPwrMgrClock	; OS trap $85
 	OS		$86,IOPInfoAccess,hasIopScc|hasIopSwim	; OS trap $086					<1.3>
 	OS		$87,IOPMsgRequest,hasIopScc|hasIopSwim	; OS trap $087					<1.3>
 	OS		$88,IOPMoveData,hasIopScc|hasIopSwim	; OS trap $088					<1.3>
 	OS		$89,NewSCSITrap,0					; os trap $89 (async SCSI Mgr)	<v1.7><3.0>
 	OS		$8A,GoToSleep,hasPwrControls|PwrMgrADB|hasPwrMgrClock	; OS trap $8A
-	OS		$8B,COMMTOOLBOXDISPATCHER			; os trap $8B (CommToolBoxTrap)		<SM33><PN>
+	OS		$8B ;,COMMTOOLBOXDISPATCHER			; os trap $8B (CommToolBoxTrap)		<SM33><PN>
 	OS		$8C									; os trap $8C (unknown)		<C489><C508><C908><1.5>
 	OS		$8D,DebugUtil						; os trap $8D					<1.5>
 	OS		$8E,ExtBTreeDispatch				; os trap $8E (BTreeDispatch)					<2.0>
@@ -1448,7 +1423,7 @@ FirstOS
 	OS		$90,SysEnvironsTrap					; OS trap $90					<C982>
 	OS		$91,Translate24To32					; os trap $91 (unknown)			<2.9> BAL
 	OS		$92,EgretDispatch,hasEgret			; os trap $92					<4>
-	OS		$93,__Microseconds					; os trap $93					<9>
+	OS		$93 ;,__Microseconds					; os trap $93					<9>
 	OS		$94									; os trap $94 (unknown)
 	OS		$95									; os trap $95 (unknown)
 	OS		$96									; os trap $96 (unknown)
@@ -1459,8 +1434,8 @@ FirstOS
 	OS		$9B									; os trap $9B (unknown)
 	OS		$9C									; os trap $9C (unknown)
 	OS		$9D,MoveHLow						; os trap $9D MoveHLow			<SM18> tcn
-	OS		$9E,PowerMgrDispatch,hasPwrControls	; os trap $9E (PowerMgrDispatch Trap)		<SM25> <SM35>
-	OS		$9F,PowerDispatch,hasPwrControls	; os trap $9F (PwrControls Traps)	<17> rb
+	OS		$9E ;,PowerMgrDispatch,hasPwrControls	; os trap $9E (PowerMgrDispatch Trap)		<SM25> <SM35>
+	OS		$9F ;,PowerDispatch,hasPwrControls	; os trap $9F (PwrControls Traps)	<17> rb
 	OS		$A0									; os trap $A0 (unknown)
 	OS		$A1									; os trap $A1 (unknown)
 	OS		$A2									; os trap $A2 (unknown)
@@ -1493,7 +1468,7 @@ FirstOS
 	OS		$B6,vWaitUntil						; vector $B6 (iocore)			<C811>
 	OS		$B7,vSyncWait						; vector $B7 (iocore)			<C811>
 
-	OS		$B8,__SNDAPPDEAD					; vector $B8
+	OS		$B8 ;,__SNDAPPDEAD					; vector $B8
 	OS		$B9,vDisPtch						; vector $B9 (deferred task)	<C811><2.2>
 	OS		$BA,vIAZInit						; vector $BA					<16jun87 CSL>
 	OS		$BB,vIAZPostInit					; vector $BB					<16jun87 CSL>
@@ -1530,7 +1505,7 @@ FirstOS
 	OS		$DA,vExtendFile						; vector $DA
 	OS		$DB,vTruncateFile					; vector $DB
 	OS		$DC,vCMSetUp						; vector $DC
-	OS		$DD,vppcDispatcher					; vector $DD (PPCDispatcher)
+	OS		$DD ;,vppcDispatcher				; vector $DD (PPCDispatcher)
 	OS		$DE,vDtrmV1							; vector $DE
 	OS		$DF,vBlkAlloc						; vector $DF
 	OS		$E0,vBlkDeAlloc						; vector $E0
@@ -1569,286 +1544,6 @@ FirstOS
 ;------------------------------------------------------------------------------
 ; end of vectors
 ;------------------------------------------------------------------------------
-
-
-	if hasNewHeapMgr Then
-;------------------------------------------------------------------------------
-; <SM46> BT: Second OS table for Figment.  This is temporary
-; until figment is fully approved.
-;------------------------------------------------------------------------------
-; WARNING -- DO NOT CHANGE THIS TABLE UNLESS YOU CHANGE THE CORRESPONDING OS TABLE! (ABOVE)
-;------------------------------------------------------------------------------
-
-SecondOS
-	OS2		$00,Open							; OS trap $00
-	OS2		$01,Close							; OS trap $01
-	OS2		$02,Read							; OS trap $02
-	OS2		$03,Write							; OS trap $03
-	OS2		$04,ControlTrap						; OS trap $04
-	OS2		$05,StatusTrap						; OS trap $05
-	OS2		$06,KillIOTrap						; OS trap $06
-	OS2		$07,GetVolInfo						; OS trap $07
-	OS2		$08,FileCreate						; OS trap $08
-	OS2		$09,FileDelete						; OS trap $09
-	OS2		$0A,OpenRFTrap						; OS trap $0A
-	OS2		$0B,RenameTrap						; OS trap $0B
-	OS2		$0C,GetFileInfo						; OS trap $0C
-	OS2		$0D,SetFileInfo						; OS trap $0D
-	OS2		$0E,UnmountVolTrap					; OS trap $0E
-	OS2		$0F,MountVol						; OS trap $0F
-	OS2		$10,FileAlloc						; OS trap $10
-	OS2		$11,GetEOFTrap						; OS trap $11
-	OS2		$12,SetEOFTrap						; OS trap $12
-	OS2		$13,FlushVolTrap					; OS trap $13
-	OS2		$14,GetVolTrap						; OS trap $14
-	OS2		$15,SetVolTrap						; OS trap $15
-	OS2		$16,FInitQueue						; OS trap $16
-	OS2		$17,EjectTrap						; OS trap $17
-	OS2		$18,GetFPosTrap						; OS trap $18
-	OS2		$19,Fig_InitZoneTrap				; OS trap $19
-	OS2		$1A,Fig_GetZone						; OS trap $1A
-	OS2		$1B,Fig_SetZone						; OS trap $1B
-	OS2		$1C,Fig_FreeMem						; OS trap $1C
-	OS2		$1D,Fig_MaxMemTrap					; OS trap $1D
-	OS2		$1E,Fig_NewPtrTrap					; OS trap $1E
-	OS2		$1F,Fig_DisposePtr					; OS trap $1F
-	OS2		$20,Fig_SetPtrSizeTrap				; OS trap $20
-	OS2		$21,Fig_GetPtrSizeTrap				; OS trap $21
-	OS2		$22,Fig_NwHandle					; OS trap $22
-	OS2		$23,Fig_DsposeHandle				; OS trap $23
-	OS2		$24,Fig_SetHandleSizeTrap			; OS trap $24
-	OS2		$25,Fig___GetHandleSize				; OS trap $25
-	OS2		$26,Fig_HandleZoneTrap				; OS trap $26
-	OS2		$27,Fig_ReallocHandleTrap			; OS trap $27
-	OS2		$28,Fig_RecoverHandleTrap			; OS trap $28
-	OS2		$29,Fig_HLock						; OS trap $29
-	OS2		$2A,Fig_HUnlock						; OS trap $2A
-	OS2		$2B,Fig_EmptyHandle					; OS trap $2B
-	OS2		$2C,Fig_InitApplZone				; OS trap $2C
-	OS2		$2D,Fig_SetApplLimit				; OS trap $2D
-	OS2		$2E,__BlockMove						; OS trap $2E
-	OS2		$2F,PostEventTrap					; OS trap $2F
-	OS2		$30,OSEventAvailTrap				; OS trap $30 <PN> <SM28> rb
-	OS2		$31,GetOSEventTrap					; OS trap $31
-	OS2		$32,FlushEvents						; OS trap $32
-	OS2		$33,VInstall						; OS trap $33
-	OS2		$34,VRemove							; OS trap $34
-	OS2		$35,OffLine							; OS trap $35
-	OS2		$36,Fig_MoreMasters					; OS trap $36
-	OS2		$37,ReadParam						; OS trap $37
-	OS2		$38,WriteParamTrap					; OS trap $38
-	OS2		$39,ReadDateTimeTrap				; OS trap $39
-	OS2		$3A,SetDateTimeTrap					; OS trap $3A
-	OS2		$3B,DelayTrap						; OS trap $3B
-	OS2		$3C,CmpString						; OS trap $3C
-	OS2		$3D,DrvrInstall						; OS trap $3D
-	OS2		$3E,DrvrRemove						; OS trap $3E
-	OS2		$3F,InitUtil						; OS trap $3F
-	OS2		$40,Fig_ResrvMem					; OS trap $40
-	OS2		$41,SetFilLock						; OS trap $41 new from extensionHFS
-	OS2		$42,RstFilLock						; OS trap $42 new from extensionHFS
-	OS2		$43,SetFilType						; OS trap $43
-	OS2		$44,SetFPosTrap						; OS trap $44
-	OS2		$45,FlushFile						; OS trap $45
-	OS2		$46,GetTrapAddressTrap				; OS trap $46
-	OS2		$47,SetTrapAddressTrap				; OS trap $47
-	OS2		$48,Fig_PtrZoneTrap					; OS trap $48
-	OS2		$49,Fig_HPurge						; OS trap $49
-	OS2		$4A,Fig_HNoPurge					; OS trap $4A
-	OS2		$4B,Fig_SetGrowZone					; OS trap $4B
-	OS2		$4C,Fig_CompactMemTrap				; OS trap $4C
-	OS2		$4D,Fig_PurgeMem					; OS trap $4D
-	OS2		$4E,AddDriveTrap					; OS trap $4E
-	OS2		$4F,InstallRDrivers					; OS trap $4F
-	OS2		$50,RelStringTrap					; OS trap $50
-	OS2		$51,ReadXPRam						; OS trap $51
-	OS2		$52,WriteXPRam						; OS trap $52
-	OS2		$53,ClkNoMem						; OS trap $53
-	OS2		$54,UprStringTrap					; OS trap $54
-	OS2		$55,__StripAddress					; OS trap $55 (new memory mgr)	<C172>
-	OS2		$56,NewLwrString					; OS trap $56 ;in-ROM script manager
-	OS2		$57,Fig_SetApplBase					; OS trap $57
-	OS2		$58,__InsTime						; OS trap $58
-	OS2		$59,__RmvTime						; OS trap $59
-	OS2		$5A,__PrimeTime						; OS trap $5A
-	OS2		$5B,PowerOff						; OS trap $5B (poweroff trap)	<11apr86>/<C68>
-	OS2		$5C,MemoryDispatch,hasMMU			; OS trap $5C (MemoryDispatch trap) <v1.8>
-	OS2		$5D									; OS trap $5D (MMU trap, set up later) <2.7>
-	OS2		$5E,__NMINSTALL						; OS trap $5E (v1.1) <SM21> tcn
-	OS2		$5F,__NMREMOVE						; OS trap $5F (v1.1) <SM21> tcn
-	OS2		$60,TFSDispatch						; OS trap $60
-	OS2		$61,Fig_MaxBlockTrap				; OS trap $61
-	OS2		$62,Fig_PurgeSpaceTrap				; OS trap $62
-	OS2		$63,Fig_MaxApplZone					; OS trap $63
-	OS2		$64,Fig_MoveHHi						; OS trap $64
-	OS2		$65,Fig_StackSpaceTrap				; OS trap $65
-	OS2		$66,Fig_NewEmptyHandleTrap			; OS trap $66
-	OS2		$67,Fig_HRSRC						; OS trap $67
-	OS2		$68,Fig_HNoRSRC						; OS trap $68
-	OS2		$69,Fig_HGetFlags					; OS trap $69
-	OS2		$6A,Fig_HSetFlags					; OS trap $6A
-	OS2		$6B,TestManager						; OS trap $6B (test trap)		<C17/27may86>
-	OS2		$6C,InitFS							; OS trap $6C
-	OS2		$6D,InitEvents						; OS trap $6D
-	OS2		$6E,SlotManager,hasSlotMgr			; OS trap $6E					<C90>
-	OS2		$6F,SlotVInstall,hasSlotMgr			; os trap $6F (Slot Manager)	<C147>
-	OS2		$70,SlotVRemove,hasSlotMgr			; os trap $70 (Slot Manager)	<C147>
-	OS2		$71,AttachVBL,hasSlotMgr			; os trap $71 (VBL Manager)		<C147>
-	OS2		$72,DoVBLTask,hasSlotMgr			; os trap $72 (VBL Manager)		<C147>
-	OS2		$73									; OS trap $73 (reserved for twitcher??) <C908>
-	OS2		$74,CacheTrap						; os trap $74					<v2.3>
-	OS2		$75,SIntInstall,hasSlotMgr			; OS trap $75					<C88>
-	OS2		$76,SIntRemove,hasSlotMgr			; OS trap $76					<C88>
-	OS2		$77,CountADBs						; OS trap $77 (fdb manager)		<C103>
-	OS2		$78,GetIndADBTrap					; OS trap $78 (fdb manager)		<C103>
-	OS2		$79,GetADBInfoTrap					; OS trap $79 (fdb manager)		<C103>
-	OS2		$7A,SetADBInfoTrap					; OS trap $7A (fdb manager)		<C103>
-	OS2		$7B,ADBReinit						; OS trap $7B (fdb manager)		<C103>
-	OS2		$7C,ADBOpTrap						; OS trap $7C (fdb manager)		<C103>
-	OS2		$7D,GetDefaultStartup				; OS trap $7D (start manager)	<C908>
-	OS2		$7E,SetDefaultStartup				; OS trap $7E (start manager)	<C908>
-	OS2		$7F,InternalWait					; os trap $7F (start manager)	<A345>
-	OS2		$80,GetVideoDefault,hasSlotMgr		; OS trap $80 (start manager)	<A345>
-	OS2		$81,SetVideoDefault,hasSlotMgr		; OS trap $81 (start manager)	<A345>
-	OS2		$82,DTInstallTrap					; OS trap $82 (deferred task)	<C489>
-	OS2		$83,SetOSDefault,hasSlotMgr			; OS trap $83 (which os to use)	<C508>
-	OS2		$84,GetOSDefault,hasSlotMgr			; OS trap $84 (which os to use)	<C508>
-	OS2		$85,PmgrOp,hasPwrControls|PwrMgrADB|hasPwrMgrClock	; OS trap $85
-	OS2		$86,IOPInfoAccess,hasIopScc|hasIopSwim	; OS trap $086					<1.3>
-	OS2		$87,IOPMsgRequest,hasIopScc|hasIopSwim	; OS trap $087					<1.3>
-	OS2		$88,IOPMoveData,hasIopScc|hasIopSwim	; OS trap $088					<1.3>
-	OS2		$89,NewSCSITrap,0					; os trap $89 (async SCSI Mgr)	<v1.7><3.0>
-	OS2		$8A,GoToSleep,hasPwrControls|PwrMgrADB|hasPwrMgrClock	; OS trap $8A
-	OS2		$8B,COMMTOOLBOXDISPATCHER			; os trap $8B (CommToolBoxTrap)		<SM33><PN>
-	OS2		$8C									; os trap $8C (unknown)		<C489><C508><C908><1.5>
-	OS2		$8D,DebugUtil						; os trap $8D					<1.5>
-	OS2		$8E,ExtBTreeDispatch				; os trap $8E (BTreeDispatch)					<2.0>
-	OS2		$8F,NonVMDeferUserFn				; os trap $8F (DeferUserFn)			PN
-	OS2		$90,SysEnvironsTrap					; OS trap $90					<C982>
-	OS2		$91,Translate24To32					; os trap $91 (unknown)			<2.9> BAL
-	OS2		$92,EgretDispatch,hasEgret			; os trap $92					<4>
-	OS2		$93,__Microseconds					; os trap $93					<9>
-	OS2		$94									; os trap $94 (unknown)
-	OS2		$95									; os trap $95 (unknown)
-	OS2		$96									; os trap $96 (unknown)
-	OS2		$97									; os trap $97 (unknown)
-	OS2		$98,HwPriv,Cpu³020					; OS trap $98					<1.6>
-	OS2		$99									; os trap $99 (unknown)
-	OS2		$9A,ProcHelper						; os trap $9A ProcHelper		<19> rb
-	OS2		$9B									; os trap $9B (unknown)
-	OS2		$9C									; os trap $9C (unknown)
-	OS2		$9D,Fig_MoveHLow					; os trap $9D MoveHLow			<SM18> tcn
-	OS2		$9E,PowerMgrDispatch,hasPwrControls	; os trap $9E (PowerMgrDispatch Trap)	<K2>
-	OS2		$9F,PowerDispatch,hasPwrControls	; os trap $9F (PwrControls Traps)	<17> rb
-	OS2		$A0									; os trap $A0 (unknown)
-	OS2		$A1									; os trap $A1 (unknown)
-	OS2		$A2									; os trap $A2 (unknown)
-	OS2		$A3									; os trap $A3 (unknown)
-	OS2		$A4,HeapDispatch					; os trap $A4 (unknown)
-	OS2		$A5,VisRgnChanged					; os trap $A5 <26MAR90 KON>
-	OS2		$A6,vRMgrStdEntry					; vector  $A6 (StdEntry in rmgr)<3.2>
-	OS2		$A7,vRMgrStdExit					; vector  $A7 (StdExit in rmgr)	<3.2>
-	OS2		$A8									; os trap $A8 (unknown)
-	OS2		$A9									; os trap $A9 (unknown)
-	OS2		$AA									; os trap $AA (unknown)
-	OS2		$AB									; os trap $AB (unknown)
-	OS2		$AC									; os trap $AC (unknown)
-	OS2		$AD,GestaltTrap						; os trap $AD (Gestalt)			<1.9>
-	OS2		$AE									; os trap $AE (unknown)
-
-;------------------------------------------------------------------------------
-; end of OS traps, start of vectors
-;------------------------------------------------------------------------------
-; WARNING -- DO NOT CHANGE THIS TABLE UNLESS YOU CHANGE THE CORRESPONDING OS TABLE! (ABOVE)
-;------------------------------------------------------------------------------
-
-	OS2		$AF,vMtCheck						; vector $AF (HFS)				<C828>
-	OS2		$B0,vCheckReMount					; vector $B0 (HFS)				<C828>
-	OS2		$B1,vDtrmV2							; vector $B1 (HFS)				<C828>
-	OS2		$B2,vFindDrive						; vector $B2 (HFS)				<C828>
-	OS2		$B3,vFClose							; vector $B3 (HFS)				<C828>
-	OS2		$B4,vFlushMDB						; vector $B4 (HFS)				<C828>
-	OS2		$B5,vGoDriver						; vector $B5 (iocore)			<C811>
-	OS2		$B6,vWaitUntil						; vector $B6 (iocore)			<C811>
-	OS2		$B7,vSyncWait						; vector $B7 (iocore)			<C811>
-
-	OS2		$B8,__SNDAPPDEAD					; vector $B8
-	OS2		$B9,vDisPtch						; vector $B9 (deferred task)	<C811><2.2>
-	OS2		$BA,vIAZInit						; vector $BA					<16jun87 CSL>
-	OS2		$BB,vIAZPostInit					; vector $BB					<16jun87 CSL>
-	OS2		$BC,vLaunchInit						; vector $BC					<16jun87 CSL>
-	OS2		$BD,vCacheFlush						; vector $BD					<C668><1.2>
-	OS2		$BE,AsyncPatch						; vector $BE					<A368>
-	OS2		$BF,vLg2Phys						; vector $BF
-	OS2		$C0,vFLushCache						; vector $C0
-	OS2		$C1,vGetBlock						; vector $C1
-	OS2		$C2,vMarkBlock						; vector $C2
-	OS2		$C3,vRelBlock						; vector $C3
-	OS2		$C4,vTrashBlocks					; vector $C4
-	OS2		$C5,vTrashVBlks						; vector $C5
-	OS2		$C6,vCacheWrIP						; vector $C6
-	OS2		$C7,vCacheRdIP						; vector $C7
-	OS2		$C8,vBasicIO						; vector $C8
-	OS2		$C9,vRdBlocks						; vector $C9
-	OS2		$CA,vWrBlocks						; vector $CA
-	OS2		$CB,vSetUpTags						; vector $CB
-	OS2		$CC,vBTClose						; vector $CC
-	OS2		$CD,vBTDelete						; vector $CD
-	OS2		$CE,vBTFlush						; vector $CE
-	OS2		$CF,vBTGetRecord					; vector $CF
-	OS2		$D0,VBTINSERT						; vector $D0
-	OS2		$D1,vBTOpen							; vector $D1
-	OS2		$D2,vBTSEARCH						; vector $D2
-	OS2		$D3,vBTUpdate						; vector $D3
-	OS2		$D4,vGetNode						; vector $D4
-	OS2		$D5,vRelNode						; vector $D5
-	OS2		$D6,vAllocNode						; vector $D6
-	OS2		$D7,vFreeNode						; vector $D7
-	OS2		$D8,vExtBTFile						; vector $D8
-	OS2		$D9,vDeallocFile					; vector $D9
-	OS2		$DA,vExtendFile						; vector $DA
-	OS2		$DB,vTruncateFile					; vector $DB
-	OS2		$DC,vCMSetUp						; vector $DC
-	OS2		$DD,vppcDispatcher					; vector $DD (PPCDispatcher)
-	OS2		$DE,vDtrmV1							; vector $DE
-	OS2		$DF,vBlkAlloc						; vector $DF
-	OS2		$E0,vBlkDeAlloc						; vector $E0
-	OS2		$E1,vFileOpen						; vector $E1
-	OS2		$E2,vPermssnChk						; vector $E2
-	OS2		$E3,vFndFilName						; vector $E3
-	OS2		$E4,vRfNCall						; vector $E4
-	OS2		$E5,vAdjEOF							; vector $E5
-	OS2		$E6,vPixel2Char						; vector $E6	<C146>
-	OS2		$E7,vChar2Pixel						; vector $E7	<C146>
-	OS2		$E8									; vector $E8 (unknown)
-	OS2		$E9,vFileClose						; vector $E9 (dnf v2.6)
-	OS2		$EA,vFileRead						; vector $EA (dnf v2.6)
-	OS2		$EB,vFileWrite						; vector $EB (dnf v2.6)
-	OS2		$EC,DispatchHelper					; OS Trap $EC DispatchHelper	<19> rb
-	OS2		$ED,VUPDALTMDB						; vector $ED	<3.1>
-	OS2		$EE,vCkExtFS						; vector $EE	<A281>
-	OS2		$EF,vDTrmV3							; vector $EF	<A281>
-	OS2		$F0,vBMChk							; vector $F0	<A281>
-	OS2		$F1,vTstMod							; vector $F1	<A281>
-	OS2		$F2,vLocCRec						; vector $F2	<A281>
-	OS2		$F3,vTreeSearch						; vector $F3	<A281>
-	OS2		$F4,vMapFBlock						; vector $F4	<A281>
-	OS2		$F5,vXFSearch						; vector $F5	<A281>
-	OS2		$F6,vReadBM							; vector $F6	<A281>
-	OS2		$F7,vDoEject						; vector $F7
-	OS2		$F8,vSegStack						; vector $F8
-	OS2		$F9,vSuperLoad						; vector $F9
-	OS2		$FA,vCmpFrm							; vector $FA
-	OS2		$FB,vNewMap							; vector $FB
-	OS2		$FC,vCheckLoad						; vector $FC
-	OS2		$FD,XTrimMeasure					; vector $FD
-	OS2		$FE,XFindWord						; vector $FE
-	OS2		$FF,XFindLine						; vector $FF
-
-;------------------------------------------------------------------------------
-; <SM46> BT: End second OS table macro
-;------------------------------------------------------------------------------
-	endif
 
 	END
 

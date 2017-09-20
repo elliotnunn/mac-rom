@@ -32,8 +32,8 @@ ScriptMgrObjects =					"{ObjDir}ScriptMgrHeader.a.o"					¶
 									"{ObjDir}ScriptMgrDispatch.a.o"					¶
 
 
-"{LibDir}ScriptMgr.lib"	Ä	{ScriptMgrObjects}
-	Lib {StdLibOpts} -o "{Targ}" {ScriptMgrObjects}
+# "{LibDir}ScriptMgr.lib"	Ä	{ScriptMgrObjects}
+# 	Lib {StdLibOpts} -o "{Targ}" {ScriptMgrObjects}
 
 
 "{ObjDir}ScriptMgrDispatch.a.o"		 Ä	"{IntAIncludes}ScriptPriv.a" 				¶

@@ -20,8 +20,8 @@ AliasMgrObjects			=	"{ObjDir}alDlogUtil.a.o"		¶
 							"{ObjDir}FolderMgr.a.o"
 
 
-"{LibDir}AliasMgr.lib"			Ä	{AliasMgrObjects}
-	Lib {StdLibOpts} -o "{Targ}" {AliasMgrObjects} 
+# "{LibDir}AliasMgr.lib"			Ä	{AliasMgrObjects}
+# 	Lib {StdLibOpts} -o "{Targ}" {AliasMgrObjects} 
 
 
 "{ObjDir}alDlogUtil.a.o"		Ä	"{ObjDir}StandardEqu.d" 						¶

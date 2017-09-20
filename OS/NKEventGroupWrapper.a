@@ -1,0 +1,55 @@
+;	Straightforward 68k wrappers for three NanoKernel MPCalls related to EventGroups
+
+MPCall49	PROC		EXPORT			; create an EventGroup (will be for blue), return its ID
+
+			Link		A6, #$0
+			MoveQ.L		#49, D0
+			dc.w		$fe1f
+			Move.L		D0, $C(A6)
+			Move.L		$8(A6), D0
+			BEQ.B		(* + $6)
+			MoveA.L		D0, A1
+			Move.L		A0, (A1)
+			Unlk		A6
+			MoveA.L		(SP)+, A0
+			AddQ		#$4, SP
+			Jmp			(A0)
+
+
+
+MPCall54	PROC		EXPORT
+
+			Link		A6, #$0
+			MoveA.L		$C(A6), A0
+			Move.L		$8(A6), D1
+			MoveQ.L		#54, D0
+			dc.w		$fe1f
+			Move.L		D0, $10(A6)
+			Unlk		A6
+			MoveA.L		(SP)+, A0
+			AddQ.L		#$8, SP
+			Jmp			(A0)
+
+
+
+MPCall52	PROC		EXPORT
+
+			Link		A6, #$0
+			MoveA.L		$8(A6), A1
+			MoveA.L		$10(A6), A0
+			MoveQ.L		#52, D0
+			dc.w		$fe1f
+			Move.L		D0, $14(A6)
+			Move.L		$C(A6), D0
+			BEQ.B		(* + $6)
+			MoveA.L		D0, A1
+			Move.L		A0, (A1)
+			Unlk		A6
+			MoveA.L		(SP)+, A0
+			DC.W		$defc, $000c
+;			AddA.W		#$C, SP
+			Jmp			(A0)
+
+
+
+			END

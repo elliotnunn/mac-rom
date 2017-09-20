@@ -333,6 +333,7 @@ sdBitPowerOff	EQU		0				; Call routine just before PowerOff.
 sdBitReStart	EQU		1				; Call routine just before a Reboot.
 sdBitUnMount	EQU		2				; Call routine before UnMounting Vols.
 sdBitDrivers	EQU		3				;  before Driver Goodbye Kiss.
+sdBitNew		EQU		4
 
 ; local equates
 
@@ -343,7 +344,7 @@ SDHeader 		EQU 	$BBC			; low mem for ROM version
 
 ;_______________________________________________________________________
 ;
-; ShutDownINIT
+; ShutDownINIT 2c330
 ;	Install default shutdown procedures in the shutdown queue.
 ;	Will not stick around in System builds, but will be there for ROMs.
 ;_______________________________________________________________________
@@ -354,15 +355,27 @@ ShutInit		PROC	Export
 				move.l	A0,SDHeader
 
 				pea		DoDrivers				; the default routine to unload				
-				move.w	#SDOnUnMount,-(SP)		; all drivers with a goodbye
+				move.w	#$8000|SDOnUnMount,-(SP)	; all drivers with a goodbye
 				jsr		ShutInstall				; install it in the queue
 
 				pea		DoUnmount				; the default routine to unmount volumes		
-				move.w	#sdRestartOrPower,-(SP)	; do before power-off or restart
+				move.w	#$8000|$10,-(SP)		; do before power-off or restart
+				jsr		ShutInstall
+
+				pea		DoSomethingAtRestartOrPower
+				move.w	#$8000|sdRestartOrPower,-(SP)
+				jsr		ShutInstall
+
+				pea		DoUnmountAtPowerDown
+				move.w	#$8000|sdOnPowerOff,-(SP)
+				jsr		ShutInstall
+
+				pea		DoUnmountAtRestart
+				move.w	#$8000|sdOnRestart,-(SP)
 				jsr		ShutInstall
 
 				pea		ClearWarmStart
-				move.w	#sdOnPowerOff,-(SP)		; only on 'shut down'						<26>
+				move.w	#$8000|sdOnPowerOff,-(SP)		; only on 'shut down'						<26>
 				jsr		ShutInstall				; install it in the queue					<26>
 
 				Rts
@@ -370,7 +383,7 @@ ShutInit		PROC	Export
 
 ;_______________________________________________________________________
 ;
-; Routine:		ShutDown
+; Routine:		ShutDown 2c382
 ;
 ; Arguments:	A0 (input) :	address of a ShutDown routine
 ;				D0 (input) :    command word (SDInit, SDPowerOff ...)
@@ -392,23 +405,26 @@ ShutInit		PROC	Export
 ShutDown		move.l	(SP)+,D2			; save return
 				move.w	(SP)+,D0			; get opcode word
 				move.l	D2,-(SP)			; restore the return
-				subq	#SDPowerOff,D0
-				bcs.w	ShutInit			; if d0=0, _SDInit a selector in ROM versions
-				beq		ShutPower			; if d0=1, Shutdown
 
-				subq	#SDInstall-SDPowerOff,D0	
-				bcs		ShutRestart			; if d0=2, carry set, bra to restart
-				beq.s	ShutInstall			; if d0=3, Install
+				cmp.w	#5,D0
+				bhi.s	@unknownSelector
 
-				subq.w	#sdUserChoice-sdInstall,d0	
-				bmi.s	ShutRemove			;if  d0=4, Remove
-				beq		UserChoice			; if d0=5, User Choice
+				move.w	@tbl(d0*2),d0
+				jmp		@tbl(d0)
+
+@tbl			dc.w	ShutInit-@tbl		; 0
+				dc.w	ShutPower-@tbl		; 1
+				dc.w	ShutRestart-@tbl	; 2
+				dc.w	ShutInstall-@tbl	; 3
+				dc.w	ShutRemove-@tbl		; 4
+				dc.w	UserChoice-@tbl		; 5
+
 @unknownSelector
 				rts							; unknown selector (do nothing, assume no parameters)
 
 ;_______________________________________________________________________
 ;
-; ShutInstall - Installs a shutDown procedure in the SD Queue.
+; ShutInstall 2c3a4 - Installs a shutDown procedure in the SD Queue.
 ;		Entry On Stack: Long - Proc pointer, to install in Queue, call later.
 ;						Word - Flags word, with low bits defining when to call proc.
 ;
@@ -432,7 +448,7 @@ ShutInstall
 
 ;_______________________________________________________________________
 ;
-; ShutRemove - Removes a shutDown procedure in the SD Queue.
+; ShutRemove 2c3c0 - Removes a shutDown procedure in the SD Queue.
 ;		Entry:	TOS - Proc pointer, to remove from the Queue.
 ;		Exit:	D0 - Error Code.
 ;
@@ -476,7 +492,7 @@ ShutRemove
 
 ;_______________________________________________________________________
 ;
-; ShutRestart - do a shut-down and restart the system
+; ShutRestart 2c3f6 - do a shut-down and restart the system
 ;
 ;		Entry:	no parameters
 ;		Exit:	never does.
@@ -514,17 +530,31 @@ ShutRemove
 
 						
 				export	ShutRestart	
+				import	SHUTDOWNMGRC_2CC90
 ShutRestart		
 				with	ROMHeader				
+
+				bsr		VersionCheckingFunc
+				beq.s	@old
+
+				bsr		DoRAMDiskAlert
+				bne		@return
+
+				bsr		FindEDisk
+				beq.s	@old
+
+				bsr		KillEDisk
+				bra.s	@old
+
+@return			rts
+@old
 
 				moveq	#sdOnPowerOff,d5		; Remove poweroff routines from the queue		<13>
 				bsr		RemoveOtherRoutines
 
 				moveq	#SDBitRestart,D0		; remember that we will reboot.
+				moveq	#1,D1
 				bsr		CallRoutines			; do the shutDown cleanup.
-
-				moveq	#1,D5					; Go ahead and hide cursor/close LCDs.
-				bsr		BlankDesktop			; Go blank the desktop.
 
 				move.l	ROMBase,A2					; point to the ROM
 				lea		ROMHeader.Restart(A2),A2	; point to the restart routine
@@ -532,39 +562,86 @@ ShutRestart
 				move.l	#emuWarmStartConst,D0	; Does the upper long match?
 				move.l	#WmStConst,D1			; Does the upper long match?
 				bsr		UpdateEmuWarmstart		; Write the warmstart (We may have come from a shutdown...) <MC8>
-							
-				tst.l	VMGlobals				; Is VM running?
-				bmi.s	@noVM					; -> No.  Assume we're in Supervisor Mode				
-				_EnterSupervisorMode			; Enter supervisor mode (don’t worry about munging the stack...)
-@noVM
-				bsr		DockInitSCC				; reset the SCC	(if we have Power controls)				<SM16><3>
 
-				TestFor	JawsExists				; are we running on a Tim machine with JAWS				<SM16><5> HJR
-				beq.s	@noJAWS					; -> No JAWS, jump to RESTART now.						<SM16><43>
-
-				with	PmgrRec, pmCommandRec
-@JawsRestartSeq									; -- Special Case for JAWS --							<5> HJR
-				move.l	PMgrBase,a0				; get pointer to the power manager globals
-				move.l	HDVector(a0),a0			; get pointer to hard disk power down
-				jsr		(a0)					; kill the hard disk
-				lea		-pmBlkSize(sp),sp		; Create stack frame									<v5.7>
-				lea		pmData(sp),a0			; Get pointer to a xmit buffer
-				move.l	a0,pmRBuffer(sp)		; Load pointer to receive buffer
-				move.l	a0,pmSBuffer(sp)		; Load pointer to xmit buffer
-				clr.l	(a0)					; No data
-				clr.w	pmLength(sp)			; No data
-				move.w	#$21,pmCommand(sp)		; ADB autopoll disable
-				move.l	sp,a0					; a0 get pointer to paramter block
-				_PmgrOp							; go kill the machine
-				clr.l	pmData(a0)				; clear data
-				clr.w	pmLength(a0)			; clear length
-				move.w	#$d0,pmCommand(sp)		; reset CPU command
-				move.w	Timedbra,d1				; set-up our counter
-				lsl.w	#2,d1					; give ourselves 4 milliseconds
-				_PmgrOp							; go kill the machine
-
-@waitloop		dbra	d1,@waitloop			; stick around for 4 milliseconds
-												; Fall into the JMP to Restart							<43>
+E_0				Bsr		SHUTDOWNMGRC_2CC90
+				MoveQ.L	#$0, D0
+				_DebugUtil
+				CmpI.L	#$8, D0
+				BLT.B	@L0
+				MoveQ.L	#$8, D0
+				_DebugUtil
+@L0				Move.L	#'pwrv', D0
+				_Gestalt
+				BNE.B	@L1
+				Move.L	A0, D0
+				CmpI.L	#$200, D0
+				BLT.B	@L1
+				MoveQ.L	#$20, D0
+				_PowerDispatch
+@L1				BTst.B	#$0, (HWCfgFlags)
+				BEQ.B	@L3
+				BTst.B	#$3, ($240A)
+				BNE.B	@L3
+				Clr.L	-(A7)
+				Clr.L	-(A7)
+				Move.L	A7, -(A7)
+				Move.L	(A7), -(A7)
+				Clr		-(A7)
+				Move	#$D0, -(A7)
+				MoveA.L	A7, A0
+				_PMgrOp
+				Lea.L	$C(A7), A7
+@L2				Bra.B	@L2
+@L3				BTst.B	#$1, ($2400)
+				BNE.B	@L4
+				Bra.B	@L6
+@L4				Move.L	#$7000000, D0
+				And.L	(UnivROMFlags), D0
+				SubI.L	#$3000000, D0
+				BNE.B	@L6
+				Lea.L	-$14(A7), A7
+				MoveA.L	A7, A0
+				Move.B	#$1, (A0)
+				Move.B	#$11, $1(A0)
+				Clr.L	$10(A0)
+				_EgretDispatch
+				Lea.L	$14(A7), A7
+@L5				Bra.B	@L5
+@L6				BTst.B	#$3, ($2409)
+				BEQ		@L8
+				Lea.L	-$28(A7), A7
+				Move.L	A7, D0
+				AddQ	#$7, D0
+				AndI.L	#$FFFFFFF8, D0
+				Move.L	#$FFFFF000, D1
+				Move.L	D1, D2
+				And.L	D0, D2
+				MoveA.L	D0, A1
+				Lea.L	$F(A1), A1
+				Move.L	A1, D4
+				And.L	D4, D1
+				Cmp.L	D1, D2
+				BEQ.B	@L7
+				Move.L	D1, D0
+@L7				MoveA.L	D0, A0
+				Move.L	([$68FFEFD0.L],$50), (A0)		; NKHWInfo.RTAS_Restart
+				Clr.L	$4(A0)
+				Move.L	#$1, $8(A0)
+				MoveA.L	A0, A1
+				MoveQ.L	#$10, D0
+				DC.W	$FE0C
+				MoveA.L	A1, A0
+				DC.W	$FE20
+				Lea.L	$28(A7), A7
+@L8				MoveQ.L	#$E, D0
+				And.L	(UnivROMFlags), D0
+				CmpI.L	#$8, D0
+				BNE.B	@noJAWS
+				MoveA.L	([$68FFEFD0.L],$30), A0			; NKHWInfo.ADB_Base
+				BSet.B	#$4, $A0(A0)
+				Nop
+				BSet.B	#$4, $110(A0)
+				Nop
 
 	; Finally!  Restart the machine by Jumping through the Restart vector in the ROM header
 	
@@ -576,7 +653,7 @@ ShutRestart
 
 ;_______________________________________________________________________
 ;
-; ShutPower - Do a shutDown and power off the system if possible.  If it’s
+; ShutPower 2c546 - Do a shutDown and power off the system if possible.  If it’s
 ;				and older system (no power off ability) then put up an
 ;				alert that the system can go down now.
 ;
@@ -598,15 +675,15 @@ ShutPower
 				bsr.w	RemoveOtherRoutines		; Go remove these procedures from the queue		<13>
 
 				moveq	#SDBitPowerOff,D0		; pass parameter: power off.
+				moveq	#1,D1
 				bsr.w	CallRoutines			; do cleanup and check if new mac.
 
-				moveq	#1,D5					; Go ahead and hide cursor/close LCDs.
-				bsr		BlankDesktop			; Clear the whole desktop.
-								
 				bsr		FindEDisk				; Do we have an EDisk in the drive Q?
 				beq.s	@noEDisk				; -> Nope, continue w/power off
 				bsr		KillEDisk				; Clear the EDisk's checksum data (invalidate the disk)
 @noEDisk
+				IMPORT	SHUTDOWNMGRC_2CC90
+				BSR		SHUTDOWNMGRC_2CC90
 
 	; Send Sonic a soft reset																	<16> thru next <16>
 
@@ -635,7 +712,7 @@ ShutPower
 
 ;_______________________________________________________________________
 ;
-; DoSysErrDialog
+; DoSysErrDialog 2c594
 ;
 ;	Put up a dialog (done by the system error handler).
 ;	The system error ID must be in D0.
@@ -648,7 +725,7 @@ DoSysErrDialog
 
 ;_______________________________________________________________________
 ;
-; UserChoice
+; UserChoice 2c59a
 ;
 ;	Start off as a power-off. If the machine supports soft power-off,
 ;	we give the user a choice between Restart and Shut Down (some of the
@@ -660,17 +737,18 @@ DoSysErrDialog
 ;_______________________________________________________________________
 
 UserChoice
-				moveq	#0,D5					; Don’t hide cursor/close LCDs.
-				bsr		BlankDesktop			; Clear the entire desktop for consistency.
-
 				bsr		CheckForSoftPowerOff	; does this machine have software power-off?
 				bz.s	@noSoftPowerOff			; no!
+
+				moveq	#0,D5					; Don’t hide cursor/close LCDs.
+				bsr		BlankDesktop			; Clear the entire desktop for consistency.
 
 				move.w	#dsShutDownOrRestart,d0	; yes, let the user choose Shut Down or Restart
 				bra.s	DoSysErrDialog
 
 @noSoftPowerOff
 				moveq	#sdBitPowerOff,d0		; notify just as we would for PowerOff
+				moveq	#0,d1
 				bsr.s	CallRoutines			; go do the notification
 
 				move.w	#dsSwitchOffOrRestart,d0	; no, let the user switch off or Restart
@@ -679,7 +757,7 @@ UserChoice
 
 ;_______________________________________________________________________
 ;
-; CallRoutines
+; CallRoutines 2c5b8
 ;		Entry:	D0 - Bit number to test (shutdown type).
 ;		Exit:	regs saved.
 ;_______________________________________________________________________
@@ -688,16 +766,27 @@ CallRoutines
 				movem.l	A1-A3/D0-D5,-(SP)
 				move.w	D0,D4
 
+				swap	D4
+				move	D1,D4
+
 ; Call Cleanup for Drivers, and Custom cleanup Procs.
 
 				moveq	#SDBitDrivers,D5		; do Pre-Driver cleanUp
 				bsr.s	CallCleanUp
 
+				moveq	#sdBitUnMount,D5
+				bsr.s	CallCleanUp
+
 ; Call Cleanup to unmount volumes, and then custom PowerOff/Restart.
 
-				moveq	#SDBitUnMount,D5		; do Vol UnMounts
+				moveq	#SDBitNew,D5
 				bsr.s	CallCleanUp
 				move.w	D4,D5					; do PowerOff or ReStart cleanup
+
+				bsr		BlankDesktop
+				swap	D4
+				move	D4,D5
+
 				bsr.s	CallCleanUp
 
 ; set up the flags for the caller.
@@ -707,7 +796,7 @@ CallRoutines
 
 ;_______________________________________________________________________
 ;
-; RemoveOtherRoutines - Remove all occurences of the passed in shutdown procedure type from the shutdown queue.	<13>
+; RemoveOtherRoutines 2c5e0 - Remove all occurences of the passed in shutdown procedure type from the shutdown queue.	<13>
 ;		This differentiates routines that wish to be executed before drivers on restart, but not at all on poweroff
 ;		(as an example).  Before, there was no differentiation between restart and poweroff for routines that were
 ;		to run before drivers close, or before volumes are unmounted.  There are cases when such differentiation
@@ -753,7 +842,7 @@ RemoveOtherRoutines
 
 ;_______________________________________________________________________
 ;
-; CallCleanUp
+; CallCleanUp 2c608
 ;		Entry:	D5 - Bit number to test (shutdown type).
 ;		Exit:
 ;_______________________________________________________________________
@@ -786,6 +875,9 @@ CallCleanUp
 
 				clr.w	QType(a2)				; QType holds the shutdown flags
 @DontCallUs
+				cmp		#0,A3
+				beq.s	@NotFound
+
 				cmp.l	A2,D3					; at the end?
 				move.l	A3,A2
 				Bne.S	@ScanLoop
@@ -794,7 +886,7 @@ CallCleanUp
 
 ;_______________________________________________________________________
 ;
-; DoDrivers - The Default shutdown routine to kiss all of the drivers
+; DoDrivers 2c63a - The Default shutdown routine to kiss all of the drivers
 ;					goodbye.
 ;		Entry:	No paramters.
 ;
@@ -815,54 +907,6 @@ DoDrivers
 
 			MOVE.L	D0,A0							; get the DCE handle
 			MOVE.L	(A0),A0 						; get the DCE pointer
-
-;------------------------------------------------------------------------	<4> jmp
-			
-			Btst	#dRamBased,DCtlFlags+1(A0)		; If we’ve got a pointer, then just skip
-			Beq.s	@skipVidChk						;	this code (our drivers are RamBased).
-			
-			Move.l	A0,D7							; Save pointer to DCE.
-			Move.l	A1,D6							; Save UTable pointer.
-			
-			Move.l	dCtlDriver(A0),A0				; Get handle to driver.
-			Move.l	(A0),A0							; Get pointer to driver.
-			Lea		drvrName(A0),A0					; Point to driver name.
-			Move.l	A0,D5							; Save it for later.
-			
-			moveq	#0,D0							; Prepare D0.
-			Move.b	(A0),D0							; Get the length of the driver name.
-			Move.w	D0,D4							; Make a copy.
-			Addq	#2,D4							; Adjust offset to version field (len + 1)
-			Bclr	#0,D4							; Adjust offset for word alignment.
-			Move.w	(A0,D4.w),D4					; Get the version number.
-			Bne.s	@endVidChk						; If non-zero, then just leave.
-			
-			Swap	D0								; Get 1st string length into hi-word.
-			Addq	#1,A0							; Point to text of driver name.
-			Lea		TimVidTitle,A1					; Point to TIM/TIM-LC’s video driver name.
-			Move.b	(A1)+,D0						; Get 2nd string length into lo-word.
-			_CmpString								; Compare drvrName with TimVidTitle.
-			Tst.b	D0								; If this is the TIM/TIM-LC driver,
-			Beq.s	@fixFlags						;	then don’t kiss it goodbye.
-			
-			Move.l	D5,A0							; Restore pointer to driver name.
-			moveq	#0,D0							; Re-prepare D0.
-			Move.b	(A0)+,D0						; Get length of 1st string…
-			Swap	D0								; 	…into the hi-word.
-			Lea		DAFBVidTitle,A1					; Point to Spike/Eclipse video driver name.
-			Move.b	(A1)+,D0						; Get 2nd string length into lo-word.
-			_CmpString								; Compare drvrName with DAFVidTitle.
-			Tst.b	D0								; If this is the DAFB (Spike/Eclipse) driver,
-			Beq.s	@fixFlags						;	then don’t kiss it goodbye.
-			Bra.s	@endVidChk						; Otherise, just leave.
-			
-@fixFlags	Move.l	D7,A0							; Restore pointer to DCE.
-			Bclr	#DNeedGoodbye,DCtlFlags(A0) 	; Reset the good-bye kiss flag.
-
-@endVidChk	Move.l	D7,A0							; Restore pointer to DCE.
-			Move.l	D6,A1							; Restore pointer to UTable.
-			
-@skipVidChk
 
 ;------------------------------------------------------------------------	<4> jmp		
 			
@@ -886,26 +930,41 @@ DoDrivers
 
 ;------------------------------------------------------------------------	<4> jmp		
 
-			String	Pascal
-
-TIMVidTitle
-			DC.W	'.Display_Video_Apple_TIM'		; Name of TIM/TIM-LC Video Driver.
-
-DAFBVidTitle
-			DC.W	'.Display_Video_Apple_DAFB'		; Name of Spike/Eclipse Video Driver.
-
-;------------------------------------------------------------------------	<4> jmp		
-
 ;_______________________________________________________________________
 ;
-; DoUnmount - Unmount all of the volumes on line, so the disks will be updated before our power off.
+; DoUnmountCommon 2c69c - Unmount all of the volumes on line, so the disks will be updated before our power off.
 ;
 ;		Entry:	No parameters.
 ;
 ;_______________________________________________________________________
 
-			export	DoUnmount
+DoUnmountAtPowerDown
+			MOVE.L	D3,-(SP)
+			MOVE.L	#$2,D3
+			BSR		DoUnmountCommon
+			MOVE.L	(SP)+,D3
+			RTS
+
+
+DoUnmountAtRestart
+			MOVE.L	D3,-(SP)
+			MOVE.L	#$1,D3
+			BSR		DoUnmountCommon
+			MOVE.L	(SP)+,D3
+			RTS
+
+
+			EXPORT	DoUnmount
 DoUnmount
+			MOVE.L	D3,-(SP)
+			MOVE.L	#$3,D3
+			BSR		DoUnmountCommon
+			MOVE.L	(SP)+,D3
+			RTS
+
+
+DoUnmountCommon
+			move.l	D5,-(SP)
 			sub		#IOQElSize,SP				; allocate pBlock
 
 ; Go through the VCB Queue to Flush and eject all volumes.
@@ -916,6 +975,20 @@ DoUnmount
 			move.l	VCBQHdr+QHead,A1			; get the queue header
 			move.l	VCBQHdr+QTail,D2			; get the tail too
 			beq.s	@AllFlushed
+
+			cmp.l	D2,A1
+			beq.s	@AllFlushed
+
+			move.l	(A1),A1
+			move.l	#0,D5
+			tst.l	$B78
+			bmi.s	@alreadySetB78
+
+			move.l	$B78,A0
+			move.w	$4E(A0),D5
+			move.l	SP,A0
+@alreadySetB78
+
 			bsr		ZapVCBQueue					; wipe out the whole queue
 
 @AllFlushed
@@ -938,6 +1011,7 @@ taskActive	equ		7							; High bit of qType word is active flag.
 			_PrimeTime							; Start the TMTask.
 
 			move.l	DrvQHdr+QHead,D0			; Now, get a pointer to the first drvQElem.
+			beq.s	@TimedOut
 @Repeat		move.l	D0,A1						; Copy the drvQElem pointer into A1.
 			cmpi.w	#-5,dqRefNum(A1)			; If this isn’t a floppy (.Sony) driver drive,
 			bne.s	@Until						;	then just go on.
@@ -954,11 +1028,52 @@ taskActive	equ		7							; High bit of qType word is active flag.
 @TimedOut	_RmvTime							; Remove TMTask.
 
 			adda.w	#tmXQSize,Sp				; Reclaim the stack space.
+			move.l	(SP)+,D5
 		  	rts
+
+
+;_______________________________________________________________________
+;
+; DoSomethingAtRestartOrPower 2c71e
+;_______________________________________________________________________
+
+DoSomethingAtRestartOrPower
+
+			movem.l	D3/D5,-(SP)
+
+			tst		D4
+			beq.s	@cond1
+
+			moveq	#1,D3
+			bra.s	@cond2
+
+@cond1		moveq	#2,D3
+@cond2		sub		#IOQElSize,SP				; allocate pBlock
+
+; Go through the VCB Queue..?
+
+		  	move.l	SP,A0						; point to the parameter block
+			clr.L	ioVNPtr(A0)
+			clr.W	ioRefNum(A0)
+			move.l	VCBQHdr+QHead,A1			; get the queue header
+			move.l	VCBQHdr+QTail,D2			; get the tail too
+
+			beq		@noZap
+
+			move.l	#0,D5
+			bsr		ZapVCBQueue
+@noZap
+
+			add.w	#IOQElSize,SP
+
+			movem.l	(SP)+,D3/D5
+
+			rts
+
 
 ;_______________________________________________________________________					<5>
 ;
-; ClearWarmStart - Shutdown task to clear warm start variable if user
+; ClearWarmStart 2c756 - Shutdown task to clear warm start variable if user
 ;					chooses 'Shut Down' from the Finder.
 ;
 ;_______________________________________________________________________					<5>
@@ -980,7 +1095,7 @@ ClearWarmStart
 
 ;_______________________________________________________________________					<MC8> SAM
 ;
-; UpdateEmuWarmstart - 
+; UpdateEmuWarmstart 2c76e - 
 ;
 ;	 The emulator warmstart flag lives in the writeprotected diagnostic info block in the Nanokernel's
 ;	 data page.  We need to "map" the diag page to a normally mapped page of RAM, write the warmstart
@@ -996,9 +1111,6 @@ ClearWarmStart
 UpdateEmuWarmstart	
 			With	nkDiagInfo	
 
-			testFor	has68kEmulator					; Does this machine have a V0 style emulator?
-			beq		@Done							; -> Nope, we're done.  Exit.
-			
 			move	SR,-(SP)						; Save SR
 			ori.w	#hiIntMask,SR					; Disable interrupts
 			movem.l	D2-D7,-(SP)						; Save some D regs
@@ -1023,6 +1135,7 @@ UpdateEmuWarmstart
 			
 			lea		1,A0							; Get the buffer page number in A0
 			lea		1,A1							; Say page is inited (#1)
+			move.l	D1,A1
 			_nkMMUMarkBacking						; Mark this page as outta here
 	
 			lea		1,A0							; Logical Page number of the buffer
@@ -1039,6 +1152,7 @@ UpdateEmuWarmstart
 	
 			lea		1,A0							; Get the lo Page number in A0
 			lea		1,A1							; Say page is inited (#1)
+			move.l	D1,A1
 			_nkMMUMarkBacking						; Mark this page as outta here
 	
 			lea		1,A0							; Get the lo Page number in A0
@@ -1054,8 +1168,14 @@ UpdateEmuWarmstart
 			
 			EndWith
 
+
+
+			rts
+
+
+
 ;_______________________________________________________________________					<5>
-; ZapVCBQueue - This routine goes through the VCB Queue, and calls HUnmountVol for each entry.
+; ZapVCBQueue 2c7f2 - This routine goes through the VCB Queue, and calls HUnmountVol for each entry.
 ;
 ;		Entry:	A0 - IOParam Block
 ;				A1 - Pointer to current Entry
@@ -1064,25 +1184,60 @@ UpdateEmuWarmstart
 ;				D1 - Preserved.
 ;_______________________________________________________________________					<5>
 
+			import	SHUTDOWNMGRC_2CB90
+
 ZapVCBQueue
-			move.w	D1,-(SP)			; save for re-entrancy.
+			movem.l	D1/D4-D6,-(SP)		; save for re-entrancy.
 			
+			moveq	#0,D4
 			move.w	vcbVRefNum(A1),D1	; get a VRefNum
+			move.w	vcbDrvNum(A1),D6
+			move.w	vcbDRefNum(A1),D4
 			move.l	QLink(A1),-(SP)		; go on to the next VCB
 			cmp.l	D2,A1
 			move.l	(SP)+,A1
 			beq.s	@FlushTime			; have we reached the end?
 			bsr.s	ZapVCBQueue			; not yet, save the VRefNum, call self.
 @FlushTime
+
+			tst		D5
+			beq.s	@defsDo
+			cmp		D5,D6
+			beq.s	@return
+@defsDo
+
 			move.w	D1,ioVRefNum(A0)	; set up the refNum in the PBlock.
-			_Eject
 			_HUnMountVol				; shut the volume down.
-			move.w	(SP)+,D1			; restore crucial VRefNum
+
+			tst		D6
+			bgt.s	@skipCheck
+
+			tst		D4
+			bge.s	@return
+
+			neg		D4
+			move	D4,D6
+@skipCheck
+
+			move.l	A0,-(SP)
+			move.l	D4,-(SP)
+			move.l	D3,-(SP)
+			bsr		SHUTDOWNMGRC_2CB90
+			addq.l	#8,SP
+			move.l	(SP)+,A0
+
+			tst		D0
+			bne.s	@return
+
+			move	D6,ioVRefNum(A0)
+			_Eject
+
+@return		movem.l	(SP)+,D1/D4-D6
 			Rts							; for reentrancy.
 
 ;_______________________________________________________________________
 ;
-; BlankDesktop
+; BlankDesktop 2c846
 ;
 ;	Blank the whole deskstop. This fills the entire desktop with black.
 ;	It used to be the case that we wanted the screen to go white on
@@ -1099,6 +1254,7 @@ ZapVCBQueue
 ;_______________________________________________________________________
 
 			IMPORT	AllocFakeRgns			;
+			IMPORT	SHUTDOWNMGRC_2D4F0, SHUTDOWNMGRC_2D330
 
 BlankDesktop
 
@@ -1138,6 +1294,14 @@ BlankDesktop
 			
 			TST.B	D5						; If we’re not supposed to close LCDs,
 			BEQ.S	@SkipClose				;	then just go on.
+
+			CLR.B	-(SP)
+			BSR		SHUTDOWNMGRC_2D4F0
+
+			CLR.B	-(SP)
+			BSR		SHUTDOWNMGRC_2D330
+
+			BSR		YetAnother
 			BSR		CloseLCDVideo			; Otherwise, close ’em.
 @SkipClose
 
@@ -1147,7 +1311,7 @@ BlankDesktop
 
 ;_______________________________________________________________________
 ;
-; CheckForSoftPowerOff
+; CheckForSoftPowerOff 2c89c
 ;
 ;	Check to see if this machine has a working PowerOff trap.
 ;
@@ -1182,51 +1346,57 @@ CheckForSoftPowerOff
 ;			if the video is of type LCD.  If so, then close the video driver.  
 ;————————————————————————————————————————————————————————————————————————————————————————
 
-CloseLCDFrame		RECORD	0, DECR
-CloseLCDCntBlk		DS.B	IOVQElSize				; control call parm block
-CloseLCDSpBlk		DS.B	spBlock.spBlockSize		; Slot Manager param block.
-CloseLCDFrameSize	EQU		*						; size of frame
-					ENDR
+CloseLCDVideo
 
-CloseLCDVideo		
-CloseLCDVideoRegs	REG		D1/A0-A1	
-		WITH CloseLCDFrame,spBlock
-			LINK	A6,#CloseLCDFrameSize			; allocate variable space
-			MOVEM.L	CloseLCDVideoRegs,-(SP)			; Save them regs
-			LEA		CloseLCDSpBlk(A6),A1			; Get pointer to spBlock
-			MOVEA.L	A1,A0							; Set pointer to A0
-			CLR.B	spSlot(A0)						; Set slot number
-			MOVEQ	#0,D1							; set spId to 0
-			CLR.B	spExtDev(A0)					; No external devices
-			MOVE.W	#CatDisplay,spCategory(A0)		; Look for this slot's card
-			MOVE.W	#TypVideo,spCType(A0)			; Make sure it is video
-			MOVE.W	#DrSwApple,spDrvrSW(A0)			; Make sure it is from Apple
-			MOVE.B	#1,spTBMask(A0)					; mark spDrvrHw field as don’t care
-@sNextLoop
-			MOVEA.L	A1,A0							; Get pointer to spBlock
-			MOVE.B	D1,spId(A0)						; Set spID
-			_sNextTypesRsrc							; get the spsPointer
-			BNE.S	@Done
+			Move.L	(DeviceList), D0
+			BEQ.B	@L5
+			MoveM.L	A0-A2, -(A7)
+			Link	A6, #-$40
+@L1			MoveA.L	D0, A2
+			MoveA.L	(A2), A2
+			IMPORT	PMGRCALLEDBYSHUTDOWNMGRDEC4
+			Bsr.L	PMGRCALLEDBYSHUTDOWNMGRDEC4
+			BNE.B	@L2
+			IMPORT	PMGRCALLEDBYSHUTDOWNMGRDEE4
+			Bsr.L	PMGRCALLEDBYSHUTDOWNMGRDEE4
+			BEQ.B	@L4
+@L2			Move	(A2), D0
+			MoveA.L	(UTableBase), A1
+			AddQ	#$1, D0
+			Neg		D0
+			AsL		#$2, D0
+			MoveA.L	$0(A1,D0.W), A1
+			MoveA.L	(A1), A1
+			BTst.B	#$3, $5(A1)
+			BEQ.B	@L3
+			Move.L	#$1, -(A7)
+			Move	(A2), D0
+			Ext.L	D0
+			Move.L	D0, -(A7)
+			IMPORT	EXPANSIONBUSMGR_VEC01A8
+			Bsr.L	EXPANSIONBUSMGR_VEC01A8
+			AddQ	#$8, A7
+			Bra.B	@L4
+@L3			Lea.L	-$40(A6), A0
+			Move	(A2), $18(A0)
+			_Close
+@L4			Move.L	$1E(A2), D0
+			BNE.B	@L1
+			Unlk	A6
+			MoveM.L	(A7)+, A0-A2
+@L5			Rts
 
-			MOVE.B	spId(A0),D1						; Save spId for later use
-			MOVE.B	#sVidAttributes,spId(A0)		; read flag field in sRsrc
-			_sReadWord								; ...pointed to by spsPointer
-			BNE.S	@sNextLoop						; no flags - find next sRsrc
 
-			MOVEQ.L	#1<<fLCDScreen,D0				; got flag word
-			AND.W	spResult+2(A0),D0				; test if LCD screen
-			BEQ.S	@sNextLoop
-			
-			LEA		CloseLCDCntBlk(A6),A0			; Get pointer to ioPB
-			MOVE.W	spRefNum(A1),ioRefNum(A0)		; Get the driver refNum
-			_Close									; Close the driver
 
-			BRA.S	@sNextLoop
-@Done
-			MOVEM.L	(SP)+,CloseLCDVideoRegs			; Restore them regs
-			UNLK	A6								; Clean up the stackframe
-			RTS										;												<4> HJR
-		ENDWITH
+			IMPORT	SHUTDOWNMGRC_2CC30
+
+YetAnother
+			MOVEM.L	D0-D2/A0-A1,-(SP)
+			BTST.B	#6,$2409
+			BEQ.S	@return
+			BSR.L	SHUTDOWNMGRC_2CC30
+@return		MOVEM.L	(SP)+,D0-D2/A0-A1
+			RTS
 
 
 
@@ -1312,7 +1482,6 @@ KillEDisk
 			BNE.S	@noEMMU					; IF we have an EMMU THEN
 			MOVE.L	A2,A0					;	get ptr to start of data area
 			MOVE.L	#BytesToKill,A1			;	get number of bytes to erase
-			MOVE.L	#(0<<16)|hwEDiskProt,D0	;	_HwPriv EDisk write protect selector and "unprotect" parm
 			BRA.S	@unProtect				; ELSE
 @noEMMU		MOVE.L	CheckSumPtr(A0),A0		;	Get Ptr to the start of the checksum area, if it exists
 			TST.L	A0						;	Check if RAM Disk is using checksums
@@ -1320,8 +1489,8 @@ KillEDisk
 			MOVE.L	A2,A0					;	  base address of RAM disk is same as DataStartPtr
 @cksumOn									;	ENDIF
 			SUB.L	A1,A1					;	Protect flag.  Zero = Unprotect
-			MOVEQ	#hwEDiskProt,D0			;	_HwPriv EDisk write protect selector
 @unProtect									; ENDIF
+			MOVEQ	#hwEDiskProt,D0			;	_HwPriv EDisk write protect selector
 			_HwPriv							; Write Enable the EDisk RAM
 			CMPI.W	#paramErr,D0			; Does not clear D0 on success, Check for failure
 			BEQ.S	@Done					; -> enable failed.  Bail out now or Bus Error!		
@@ -1445,7 +1614,13 @@ ShutDownCancelButton	EQU		2				; dialog item of Cancel button
 			_ParamText							; set dialog parameters
 
 			subq	#4,sp						; room for DialogPtr
+			bsr		VersionCheckingFunc
+			beq.s	@oldDLOG
+			move.w	#-20601,-(sp)
+			bra.s	@doIt
+@oldDLOG
 			move.w	#ShutDownDLOGID,-(sp)		; resource ID
+@doIt
 			clr.l	-(sp)						; use heap storage
 			move.l	#-1,-(sp)					; put it in front
 			_GetNewDialog
@@ -1488,82 +1663,30 @@ exitFalse	move.w	#false,d0					; allow shutdown to continue
 justExit	move.l	(sp)+,a2					; restore a2
 			rts
 			
-;________________________________
-;
-;	Docking Dispatch Trap
-;
 
-DockInitSCC		MOVEM.L	D0-D2/A0-A2,-(SP)			;														<3>
-				MOVE.W	#UnimplementedTrapNumber,D0	; does the _DockingDispatch trap exist?
-				_GetTrapAddress	,NEWTOOL
-				MOVEA.L	A0,A1
-				MOVE.W	#$AA57,D0
-				_GetTrapAddress	,NEWTOOL
-				CMPA.L	A0,A1
-				BEQ.S	@Done						; -> no, skip it
-				MOVEQ	#sccOn-256,D0				; turn SCC power on
-				BSR.S	@SCCPower
-				BSR.S	InitSCC						; reset the SCC so it doesn't cause us trouble
-				MOVEQ	#sccOff,D0					; turn SCC power off
-				BSR.S	@SCCPower
-@Done			MOVEM.L	(SP)+,D0-D2/A0-A2
-				RTS
-@SCCPower
-				TestFor	hwCbPwrMgr					; does this machine have a Power Manager?
-				BEQ.S	@NoPMGR						; -> nope, skip
-				MOVE.B	D0,-(SP)
-				MOVE.L	SP,-(SP)					;  pmRBuffer
-				MOVE.L	(SP),-(SP)					;  pmSBuffer
-				MOVE.W	#1,-(SP)					;  pmLength = 1 byte to send
-				MOVE.W	#powerCntl,-(SP)			;  pmCommand = power control
-				MOVEA.L	SP,A0						; point to the parameter block
-				_PMgrOp								; turn SCC power on or off
-				LEA		pmRBuffer+4+2(SP),SP		; toss the parameter block and buffer
-@NoPMGR			RTS
-InitBData
-				DC.B	9,$C0						; do a hard reset
-				DC.B	9,$40						; reset the channel
-				DC.B	4,$4C						; set async mode (magic?)
-				DC.B	2,$00						; zero interrupt vector for dispatcher
-				DC.B	3,$C0						; DCD not an auto-enable
-				DC.B	15,$00						; no interrupts
-				DC.B	0,$10						; reset ext/sts interrupts twice
-				DC.B	0,$10
-				DC.B	1,$00						; no interrupts
-InitBLth		EQU 	*-InitBData
-	
-InitAData		DC.B	9,$80						; reset the channel
-				DC.B	4,$4C						; set async mode (magic?)
-				DC.B	3,$C0						; DCD not an auto-enable
-				DC.B	15,$00						; no interrupts
-				DC.B	0,$10						; reset ext/sts interrupts twice
-				DC.B	0,$10
-				DC.B	1,$00						; no interrupts
-InitALth		EQU 	*-InitAData
-	
-	
-InitSCC
-				TestFor	SCCIOPExists				; see if we have a SCC IOP
-				bne.s	@hasIOP						; if so, don't try to initialize it
-				MOVEA.L	SCCWr,A0					; point to SCC base write address (chan B)
-				MOVEA.L	SCCRd,A1					; point to SCC base read address (chan B)
-				LEA 	InitBData,A2				; point to channel B init data
-				MOVEQ	#InitBLth,D1				;  and set up the length
-				BSR.S	@WriteSCC					; then init channel B
-	
-				ADDQ.W	#ACtl,A0					; adjust SCC addresses for channel A
-				ADDQ.W	#ACtl,A1
-													; A2 points to channel A's init data
-				MOVEQ	#InitALth,D1				;  init data length
-@WriteSCC		MOVE.B	(A1),D2 					; read to make sure SCC is sync'ed up
-				BRA.S	@2							; delay for timing, too
-@1				MOVE.L	(SP),(SP)					; delay long for reset
-				MOVE.L	(SP),(SP)
-				MOVE.B	(A2)+,(A0)
-@2				DBRA	D1,@1
-	
-@hasIOP			RTS
- 				
+
+VersionCheckingFunc
+			
+			move.l	ROMBase, a0
+
+			cmp.w	#$077D, ROMHeader.MachineNumber(a0)
+			bne.s	@zero
+
+			cmp.b	#$40, ROMHeader.ROMRelease(a0)
+			beq.s	@one
+
+			cmp.b	#$45, ROMHeader.ROMRelease(a0)
+			beq.s	@one
+
+			cmp.b	#$44, ROMHeader.ROMRelease(a0)
+			bne.s	@zero
+
+@one		moveq.l	#1, d0
+			rts
+
+@zero		moveq.l	#0, d0
+			rts
+
 		endwith	
 		ENDP
 		END

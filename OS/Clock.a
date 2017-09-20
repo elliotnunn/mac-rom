@@ -129,7 +129,7 @@ Clock		PROC	EXPORT
 		IF NOT BlackBirdDebug THEN
 ;_______________________________________________________________________				<1.3>
 ;
-; Routine:		OneSecInt
+; Routine:		OneSecInt 8180
 ;
 ; Arguments:	A1 (input)  -- Address of VIA1
 ;
@@ -151,7 +151,7 @@ Clock		PROC	EXPORT
 ;_______________________________________________________________________
 
 OneSecInt	MOVE.B	#1<<ifCA2,VIFR(A1)		; clear the interrupt						<1.4>
-			ADDQ.L	#1,Time					; count the second
+			NOP
 			BCLR	#5,AlarmState			; flag GNEFilter to flash if enabled
 
 			TST.B	SPVolCtl				; bit 7 is alarm enable
@@ -210,7 +210,7 @@ OneSecInt	MOVEA.l A1, A0					;
 
 ;________________________________________________________________________________________
 ;
-; Routine:	PramIO
+; Routine:	PramIO 81a8
 ;
 ; Inputs:	A0	-	pointer to table of base addresses
 ;			A1	-	pointer to ProductInfo record for this machine
@@ -239,7 +239,7 @@ PramIO		MOVEM.L	D0-D2/A0-A2,-(SP)		;														<H2>
 
 ;________________________________________________________________________________________
 ;
-; Routine:	ReadXPRAM, WriteXPRAM
+; Routine:	ReadXPRAM 81c2, WriteXPRAM 81cc
 ;
 ; Inputs:	A0	-	pointer to caller's buffer
 ;			D0	-	[number of bytes to transfer][starting PRAM address]
@@ -277,7 +277,7 @@ rwXCommon	BTST.B	#hwCbClock-8,HWCfgFlags	; do we have a new clock chip (256 PRAM
 
 ;________________________________________________________________________________________			<H2>
 ;
-; Routine:	ValidatePRAM
+; Routine:	ValidatePRAM 81f8
 ;
 ; Inputs:	A6	-	return address
 ;			A0	-	pointer to table of base addresses
@@ -322,14 +322,16 @@ ValidatePRAM
 					 (8<<0),D3				;   starting at PRAM address 8							<H2>
 			BSR		PramIO					; write out the last 4 bytes of original PRAM			<H2>
 
+			LEA		@other,A3
+			MOVE.L	#(1<<31)|\				; write
+					 (1<<16)|\				;  1 byte
+					 (16<<0),D3				;   starting at PRAM address 16
+			BSR		PramIO
+
 @CheckXPRAM	LEA		@XPRAMSig,A3			;														<H2>
 			MOVE.L	12(SP),D3				; are the extended PRAM signature bytes valid?			<H2>
 			CMP.L	(A3),D3					;														<H2>
 			BEQ.S	@Done					; -> yes, we're done									<H2>
-			MOVE.L	#(1<<31)|\				; write													<H2>
-					 (4<<16)|\				;  4 bytes												<H2>
-					 (12<<0),D3				;   starting at PRAM address 12							<H2>
-			BSR		PramIO					; write out the correct extended PRAM signature bytes	<H2>
 
 			MOVEA.L	SP,A3					; point to our stack buffer								<H2>
 			MOVEQ	#(256-32)/4-1,D3		;  and zero each byte									<H2>
@@ -337,8 +339,11 @@ ValidatePRAM
 			DBRA	D3,@ClearBuf			;														<H2>
 
 			BIGLEA	PRAMInitTbl,A2			; point to the table of default extended PRAM values	<H2>
+			BIGLEA	*+$373c,A3
+			SUB.L	A2,A3
+			MOVE.L	A3,D3
+			SUB.L	#1,D3
 			LEA		$76-32(SP),A3			;  and where they'll go in the buffer					<H2>
-			MOVEQ	#$89-$76,D3				; copy them into the buffer								<H2>
 @CopyXDefs	MOVE.B	(A2)+,(A3)+				;														<H2>
 			DBRA	D3,@CopyXDefs			;														<H2>
 
@@ -348,11 +353,19 @@ ValidatePRAM
 					 (32<<0),D3				;   starting at PRAM address 32							<H2>
 			BSR		PramIO					;														<H2>
 
+			LEA		@XPRAMSig,A3
+			MOVE.L	#(1<<31)|\				; write
+					 (4<<16)|\				;  4 bytes
+					 (12<<0),D3				;   starting at PRAM address 12
+			BSR		PramIO
+
 @Done		
 			LEA		256(SP),SP				; clean up the stack									<H2>
 			MOVEM.L	(SP)+,D0-D3/A0-A3		; restore regs from StartINIT							<SM5>													<8.6>
 			RTS								;														<H2>
 		
+@other		DC.W	$A800
+
 @XPRAMSig	DC.L	'NuMc'					; extended PRAM validity bytes (slot-based machines)	<H2>
 
 

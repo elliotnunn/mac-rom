@@ -155,6 +155,8 @@
 			include 'fontPrivate.a'				; <CEL-41>
 			include	'universalEqu.a'
 			include	'PowerPrivEqu.a'
+			include	'Processes.a'
+			include	'TextServices.a'
 
 PwrCycCount		EQU			$AA					; <1>
 	
@@ -168,7 +170,7 @@ PwrCycCount		EQU			$AA					; <1>
 
 ;___________________________________________________________________________________
 ;
-; Routine:	SynchIdleTime
+; Routine:	SynchIdleTime bcc0
 ;
 ; Inputs:	none
 ;
@@ -243,25 +245,52 @@ SynchIdleTimeProc	PatchProc	_SynchIdleTime
 				_PPC											; PPC trap <PN>
 
 				WITH	PMgrRec,PowerDispRec					;
-				BRA.S	@Done									; <PN> branch always because we are SM ROM
-				Testfor	hwCbPwrMgr								; do we have a power manager?
+				BTST.B	#0,$DD5
 				BEQ.S	@Done									; no power cycling
-				MOVE.L	PMgrBase,A0								; Get the Power Manager Globals
-				MOVE.W	PwrCycSyncCount(A0),D0					; Get the number of syncIdle before IdleMind
-				ADDI.W	#1,PMgrScratch.SyncCounter(A0)			; Increment scratch counter
-				CMP.W	PMgrScratch.SyncCounter(A0),D0			; Have we done enough SyncIdles
-				BLT.S	@Done
-				CLR.W	PMgrScratch.SyncCounter(A0)				; reset counter
 				MOVEQ	#IdleMindDisp,D0						; Set the selector to IdleMind
 				_PowerDispatch
 @Done
-				rts
+
+				BTst.B		#$1, ($2409)
+				BEQ.B		@skipDriverCall
+				IMPORT		PMIdleRelatedDriverCall
+				MACHINE		MC68030
+				Bsr.L		PMIdleRelatedDriverCall
+@skipDriverCall
+
+				MoveA.L		([$2B6],$288), A0
+				Move.L		A0, D0
+				BEQ.B		@return
+				MoveM.L		D1-D3/A1-A2, -(A7)
+				Move		$6(A0), D1
+				MoveQ.L		#$0, D2
+
+@loop			MoveA.L		$14(A0,D2.L), A1
+				Move.L		A1, D0
+				BEQ.B		@continue
+				Move		$C8(A1), D0
+				Clr			D3
+				Cmp			D3, D0
+				BEQ.B		@continue
+				MoveA.L		$C4(A1), A2
+				Move.L		A2, D0
+				BEQ.B		@continue
+				Jsr			(A2)
+				Bra.B		@exit
+@continue		AddQ		#$4, D2
+				SubQ		#$1, D1
+				BNE.B		@loop
+
+@exit			MoveM.L		(A7)+, D1-D3/A1-A2
+
+@return			Rts
+
 
 				ENDPROC											; SynchIdleTimeProc
 
 ;___________________________________________________________________________________
 ;
-; Routine:	InitApplication														<1.6>
+; Routine:	InitApplication bd40														<1.6>
 ;
 ; Inputs:	none
 ;
@@ -314,30 +343,48 @@ CleanupApp		PatchProc	_CleanupApplication
 				MOVE.L		applZone,A0				; point to zone hdr
 				MOVE.L		A0,-(SP)				; push start ptr
 				MOVE.L		(A0),-(SP)				; push zone trailer
-				_sbKillSomeCaches
+				MOVE.W		#sbKillSomeCaches,D0
+				_SplineMgr							; like _sbKillSomeCaches but with non-quick move
 				ADDQ		#4,SP					; ignore result
 		
-		IF hasCommToolbox THEN
-				;
-				; Clean up CommToolbox if necessary
-				;
-				import		CleanUpCommToolbox
-				JSR		CleanupCommToolbox
-		ENDIF		
 
-		IF hasEditionMgr THEN								; <36>
-				;
-				; Check if app was doing Edition Manager stuff that needs cleaning up
-				;
-				MOVE.L		ExpandMem, A0					; get expanded memory area
-				MOVE.L		ExpandMemRec.emDataPub(A0), D0	; get dp globals
-				BEQ.S		@noEditionMgr					; if not allocated, no need to do cleanup
-				SUBQ		#2,SP							; place holder for result
-				_QuitEditionPack							; call pack11 clean up
-				TST.W		(SP)+							; ignore result
-@noEditionMgr				
-		ENDIF
-		
+				MoveA.L		ExpandMem, A0
+				MoveA.L		$64(A0), A0
+
+				Tst.L		$70(A0)
+				BEQ.B		@skipAll
+
+				SubQ		#$8, SP
+				Clr			-(SP)
+				Pea.L		$2(SP)
+
+				_GetCurrentProcess
+
+				Tst			(SP)+
+				BNE.B		@dont
+
+				Clr			-(SP)
+				Pea.L		$2(SP)
+				Clr			-(SP)
+
+				_InlineAware
+
+				Tst.B		(SP)+
+				BEQ.B		@dont
+
+				Clr			-(SP)
+				Move		#$2, -(SP)
+				Pea.L		$4(SP)
+
+				Move		#$16, D0
+				_TSMDispatch
+				AddQ		#$2, SP
+@dont
+
+				AddQ		#$8, SP
+@skipAll
+
+
 				;
 				; Clean up Compoents and Component insetances belong to this app.
 				;
@@ -346,10 +393,8 @@ CleanupApp		PatchProc	_CleanupApplication
 				;
 				; Clean up the Palette Manager if there is one.
 				;
-				CMP.W	#$3FFF,ROM85				; do we have color QD? 
-				BHI.S	@noPMgrExit
-				_PMgrExit
-@noPmgrExit
+				MOVE.W	#selectPMgrExit,D0				; _PMgrExit
+				_PaletteDispatch
 
 				;
 				; Clean up Sound Manager
@@ -408,108 +453,6 @@ CleanupApp		PatchProc	_CleanupApplication
 				rts	
 				
 				ENDPROC								; CleanupApp
-
-;___________________________________________________________________________________
-;
-;			FUNCTION get70MgrAttr(selector : OSType; VAR response : LONGINT) : OSErr;
-;
-;			Generic Gestalt function for testing for existence of System 7.0
-;			features.  Since this patch is for 7.0 only, it always returns 1 in the
-;			response.  If your particular feature requires more bits set in the
-;			response, don't use this routine.  Currently, this is the function
-;			for the gestaltDBAccessMgrAttr and gestaltEditionMgrAttr selectors.
-;
-;			Registers A0 and A1 are destroyed.
-;
-;___________________________________________________________________________________
-
-get70MgrAttr	PROC
-
-				MOVE.L		(SP)+,A0			; return address
-				MOVE.L		(SP)+,A1			; address of result
-				
-				MOVE.L		#1,(A1)				; 7.0 features always under 7.0!
-
-				ADDA.W		#4,SP				; pop the selector type
-				MOVE.W		#noErr,(SP)			; it always works
-				JMP			(A0)
-
-				ENDPROC							; get70MgrAttr
-
-
-
-;___________________________________________________________________________________
-;
-;	Additional patch code goes here
-;
-;___________________________________________________________________________________
-
-;___________________________________________________________________________________
-;
-;			dimg entry - Dictionary Manager
-;
-;___________________________________________________________________________________
-
-DictionaryDispatch		PatchProc	_DictionaryDispatch
-
-DictionaryHandle	EQU			ExpandMemRec.emDictionaryMgrPackHandle
-DictionaryUseCount	EQU			ExpandMemRec.emDictionaryMgrUseCount
-
-				MOVE.L		ExpandMem,A1						; get expand mem into A1
-				MOVE.L		DictionaryHandle(A1),A0				; move the handle to the code into A0
-				ADD.W		#DictionaryUseCount,A1				; A1 = pointer to use count
-				_ProcHelper										; let ProcHelper take over
-				
-				ENDPROC											; DictionaryDispatch
-
-;___________________________________________________________________________________
-;
-;	Install Gestalt functions for gestaltDBAccessMgrAttr, gestaltEditionMgr,
-; 	gestaltStandardFileAttr, and gestaltAppleEventsAttr
-;
-;	!!!! all just return 1 for system 7.0 !!!!!
-;
-;___________________________________________________________________________________
-
-MiscPatchesInstall	InstallProc
-
-			IMPORT	get70MgrAttr
-			
-		IF hasDataAccessMgr THEN							; <37>				
-			MOVE.L			#gestaltDBAccessMgrAttr, D0		; Data Access Manager
-			lea				get70MgrAttr, A0
-			_NewGestalt
-		ENDIF
-		
-
-		IF hasEditionMgr THEN								; <37>							
-			MOVE.L			#gestaltEditionMgrAttr, D0		; Edition Manager
-			lea				get70MgrAttr, A0
-			_NewGestalt
-		ENDIF
-		
-			MOVE.L			#gestaltStandardFileAttr, D0	; Standard File
-			leaResident		get70MgrAttr, A0
-			_NewGestalt
-	
-		IF hasAppleEventMgr THEN							; <37>							
-			MOVE.L			#gestaltAppleEventsAttr, D0		; AppleEvent Manager
-			lea				get70MgrAttr, A0
-			_NewGestalt
-		ENDIF
-
-;___________________________________________________________________________________
-;	Gestalt function for the dictionary manager.  
-;		just returns 1 for CubeE
-;____________________________________________________________________________________
-			MOVE.L			#gestaltDictionaryMgrAttr, D0	; Dictionary Manager
-			lea				get70MgrAttr, A0		
-			_NewGestalt
-
-			
-			RTS
-
-			ENDPROC
 
 
 			END ; of file

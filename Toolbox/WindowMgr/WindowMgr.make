@@ -32,8 +32,8 @@ WindowMgrObjs		=				"{ObjDir}WindowMgr.a.o"							¶
 	Link {StdLOpts} {StdAlign} -rt WDEF=1 -o "{Targ}" "{ObjDir}RoundedWDEF.a.o" || Exit 1
 
 
-"{LibDir}WindowMgr.lib"				Ä 	{WindowMgrObjs}
-	Lib	{StdLibOpts} -o "{Targ}" {WindowMgrObjs}
+# "{LibDir}WindowMgr.lib"				Ä 	{WindowMgrObjs}
+# 	Lib	{StdLibOpts} -o "{Targ}" {WindowMgrObjs}
 
 
 "{ObjDir}LayerMgr.c.o"				Ä	"{WindowMgrDir}LayerMgr.c"

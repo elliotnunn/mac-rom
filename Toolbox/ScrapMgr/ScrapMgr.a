@@ -383,6 +383,7 @@ ZeroScrap
 			BSR 		StdEntry				; D0 set to 0 by above
 			BNE 		err0Exit
 
+			MOVEQ.L		#0,D0
 			MOVE.L		D0,scrapInfo			; zero out info
 			ADDQ		#8,4(A4)				; increment validation word
 			BPL.S		@0

@@ -436,11 +436,13 @@ emExpansionBusGlobals		ds.l	1				; Pointer to Expansion Bus Manager Globals
 
 jSWModemSoundVector			ds.l	1				; Vector to control routine for software modem sound
 
+							ds.b	270
+
 ; NOTE: When adding new fields here, be sure to update the high-level language header files as well
 ; (currently {CInternal}ExpandMemPriv.h is the one)
 ; Be sure to update the Reality sources when you change this file (and the version number)
 
-emCurVersion		EQU			$0133				; version 
+emCurVersion		EQU			$016b				; version 
 
 emRecSize			equ			*					; size for this version
 size				equ			*

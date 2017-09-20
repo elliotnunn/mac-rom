@@ -219,7 +219,7 @@ ASyncPatch											; <A368>
 
 ;______________________________________________________________________
 ;
-; Routine:		  ReadParam
+; Routine:		  ReadParam b332
 ;					A0 (input)	-- pointer to buffer which returns parameters
 ;					D0 (input)	-- bits 0-19 indicate which of parameter bytes
 ;									 0-19 to return in the buffer.	bytes are
@@ -246,7 +246,7 @@ XPLoop		LSR.L	#1,D0				; read a byte for each one set
 
 ;______________________________________________________________________
 ;
-; Routine:		WriteParam
+; Routine:		WriteParam b34c
 ; Input:		A0 (input) -- pointer to PRAM buffer
 ; Arguments:	D0 (output) -- result code
 ; Function: 	This routine writes the parameter ram copy in SysParam 
@@ -273,7 +273,7 @@ WriteParamTrap
 
 ;______________________________________________________________________
 ;
-; Routine:		  ReadDateTime
+; Routine:		  ReadDateTime b374
 ;					A0 (input)	-- pointer to buffer in which time is returned
 ; Arguments:		D0 (output) -- result code
 ; Function: 	  This routine updates Time in memory and then writes
@@ -288,7 +288,7 @@ ReadDateTimeTrap
 
 ;______________________________________________________________________
 ;
-; Routine:		  SetDateTime
+; Routine:		  SetDateTime b37e
 ; Arguments:		D0 (input)	--	32-bit value to write to clock
 ;					D0 (output) --	result code
 ; Function: 	  This routine updates Time in memory and then writes
@@ -302,7 +302,7 @@ SetDateTimeTrap
 
 ;______________________________________________________________________
 ;
-; Routine:		  Delay
+; Routine:		  Delay b386
 ; Arguments:		A0 (input)	--	number of tick counts to delay
 ;					D0 (output) --	value of Ticks after delay
 ;					interrupt level 0 is set
@@ -311,19 +311,29 @@ SetDateTimeTrap
 ;
 ;______________________________________________________________________
 
-DelayTrap	ANDI.W 	#$F8FF,SR			; have to let interrupts in 			<SM7> rb
-			MOVE.L	Ticks,D0
-			ADD.L	A0,D0
+DelayTrap	MOVEM.L	D1-D3/A0-A1,-(SP)
+			ANDI.W 	#$F8FF,SR			; have to let interrupts in 			<SM7> rb
+			MOVE.L	Ticks,D3
+			ADD.L	A0,D3
+			BRA.S	@enter
 
-@1			CMP.L	Ticks,D0			; have enough ticks ticked?
+@1			CLR.L	-(SP)
+			MOVE.L	#$10,-(SP)
+			MOVE	#$FFCB,-(SP)
+			DC.W	$AA7F				; InternalWait?
+			ADDQ.L	#4,SP
+
+@enter		CMP.L	Ticks,D3			; have enough ticks ticked?
 			BHI.S	@1					; -> No. Keep waiting.			<SM9> (now use unsigned comparison)
+			MOVE.L	D3,D0
+			MOVEM.L	(SP)+,D1-D3/A0-A1
 			RTS
 
 
 
 ;______________________________________________________________________
 ;
-; Routine:		  UprString
+; Routine:		  UprString b3b4
 ; Arguments:		D0.W (input)  --  string length
 ;					A0.L (input)  --  pointer to string to canonize
 ;					Opcode bit 10 --  0 - map to upper case; 1 - case sensitive
@@ -363,7 +373,7 @@ USLoopEntry
 
 ;______________________________________________________________________ 				<27Feb85>...
 ;
-; Routine:		  CmpString, RelString
+; Routine:		  CmpString b3ca, RelString b3e0
 ; Arguments:		D0.L (input)  --  high-order word = string 0 length
 ;									   low-order word = string 1 length
 ;					A0.L (input)  --  pointer to string 0
@@ -952,7 +962,7 @@ CmpTab
 
 ;_______________________________________________________________________
 ;
-; Routine:		ReadPram
+; Routine:		ReadPram b856
 ;
 ; Arguments:	A1 (input)  -- pointer to buffer where 20 bytes are placed
 ;				all regs preserved
@@ -983,7 +993,7 @@ ReadPram	MOVE.L	A0,-(SP)				;												<H2>
 
 ;_______________________________________________________________________
 ;
-; Routine:		InitUtil
+; Routine:		InitUtil b87c
 ;
 ; Arguments:	D0 (output) -- result code (0 if clock was already initialized)
 ;
@@ -1003,7 +1013,7 @@ InitUtil	CLR.W	-(SP)					; assume no reset of PRam values				<30Oct85> LAK
 
 			MOVEQ	#0,D0					; assume valid clock data
 			CMP.B	#$A8,(A1)				; is the clock data valid?
-			BEQ.S	CkNewPram				; branch if so
+			BEQ.S	POSTWRITE
 			MOVE.W	#PRInitErr,(SP) 		; report non-zero result						<30Oct85> LAK
 
 			MOVEQ	#4,D1
@@ -1013,8 +1023,11 @@ InitUtil	CLR.W	-(SP)					; assume no reset of PRam values				<30Oct85> LAK
 
 			BSR 	WritePram				; and put initial values into clk chip
 
-CkNewPram	BTST	#6,HWCfgFlags			; new clock chip present?						<30oct85> BBM
-			BEQ.S	ClkXit					; exit if not									<30oct85> BBM
+CkNewPram	LEA.L	SysParam,A0
+			MOVE.B	#$A8,(A0)
+			MOVE.L	#$10010,D0
+			_WriteXPRam
+POSTWRITE
 			LEA 	GetParam,A0 			; get pointer to useful buffer					<30oct85> BBM
 
 			MOVE.L	#$4000C,D0				; Command to read 4 bytes at addr C 			<30oct85> BBM
@@ -1026,10 +1039,6 @@ CkNewPram	BTST	#6,HWCfgFlags			; new clock chip present?						<30oct85> BBM
 			BEQ.S	ClkXit					; exit if so									<30oct85> BBM
 
 			MOVE.W	#PRInitErr,(SP) 		; report non-zero result						<30Oct85> LAK
-			MOVE.L	D1,(A0) 				; store out true validity bytes 				<30oct85> BBM
-			MOVE.L	#$4000C,D0				; Command to write 4 bytes at addr C			<30oct85> BBM
-			_WriteXPRam 					;												<30oct85> BBM
-
 			MOVEQ	#32,D1					; starting address to clear out XPRam			<30oct85> BBM
 @0			MOVEQ	#4,D0					; number of bytes to write
 			SWAP	D0						; finish the command byte						<30oct85> BBM
@@ -1041,25 +1050,24 @@ CkNewPram	BTST	#6,HWCfgFlags			; new clock chip present?						<30oct85> BBM
 			CMP.B	#8,D1					; Check if we wrote the last address			<30oct85> BBM
 			BNE.S	@0						; if not loop back untill we are done			<30oct85> BBM
 
-			MOVEM.L	A1,-(SP)				;Save A1
 			LEA		PRAMInitTbl,A0			;Copy the data from the PRAMInit table.			<C518>
-			LEA		GetParam,A1				;  into the GetParam buffer.					<C518>
-			MOVEQ	#5-1,D0					;Loop 5 times  (20 bytes)						<C518><C779>
-@10			MOVE.L	(A0)+,(A1)+				;Copy 4 bytes									<C518>
-			DBRA	D0,@10					;Branch if not done.							<C518>
+			LEA		ReadTime,A1
 
-			MOVE.L	#$00140076,D0			;Write 20 bytes beginning at PRAM address $76	<C518><C779>
-			LEA		GetParam,A0				;  from the buffer								<C518>
-			_WriteXPRam 					;  into the PRAM.								<C518>
+			SUB.L	A0,A1
+			MOVE.L	A1,D0
+			SWAP	D0
+			ORI		#$76,D0
+			_WriteXPRam
 
-	; Write the default memory mgr flags to location $8A.  Since this is the only xpram whose default
-	; is non zero, we write it explicitly (as opposed to writing a default table full of zeros)			<MC2>
+			LEA.L	GetParam,A0
+			MOVE.L	#'NuMc',(A0)
+			MOVE.L	#$4000C,D0
+			_WriteXPRam
 
-			LEA		MMFlags,A0				; Point A0 at the Memory Manager flags lomem				<MC2>
-			MOVE.B	#MMFlagsDefault,(A0)	; Put the default MMFlags into MMFlags
-			MOVE.L	#MMPRAMloc,D0			; Write MMFlags to PRAM
-			_WriteXPRam 					; Store it.
-			MOVEM.L	(SP)+,A1				;Restore A1
+			IMPORT	InterC_29c0_Wireless
+			MACHINE	MC68030
+			BSR.L	InterC_29c0_Wireless
+;			MACHINE	MC68000
 
 ClkXit		MOVE.W	(SP)+,D0				; pass back error code							<30oct85> LAK
 			BNE.S	@1						; br if we had to reset clock/pram				<30oct85> LAK
@@ -1070,7 +1078,7 @@ ClkXit		MOVE.W	(SP)+,D0				; pass back error code							<30oct85> LAK
 
 ;  original 20-byte parameter RAM initialization values
 
-PRAMInit	DC.B	$A8						; old PRAM validity byte						<2.7>
+PRAMInit	DC.B	$77						; old PRAM validity byte						<2.7>
 			DC.B	0						; AppleTalk node ID hint for modem port			<2.7>
 			DC.B	0						; AppleTalk node ID hint for printer port		<2.7>
 			DC.B	(0<<4)+(0<<0)			; serial port usage		= neither port in use	<2.7>
@@ -1107,7 +1115,7 @@ PRAMInit	DC.B	$A8						; old PRAM validity byte						<2.7>
 			DC.B	((32/4)<<4)+ \			; ¥	double-click time	= 32 ticks				<2.7>
 					(32/4)					; ¥	caret-blink time	= 32 ticks				<2.7>
 
-			DC.B	3						; ram cache size in 32K blocks (96k default)	<SM9>
+			DC.B	32						; ram cache size in 32K blocks (96k default)	<SM9>
 
 			DC.B	(1<<7)+ \				; ¥	color desk pattern	= 1 (use if CQD around)	<2.7><H5/6>
 					(1<<6)+ \				; ¥	mouse scaling		= 1 (on)				<2.7>
@@ -1118,7 +1126,7 @@ PRAMInit	DC.B	$A8						; old PRAM validity byte						<2.7>
 											;Start Manager									<C518>
 PRAMInitTbl	DC.B	00						;  [$76]		Reserved.						<C518>
 			DC.B	01						;  [$77]		Default OS.						<C518>
-			DC.W	$FFFF,$FFDF				;  [$78-$7B]	Default boot.					<C774>
+			DC.W	$0000,$6666				;  [$78-$7B]	Default boot.					<C774>
 			
 											;Sound Manager?									<C518>
 			DC.W	0						;  [$7C-$7D]	Sound alert id					<C518>
@@ -1135,9 +1143,35 @@ PRAMInitTbl	DC.B	00						;  [$76]		Reserved.						<C518>
 											;Reserved										<C779>
 			DC.B	0,0						;  [$88-$89]									<C779>
 
+
+OtherDamnTable
+			DC.L	$25000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000070
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000000
+			DC.L	$00000001
+			DC.W	$000A
+
 ;________________________________________________________________________________________
 ;
-; Routine:	ReadTime
+; Routine:	ReadTime b9a2
 ;
 ; Inputs:	none
 ;
@@ -1166,7 +1200,7 @@ ReadTime	MOVEM.L A0/A2-A3/D1-D2/D4-D5,-(SP)	;													<H4>
 
 ;________________________________________________________________________________________
 ;
-; Routine:	WriteTime
+; Routine:	WriteTime b9ca
 ;
 ; Inputs:	"Time" contains the 32-bit time value to write to the clock
 ;
@@ -1194,7 +1228,7 @@ WriteTime	MOVEM.L A0/D1-D5,-(SP)			;														<H4>
 
 ;________________________________________________________________________________________
 ;
-; Routine:	InitCPHardware
+; Routine:	InitCPHardware b9e6
 ;
 ; Inputs:	none
 ;
@@ -1220,7 +1254,7 @@ InitCPHardware								;														<H4>
 
 ;_______________________________________________________________________
 ;
-; Routine:		WritePram
+; Routine:		WritePram ba06
 ;
 ; Arguments:	  SysParam contains the 20 bytes to write.
 ;				  all regs preserved
@@ -1252,7 +1286,7 @@ WritePram	MOVE.L	A0,-(SP)				;														<H2>
 			
 			
 ;-----------------------------------------------------------------------------
-; SysEnvirons call.
+; SysEnvirons call. ba30
 ;
 ;					Fix File	Date	Patch#		Fix Routine(s)	Routine(s) Fixed
 ;AppleSystemPatch 	PatchIIROM.a	28Mar87	#PABM150 	(SysEnvirons) 	(SysEnvirons)
@@ -1485,163 +1519,4 @@ Exit	MOVE.W	D2,D0					; put error number in D0
 		RTS								; return to caller (Return address should be on stack)
 
 		ENDPROC							; SysEnvirons								<C982>
-
-;----- <2.4>
-;
-;	The Reliability Manager 
-;
-;	This new "manager" is responsible for monitoring the operation of the machine
-;	and recording pertinent information in parameter RAM.
-;
-;	Written by Bob Herold, May 24, 1989
-;
-;-----
-
-;-----
-;	InitReliability - sets time of 1st power on, and initializes the Usage Statistics time 
-;					  manager task
-;
-;	The time of 1st power on is kept as the number of 48 hour periods since Jan 1 1989.  To
-;	calculate this, we first get the number of seconds since Jan 1 1989.  On 020 and higher
-;	machines, we could divide by the number of seconds in 48 hours.  To work on 68000
-;	machines, we separate out factors of two to get the divisor into the 16 bit range:
-;
-;			# 48 hrs since Jan 1 1989	= (# secs since Jan 1 1989) / (# secs in 48 hours)
-;										= (# secs) / (60 * 60 * 24 * 2)
-;										= (# secs) / (2*2*15) * (2*2*15) * (2*2*2*3) * 2
-;										= (# secs) / (15 * 15 * 3) * 2^^8
-;										= ((# secs) / 2^^8) / (15 * 15 * 3)
-;---						
-
-InitReliability	PROC	EXPORT
-			IMPORT		RelTimeTask, RelDeferredTimeTask
-			
-			IF hasPowerMgr THEN
-			rts
-			ELSE
-
-;---
-;	Initialize the 'time of 1st power on'
-;---
-
-			subq		#RelPram>>16,sp				; allocate buffer on stack
-			move.l		Time,d1						; get current # secs
-			sub.l		#Jan1st89,d1				; get # secs since Jan 1 1989
-			blo.s		@doneStart					; if earlier, clock chip set wrong!
-			movea.l		sp,a0						; get buffer ptr
-			move.l		#RelPram,d0					; get #, addr PRAM bytes
-			_ReadXPram								; read 'em and weep
-			move.l		(sp),d0						; get 'da bytes
-			and.l		#Rel1stMask,d0				; mask all except 1st powered on time
-			bne.s		@doneStart					; if already set, do nothing
-			lsr.l		#8,d1						; divide # secs by 2^^8
-			divu.w		#15*15*3,d1					; get # 48 hour periods (see comment above)
-			moveq		#Rel1stBit,d0				; get shift count
-			lsl.l		d0,d1						; shift our value into position
-			and.l		#Rel1stMask,d1				; mask unneeded high bits
-			and.l		#-1-Rel1stMask,(sp)			; zero our bits in result
-			or.l		d1,(sp)						; overlay our value into result
-			move.l		#RelPram,d0					; get #, addr PRAM bytes
-			_WriteXPram								; write out 1st power on time
-@doneStart	addq		#RelPram>>16,sp				; de-allocate buffer
-
-;---
-;	Set up time manager task for power on time measurement
-;---
-
-			WITH		RelGlobals
-			
-			moveq		#rlRecSize,d0				; get size Reliability Mgr globals
-			move.b		d0,d1						; save for later
-			_NewPtr		,sys,clear					; allocate space for it
-			bne.s		@done						; don't bother if no room
-			move.l		ExpandMem,a1				; get ptr to low memory expansion
-			move.l		a0,ExpandMemRec.emReliability(a1) ; save ptr to Reliability globals there
-			move.b		d1,rlGlobalsSize(a0) 		; save size of globals
-			move.b		#rlRecVers,rlGlobalsVers(a0); save version number of globals
-			bclr		#usRelTaskRun,UnSwitchedFlags; signal we are timing
-
-; Initialize a deferred task queue element to schedule execution of the original Time Manager
-; task, now called RelDeferredTimeTask. Pass a pointer to the Time Manager task in dtParm so
-; that the original code still gets its expected parameter in A1.
-
-			move.w		#dtQType,rlDeferredTask.qType(a0)
-			lea			RelDeferredTimeTask,a1
-			move.l		a1,rlDeferredTask.dtAddr(a0)
-			lea			rlTimeBlock(a0),a1
-			move.l		a1,rlDeferredTask.dtParm(a0)
-			
-			lea			rlTimeBlock(a0),a0			; point to time manager task block
-			lea			RelTimeTask,a1				; point to our time task
-			move.l		a1,tmAddr(a0)				; stuff it into task block
-			_InsXTime								; install our task
-			move.l		#RelMsCount,d0				; get # ms between calls
-			clr.l		tmWakeUp(a0)				; signal its the first time
-			_PrimeTime								; fire up time mgr task			
-@done		rts
-
-			ENDWITH									; {RelGlobals}
-
-			ENDIF
-
-			ENDPROC									; {InitReliability}
-			
-
-;-----
-;	RelTimeTask - the time manager task for doing all this reliability stuff
-;
-;	Called by the Time Manager
-;
-;	Entry
-;		a0 - points to this routine (not too useful, huh?)
-;		a1 - points to task block (now there's something useful!)
-;
-;
-;	RelDeferredTimeTask - the deferred Time Manager task for doing all this reliability stuff
-;
-;	Called by the Deferred Task Manager
-;
-;	Entry
-;		A1 - dtParm points to the originating Time Manager task block
-;---
-
-RelTimeTask	PROC	EXPORT
-
-; If PRAM is in Egret/CUDA, _ReadXPram and _WriteXPram require interrupts enabled
-; to execute efficiently. Therefore, the periodic Reliability task now uses the
-; Deferred Task Manager to be more interrupt-friendly.
-
-; This helps MIDI SysEx dumps and other interrupt tasks run more punctually.
-
-			lea			tmXQSize(a1),a0				; deferred task element follows TM task element
-			_DTInstall
-			rts
-			
-
-			entry		RelDeferredTimeTask
-
-RelDeferredTimeTask
-
-			subq		#RelPram>>16,sp				; allocate buffer on stack
-			movea.l		sp,a0						; get buffer ptr
-			move.l		#RelPram,d0					; get #, addr PRAM bytes
-			_ReadXPram								; read 'em and weep
-			move.l		(sp),d0						; get 'da bytes
-			move.l		d0,d1						; save a copy
-			and.l		#RelPwrMask,d0				; mask to get power on time
-			addq.l		#1,d0						; increment power on time
-			and.l		#RelPwrMask,d0				; mask again, in case of rollover
-			and.l		#-1-RelPwrMask,d1			; zero power on time bits
-			or.l		d0,d1						; replace the power on time bits
-			move.l		d1,(a0)						; put new PRAM value in buffer
-			move.l		#RelPram,d0					; get #, addr PRAM bytes
-			_WriteXPRAM								; write 'em back
-			addq		#RelPram>>16,sp				; deallocate buffer
-			move.l		a1,a0						; get ptr to task block
-			move.l		#RelMsCount,d0				; get # ms between calls
-			_PrimeTime								; re-fire up time mgr task
-			rts
-
-			ENDPROC									; {RelTimeTask}
-			
 		END

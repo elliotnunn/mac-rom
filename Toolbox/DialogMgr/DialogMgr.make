@@ -19,8 +19,8 @@ DialogMgrObjects						=	"{ObjDir}DialogMgr.a.o"						¶
 											"{ObjDir}DialogDispatch.a.o"
 
 
-"{LibDir}DialogMgr.lib"				Ä	{DialogMgrObjects}
-	Lib {StdLibOpts} -o "{Targ}" {DialogMgrObjects}
+# "{LibDir}DialogMgr.lib"				Ä	{DialogMgrObjects}
+# 	Lib {StdLibOpts} -o "{Targ}" {DialogMgrObjects}
 
 	
 "{ObjDir}DialogMgr.a.o"					Ä	"{ObjDir}StandardEqu.d"						¶

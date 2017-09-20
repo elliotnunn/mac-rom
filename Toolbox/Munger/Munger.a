@@ -267,7 +267,7 @@ bm												; local, faster block move		<4May85>
 			SUBQ.L		#1,D0					; only move <=1 byte?			<4May85>
 			BLE.S		@0						; small move?					<4May85>
 			ADDQ.L		#1,D0					; fix up subtract above 		<4May85>
-			_BlockMove							; move 'em on out               <4May85
+			_BlockMoveData						; move 'em on out               <4May85
 			RTS 								; adios 						<4May85>
 @0												;								<4May85>
 			BLT.S		zeroErr 				; nothing to move				<4May85>
@@ -324,7 +324,7 @@ doDelete
 			ADD.L		D3,A0					; l1
 
 			BSR 		bm						; use our blockmove 			<4May85>
-;			 _BlockMove 						 ;								<4May85>
+;			 _BlockMoveData						 ;								<4May85>
 
 			MOVE.L		A2,A0					; reset size
 			MOVE.L		D5,D0					; new size
@@ -483,7 +483,7 @@ clone2Common
 			ADD.L		D2,A0					; add in offset (=0 most times)
 			EXG 		A0,A1					; switch source/dest
 			MOVE.L		D1,D0					; restore length
-			_BlockMove							; counts on D0 being returned 0
+			_BlockMoveData						; counts on D0 being returned 0
 
 			MOVE.L		(SP)+,A0				; get handle for return
 noRoom

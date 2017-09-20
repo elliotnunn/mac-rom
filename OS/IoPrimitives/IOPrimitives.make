@@ -27,8 +27,8 @@ IOPrimitivesObjs	=					"{ObjDir}PowerMgrPrimitives.a.o"			¶
 										"{ObjDir}PWM.c.o"												¶
 										"{ObjDir}SndPrimitives.a.o"
 
-"{LibDir}IOPrimitives.lib"		Ä		{IOPrimitivesObjs}
-	Lib {StdLibOpts} {IOPrimitivesObjs} -o "{Targ}"
+# "{LibDir}IOPrimitives.lib"		Ä		{IOPrimitivesObjs}
+# 	Lib {StdLibOpts} {IOPrimitivesObjs} -o "{Targ}"
 
 
 "{ObjDir}ADBPrimitives.a.o"			Ä	"{ObjDir}StandardEqu.d"						¶

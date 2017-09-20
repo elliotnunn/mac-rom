@@ -231,40 +231,109 @@ DockingGlobals	EQU		$1FF8				; pointer to docking globals							<H12>
 
 
 ;_______________________________________________________________________
-;	Processor Info Record
-;
-;	Used to pass Processor information from the NanoKernel to user mode
-;	software.
+;	Configuration Info Record
+;	Used to pass Configuration information from the Boot Program to the
+;	NanoKernel for data structure and address mapping initialization.
 ;_______________________________________________________________________
 
-ProcessorInfoPtr		equ		$5FFFEFD8	; logical address of ProcessorInfo record
-ProcessorInfoVer		equ		$5FFFEFDC	; version number of ProcessorInfo record
-ProcessorInfoLen		equ		$5FFFEFDE	; length of ProcessorInfo record
+NKConfigurationInfo		record	0,increment
+ROMByteCheckSums		ds.l	8					; 000 ; ROM Checksums - one word for each of 8 byte lanes
+ROMCheckSum64			ds.l	2					; 020 ; ROM Checksum - 64 bit sum of doublewords
 
-ProcessorInfo			record	0,increment
-ProcessorVersionReg		ds.l	1			; contents of the PVR special purpose register
-CpuClockRateHz			ds.l	1			; CPU Clock frequency
-BusClockRateHz			ds.l	1			; Bus Clock frequency
-DecClockRateHz			ds.l	1			; Decrementer Clock frequency
-PageSize				ds.l	1			; number of bytes in a memory page
-DataCacheTotalSize		ds.l	1			; number of bytes in the Data Cache
-InstCacheTotalSize		ds.l	1			; number of bytes in the Instruction Cache
-CoherencyBlockSize		ds.w	1			; number of bytes in a Coherency Block
-ReservationGranuleSize	ds.w	1			; number of bytes in a Reservation Granule
-CombinedCaches			ds.w	1			; 1 <- combined or no cache, 0 <- split cache
-InstCacheLineSize		ds.w	1			; number of bytes in a Line of the Instruction Cache
-DataCacheLineSize		ds.w	1			; number of bytes in a Line of the Data Cache
-DataCacheBlockSizeTouch	ds.w	1			; number of bytes in a Block for DCBT DCBTST
-InstCacheBlockSize		ds.w	1			; number of bytes in a Block of the Instruction Cache
-DataCacheBlockSize		ds.w	1			; number of bytes in a Block of the Data Cache
-InstCacheAssociativity	ds.w	1			; Associativity of the Instruction Cache
-DataCacheAssociativity	ds.w	1			; Associativity of the Data Cache
+ROMImageBaseOffset		ds.l	1					; 028 ; Offset of Base of total ROM image
+ROMImageSize			ds.l	1					; 02c ; Number of bytes in ROM image
+ROMImageVersion			ds.l	1					; 030 ; ROM Version number for entire ROM
 
-TransCacheTotalSize		ds.w	1			; number of entries in the Translation Cache
-TransCacheAssociativity	ds.w	1			; Associativity of the Translation Cache
-						align	32			; pad to nice cache block alignment
-Size					equ		*-ProcessorInfo
+Mac68KROMOffset			ds.l	1					; 034 ; Offset of base of Macintosh 68K ROM
+Mac68KROMSize			ds.l	1					; 038 ; Number of bytes in Macintosh 68K ROM
+	
+ExceptionTableOffset	ds.l	1					; 03c ; Offset of base of PowerPC Exception Table Code
+ExceptionTableSize		ds.l	1					; 040 ; Number of bytes in PowerPC Exception Table Code
+
+HWInitCodeOffset		ds.l	1					; 044 ; Offset of base of Hardware Init Code (field moved!)
+HWInitCodeSize			ds.l	1					; 048 ; Number of bytes in Hardware Init Code
+
+KernelCodeOffset		ds.l	1					; 04c ; Offset of base of NanoKernel Code
+KernelCodeSize			ds.l	1					; 050 ; Number of bytes in NanoKernel Code
+
+EmulatorCodeOffset		ds.l	1					; 054 ; Offset of base of Emulator Code
+EmulatorCodeSize		ds.l	1					; 058 ; Number of bytes in Emulator Code
+
+OpcodeTableOffset		ds.l	1					; 05c ; Offset of base of Opcode Table
+OpcodeTableSize			ds.l	1					; 060 ; Number of bytes in Opcode Table
+
+BootstrapVersion		ds.b	16					; 064 ; Bootstrap loader version info
+BootVersionOffset		ds.l	1					; 074 ; offset within EmulatorData of BootstrapVersion
+ECBOffset				ds.l	1					; 078 ; offset within EmulatorData of ECB
+IplValueOffset			ds.l	1					; 07c ; offset within EmulatorData of IplValue
+
+EmulatorEntryOffset		ds.l	1					; 080 ; offset within Emulator Code of entry point
+KernelTrapTableOffset	ds.l	1					; 084 ; offset within Emulator Code of KernelTrapTable
+
+TestIntMaskInit			ds.l	1					; 088 ; initial value for test interrupt mask
+ClearIntMaskInit		ds.l	1					; 08c ; initial value for clear interrupt mask
+PostIntMaskInit			ds.l	1					; 090 ; initial value for post interrupt mask
+LA_InterruptCtl			ds.l	1					; 094 ; logical address of Interrupt Control I/O page
+InterruptHandlerKind	ds.b	1					; 098 ; kind of handler to use
+						ds.b	3					; 099 ; filler
+
+LA_InfoRecord			ds.l	1					; 09c ; logical address of InfoRecord page
+LA_KernelData			ds.l	1					; 0a0 ; logical address of KernelData page
+LA_EmulatorData			ds.l	1					; 0a4 ; logical address of EmulatorData page
+LA_DispatchTable		ds.l	1					; 0a8 ; logical address of Dispatch Table
+LA_EmulatorCode			ds.l	1					; 0ac ; logical address of Emulator Code
+
+MacLowMemInitOffset		ds.l	1					; 0b0 ; offset to list of LowMem addr/data values
+
+PageAttributeInit		ds.l	1					; 0b4 ; default WIMG/PP settings for PTE creation
+PageMapInitSize			ds.l	1					; 0b8 ; size of page mapping info
+PageMapInitOffset		ds.l	1					; 0bc ; offset to page mapping info (from base of ConfigInfo)
+PageMapIRPOffset		ds.l	1					; 0c0 ; offset of InfoRecord map info (from base of PageMap)
+PageMapKDPOffset		ds.l	1					; 0c4 ; offset of KernelData map info (from base of PageMap)
+PageMapEDPOffset		ds.l	1					; 0c8 ; offset of EmulatorData map info (from base of PageMap)
+
+SegMaps
+SegMap32SupInit			ds.l	32					; 0cc ; 32 bit mode Segment Map Supervisor space
+SegMap32UsrInit			ds.l	32					; 14c ; 32 bit mode Segment Map User space
+SegMap32CPUInit			ds.l	32					; 1cc ; 32 bit mode Segment Map CPU space
+SegMap32OvlInit			ds.l	32					; 24c ; 32 bit mode Segment Map Overlay mode
+
+BATRangeInit			ds.l	32					; 2cc ; BAT mapping ranges
+
+BatMap32SupInit			ds.l	1					; 34c ; 32 bit mode BAT Map Supervisor space
+BatMap32UsrInit			ds.l	1					; 350 ; 32 bit mode BAT Map User space
+BatMap32CPUInit			ds.l	1					; 354 ; 32 bit mode BAT Map CPU space
+BatMap32OvlInit			ds.l	1					; 358 ; 32 bit mode BAT Map Overlay mode
+
+SharedMemoryAddr		ds.l	1					; 35c ; physical address of Mac/Smurf shared message mem
+
+PA_RelocatedLowMemInit	ds.l	1					; 360 ; physical address of RelocatedLowMem
+
+OpenFWBundleOffset		ds.l	1					; 364 ; Offset of base of OpenFirmware PEF Bundle
+OpenFWBundleSize		ds.l	1					; 368 ; Number of bytes in OpenFirmware PEF Bundle
+
+LA_OpenFirmware			ds.l	1					; 36c ; logical address of Open Firmware
+PA_OpenFirmware			ds.l	1					; 370 ; physical address of Open Firmware
+LA_HardwarePriv			ds.l	1					; 374 ; logical address of HardwarePriv callback
+
+;	Used to stop here, plus 8 bytes for cache block alignment (0x380 bytes).
+;	Now there be more!
+
+Debug					ds.w	1					; 378 ; > 256 required for screen log
+DebugThreshold			equ		257
+
+						org		$388
+DebugFlags				ds.l	1					; 388 ; bit 1<< 1 required for screen log
+NanodbgrFlagShift		equ		0
+NanodbgrFlagBit			equ		31 - NanodbgrFlagShift
+LogFlagShift			equ		1
+LogFlagBit				equ		31 - LogFlagShift
+
+						org		$100
+Size					equ		*
 						endr
+
+
 
 ;_______________________________________________________________________
 ;	System Info Record
@@ -273,68 +342,110 @@ Size					equ		*-ProcessorInfo
 ;	software.
 ;_______________________________________________________________________
 
-NKSystemInfoPtr			equ		$5FFFEFF0	; logical address of NKSystemInfo record
-NKSystemInfoVer			equ		$5FFFEFF4	; version number of NKSystemInfo record
-NKSystemInfoLen			equ		$5FFFEFF6	; length of NKSystemInfo record
+NKSystemInfoPtr			equ		$68FFEFF0	; logical address of NKSystemInfo record
+NKSystemInfoVer			equ		$68FFEFF4	; version number of NKSystemInfo record
+NKSystemInfoLen			equ		$68FFEFF6	; length of NKSystemInfo record
 
 NKSystemInfo			record	0,increment
-PhysicalMemorySize		ds.l	1			; Number of bytes in Physical RAM
-UsableMemorySize		ds.l	1			; Number of bytes in Usable RAM
-LogicalMemorySize		ds.l	1			; Number of bytes in Logical RAM
-HashTableSize			ds.l	1			; Number of bytes in Memory Hash Table
+PhysicalMemorySize		ds.l	1			; 000, irp+dc0 ; Number of bytes in Physical RAM
+UsableMemorySize		ds.l	1			; 004, irp+dc4 ; Number of bytes in Usable RAM
+LogicalMemorySize		ds.l	1			; 008, irp+dc8 ; Number of bytes in Logical RAM
+HashTableSize			ds.l	1			; 00c, irp+dcc ; Number of bytes in Memory Hash Table
 
-L2DataCacheTotalSize	ds.l	1			; number of bytes in the L2 Data Cache
-L2InstCacheTotalSize	ds.l	1			; number of bytes in the L2 Instruction Cache
-L2CombinedCaches		ds.w	1			; 1 <- combined or no cache, 0 <- split cache
-L2InstCacheBlockSize	ds.w	1			; number of bytes in a Block of the L2 Instruction Cache
-L2DataCacheBlockSize	ds.w	1			; number of bytes in a Block of the L2 Data Cache
-L2InstCacheAssociativity ds.w	1			; Associativity of the L2 Instruction Cache
-L2DataCacheAssociativity ds.w	1			; Associativity of the L2 Data Cache
-						ds.b	2			; unused
+L2DataCacheTotalSize	ds.l	1			; 010, irp+dd0 ; number of bytes in the L2 Data Cache
+L2InstCacheTotalSize	ds.l	1			; 014, irp+dd4 ; number of bytes in the L2 Instruction Cache
+L2CombinedCaches		ds.w	1			; 018, irp+dd8 ; 1 <- combined or no cache, 0 <- split cache
+L2InstCacheBlockSize	ds.w	1			; 01a, irp+dda ; number of bytes in a Block of the L2 Instruction Cache
+L2DataCacheBlockSize	ds.w	1			; 01c, irp+ddc ; number of bytes in a Block of the L2 Data Cache
+L2InstCacheAssociativity ds.w	1			; 01e, irp+dde ; Associativity of the L2 Instruction Cache
+L2DataCacheAssociativity ds.w	1			; 020, irp+de0 ; Associativity of the L2 Data Cache
+						ds.b	2			; 022, irp+de2 ; unused
 
-						ds.b	2			; unused
-FlashManufacturerCode	ds.b	1			; Flash ROM Manufacturer code
-FlashDeviceCode			ds.b	1			; Flash ROM Device code
-FlashStart				ds.l	1			; Starting address of Flash ROM
-FlashSize				ds.l	1			; Number of bytes in  Flash ROM
+						ds.b	2			; 024, irp+de4 ; unused
+FlashManufacturerCode	ds.b	1			; 026, irp+de6 ; Flash ROM Manufacturer code
+FlashDeviceCode			ds.b	1			; 027, irp+de7 ; Flash ROM Device code
+FlashStart				ds.l	1			; 028, irp+de8 ; Starting address of Flash ROM
+FlashSize				ds.l	1			; 02c, irp+dec ; Number of bytes in  Flash ROM
 
-						align	16
-Bank0Start				ds.l	1			; Starting address of RAM bank 0
-Bank0Size				ds.l	1			; Number of bytes in  RAM bank 0
-Bank1Start				ds.l	1			; Starting address of RAM bank 1
-Bank1Size				ds.l	1			; Number of bytes in  RAM bank 1
-Bank2Start				ds.l	1			; Starting address of RAM bank 2
-Bank2Size				ds.l	1			; Number of bytes in  RAM bank 2
-Bank3Start				ds.l	1			; Starting address of RAM bank 3
-Bank3Size				ds.l	1			; Number of bytes in  RAM bank 3
-Bank4Start				ds.l	1			; Starting address of RAM bank 4
-Bank4Size				ds.l	1			; Number of bytes in  RAM bank 4
-Bank5Start				ds.l	1			; Starting address of RAM bank 5
-Bank5Size				ds.l	1			; Number of bytes in  RAM bank 5
-Bank6Start				ds.l	1			; Starting address of RAM bank 6
-Bank6Size				ds.l	1			; Number of bytes in  RAM bank 6
-Bank7Start				ds.l	1			; Starting address of RAM bank 7
-Bank7Size				ds.l	1			; Number of bytes in  RAM bank 7
-Bank8Start				ds.l	1			; Starting address of RAM bank 8
-Bank8Size				ds.l	1			; Number of bytes in  RAM bank 8
-Bank9Start				ds.l	1			; Starting address of RAM bank 9
-Bank9Size				ds.l	1			; Number of bytes in  RAM bank 9
-Bank10Start				ds.l	1			; Starting address of RAM bank 10
-Bank10Size				ds.l	1			; Number of bytes in  RAM bank 10
-Bank11Start				ds.l	1			; Starting address of RAM bank 11
-Bank11Size				ds.l	1			; Number of bytes in  RAM bank 11
-Bank12Start				ds.l	1			; Starting address of RAM bank 12
-Bank12Size				ds.l	1			; Number of bytes in  RAM bank 12
-Bank13Start				ds.l	1			; Starting address of RAM bank 13
-Bank13Size				ds.l	1			; Number of bytes in  RAM bank 13
-Bank14Start				ds.l	1			; Starting address of RAM bank 14
-Bank14Size				ds.l	1			; Number of bytes in  RAM bank 14
-Bank15Start				ds.l	1			; Starting address of RAM bank 15
-Bank15Size				ds.l	1			; Number of bytes in  RAM bank 15
-						align	32			; pad to nice cache block alignment
-MaxBanks				equ		16			; 16 banks, 0É15
-Size					equ		*-SystemInfo
+Bank0Start				ds.l	1			; 030, irp+df0 ; Starting address of RAM bank 0
+Bank0Size				ds.l	1			; 034, irp+df4 ; Number of bytes in  RAM bank 0
+Bank1Start				ds.l	1			; 038, irp+df8 ; Starting address of RAM bank 1
+Bank1Size				ds.l	1			; 03c, irp+dfc ; Number of bytes in  RAM bank 1
+Bank2Start				ds.l	1			; 040, irp+e00 ; Starting address of RAM bank 2
+Bank2Size				ds.l	1			; 044, irp+e04 ; Number of bytes in  RAM bank 2
+Bank3Start				ds.l	1			; 048, irp+e08 ; Starting address of RAM bank 3
+Bank3Size				ds.l	1			; 04c, irp+e0c ; Number of bytes in  RAM bank 3
+Bank4Start				ds.l	1			; 050, irp+e10 ; Starting address of RAM bank 4
+Bank4Size				ds.l	1			; 054, irp+e14 ; Number of bytes in  RAM bank 4
+Bank5Start				ds.l	1			; 058, irp+e18 ; Starting address of RAM bank 5
+Bank5Size				ds.l	1			; 05c, irp+e1c ; Number of bytes in  RAM bank 5
+Bank6Start				ds.l	1			; 060, irp+e20 ; Starting address of RAM bank 6
+Bank6Size				ds.l	1			; 064, irp+e24 ; Number of bytes in  RAM bank 6
+Bank7Start				ds.l	1			; 068, irp+e28 ; Starting address of RAM bank 7
+Bank7Size				ds.l	1			; 06c, irp+e2c ; Number of bytes in  RAM bank 7
+Bank8Start				ds.l	1			; 070, irp+e30 ; Starting address of RAM bank 8
+Bank8Size				ds.l	1			; 074, irp+e34 ; Number of bytes in  RAM bank 8
+Bank9Start				ds.l	1			; 078, irp+e38 ; Starting address of RAM bank 9
+Bank9Size				ds.l	1			; 07c, irp+e3c ; Number of bytes in  RAM bank 9
+Bank10Start				ds.l	1			; 080, irp+e40 ; Starting address of RAM bank 10
+Bank10Size				ds.l	1			; 084, irp+e44 ; Number of bytes in  RAM bank 10
+Bank11Start				ds.l	1			; 088, irp+e48 ; Starting address of RAM bank 11
+Bank11Size				ds.l	1			; 08c, irp+e4c ; Number of bytes in  RAM bank 11
+Bank12Start				ds.l	1			; 090, irp+e50 ; Starting address of RAM bank 12
+Bank12Size				ds.l	1			; 094, irp+e54 ; Number of bytes in  RAM bank 12
+Bank13Start				ds.l	1			; 098, irp+e58 ; Starting address of RAM bank 13
+Bank13Size				ds.l	1			; 09c, irp+e5c ; Number of bytes in  RAM bank 13
+Bank14Start				ds.l	1			; 0a0, irp+e60 ; Starting address of RAM bank 14
+Bank14Size				ds.l	1			; 0a4, irp+e64 ; Number of bytes in  RAM bank 14
+Bank15Start				ds.l	1			; 0a8, irp+e68 ; Starting address of RAM bank 15
+Bank15Size				ds.l	1			; 0ac, irp+e6c ; Number of bytes in  RAM bank 15
+Bank16Start				ds.l	1			; 0b0, irp+e70 ; Starting address of RAM bank 16
+Bank16Size				ds.l	1			; 0b4, irp+e74 ; Number of bytes in  RAM bank 16
+Bank17Start				ds.l	1			; 0b8, irp+e78 ; Starting address of RAM bank 17
+Bank17Size				ds.l	1			; 0bc, irp+e7c ; Number of bytes in  RAM bank 17
+Bank18Start				ds.l	1			; 0c0, irp+e80 ; Starting address of RAM bank 18
+Bank18Size				ds.l	1			; 0c4, irp+e84 ; Number of bytes in  RAM bank 18
+Bank19Start				ds.l	1			; 0c8, irp+e88 ; Starting address of RAM bank 19
+Bank19Size				ds.l	1			; 0cc, irp+e8c ; Number of bytes in  RAM bank 19
+Bank20Start				ds.l	1			; 0d0, irp+e90 ; Starting address of RAM bank 20
+Bank20Size				ds.l	1			; 0d4, irp+e94 ; Number of bytes in  RAM bank 20
+Bank21Start				ds.l	1			; 0d8, irp+e98 ; Starting address of RAM bank 21
+Bank21Size				ds.l	1			; 0dc, irp+e9c ; Number of bytes in  RAM bank 21
+Bank22Start				ds.l	1			; 0e0, irp+ea0 ; Starting address of RAM bank 22
+Bank22Size				ds.l	1			; 0e4, irp+ea4 ; Number of bytes in  RAM bank 22
+Bank23Start				ds.l	1			; 0e8, irp+ea8 ; Starting address of RAM bank 23
+Bank23Size				ds.l	1			; 0ec, irp+eac ; Number of bytes in  RAM bank 23
+Bank24Start				ds.l	1			; 0f0, irp+eb0 ; Starting address of RAM bank 24
+Bank24Size				ds.l	1			; 0f4, irp+eb4 ; Number of bytes in  RAM bank 24
+Bank25Start				ds.l	1			; 0f8, irp+eb8 ; Starting address of RAM bank 25
+Bank25Size				ds.l	1			; 0fc, irp+ebc ; Number of bytes in  RAM bank 25
+EndOfBanks
+MaxBanks				equ		26			; Pads out to old struct len (cache block), more to come...
+
+											; Interrupt Support Data
+IntCntrBaseAddr			ds.l	1			; 100, irp+ec0 ; Interrupt Controller Base Address  (variable is used since this is a PCI Dev and address is relocatable)
+IntPendingReg			ds.l 	2			; 104, irp+ec4 ; Data of current interrupts pending register
+
+											; These fields were added to report information about tightly-coupled L2 caches.
+											; The inline L2 information should be used in situations where there is a CPU
+											; card L2 cache that can coexist with a motherboard L2.
+
+InlineL2DSize			ds.l	1			; 10c, irp+ecc ; Size of in-line L2 Dcache
+InlineL2ISize			ds.l	1			; 110, irp+ed0 ; Size of in-line L2 Icache
+InlineL2Combined		ds.w	1			; 114, irp+ed4 ; 1 <- combined or no cache, 0 <- split cache
+InlineL2IBlockSize		ds.w	1			; 116, irp+ed6 ; Block size of in-line I L2 cache
+InlineL2DBlockSize		ds.w	1			; 118, irp+ed8 ; Block size of in-line D L2 cache
+InlineL2IAssoc			ds.w	1			; 11a, irp+eda ; Associativity of L2 I
+InlineL2DAssoc			ds.w	1			; 11c, irp+edc ; Associativity of L2 D
+						ds.w	1			; 11e, irp+ede ; pad
+
+											; More Interrupt Support Data
+IntsCompleted			ds.l 	2			; 120, irp+ee0 ; completed interrupts
+
+						ds.b	$18
+Size					equ		*
 						endr
+
 
 
 ;_______________________________________________________________________
@@ -344,19 +455,52 @@ Size					equ		*-SystemInfo
 ;	the NanoKernel, and from the NanoKernel to user mode software.
 ;_______________________________________________________________________
 
-nkDiagInfoPtr			equ		$5FFFEFE8	; logical address of DiagnosticInfo record
-nkDiagInfoVer			equ		$5FFFEFEC	; version number of DiagnosticInfo record
-nkDiagInfoLen			equ		$5FFFEFEE	; length of DiagnosticInfo record
+NKDiagInfoPtr			equ		$68FFEFE8	; logical address of DiagnosticInfo record
+NKDiagInfoVer			equ		$68FFEFEC	; version number of DiagnosticInfo record
+NKDiagInfoLen			equ		$68FFEFEE	; length of DiagnosticInfo record
 
-nkDiagInfo				record	0,increment
-						ds.b	236			; it WILL all fit in 256 bytes
-DiagPOSTResult2			ds.l	1			; POST results
-DiagPOSTResult1			ds.l	1			; POST results
-DiagEmoRestart			ds.l	1			; Burn in restart flag
-DiagWarmStartHigh		ds.l	1			; First long of native warm start  (WLSC)		<SM44>
-DiagWarmStartLow		ds.l	1			; Second long of native warm start (SamB)		<SM44>
-						align	32			; pad to nice cache block alignment
-Size					equ		*-nkDiagInfo
+NKDiagInfo				record	0,increment
+BankMBFailOffset		ds.l	1			; 000 ; Mother Board RAM failure code
+BankAFailOffset			ds.l	1			; 004 ; Bank A RAM failure code
+BankBFailOffset			ds.l	1			; 008 ; Bank B RAM failure code
+BankCFailOffset			ds.l	1			; 00c ; Bank C RAM failure code
+
+BankDFailOffset			ds.l	1			; 010 ; Bank D RAM failure code
+BankEFailOffset			ds.l	1			; 014 ; Bank E RAM failure code
+BankFFailOffset			ds.l	1			; 018 ; Bank F RAM failure code
+BankGFailOffset			ds.l	1			; 01c ; Bank G RAM failure code
+
+BankHFailOffset			ds.l	1			; 020 ; Bank H RAM failure code
+CacheFailOffset			ds.l	1			; 024 ; cache failure code
+LongBootParamOffset		ds.l	1			; 028 ; on longBoot this is where the params will be
+POSTTraceOffset			ds.l	1			; 02c ; this tells us what route the POST took
+
+POSTOldWarmOffset		ds.l	1			; 030 ; logged address of old warmstart flag
+POSTOldLongOffset		ds.l	1			; 034 ; logged address of old long boot flag
+POSTOldGlobbOffset		ds.l	1			; 038 ; logged address of old Diagnostic Info Record
+POSTOldParamOffset		ds.l	1			; 03c ; the params from the old diag globb
+
+POSTStartRTCUOffset		ds.l	1			; 040 ; PPC Real Time Clock Upper at start of POST
+POSTStartRTCLOffset		ds.l	1			; 044 ; PPC Real Time Clock Lower at start of POST
+POSTEndRTCUOffset		ds.l	1			; 048 ; PPC Real Time Clock Upper at end of POST
+POSTEndRTCLOffset		ds.l	1			; 04c ; PPC Real Time Clock Lower at end of POST
+
+POSTTestTypeOffset		ds.l	1			; 050 ; when long RAM tests fail test type which failed is put here
+POSTError2Offset		ds.l	1			; 054 ; result codes from tests
+POSTError3Offset		ds.l	1			; 058 ; result codes from tests
+POSTError4Offset		ds.l	1			; 05c ; result codes from tests
+
+RegistersStore			ds.b	140			; 060 ; store all 60x registers here, still fit into 256 bytes size.
+
+;	Everything BEFORE here is new (hence the funny-sized register store)
+
+DiagPOSTResult2			ds.l	1			; 0ec ; POST results
+DiagPOSTResult1			ds.l	1			; 0f0 ; POST results
+DiagLongBootSig			ds.l	1			; 0f4 ; Burn in restart flag
+DiagWarmStartHigh		ds.l	1			; 0f8 ; First long of native warm start  (WLSC)		<SM44>
+DiagWarmStartLow		ds.l	1			; 0fc ; Second long of native warm start (SamB)		<SM44>
+
+Size					equ		*
 						endr
 
 
@@ -368,30 +512,278 @@ Size					equ		*-nkDiagInfo
 ;	software.
 ;_______________________________________________________________________
 
-nkNanoKernelInfoPtr		equ		$5FFFEFE0	; logical address of NanoKernelInfo record
-nkNanoKernelInfoVer		equ		$5FFFEFE4	; version number of NanoKernelInfo record
-nkNanoKernelInfoLen		equ		$5FFFEFE6	; length of NanoKernelInfo record
+NKNanoKernelInfoPtr		equ		$68FFEFE0	; logical address of NanoKernelInfo record
+NKNanoKernelInfoVer		equ		$68FFEFE4	; version number of NanoKernelInfo record
+NKNanoKernelInfoLen		equ		$68FFEFE6	; length of NanoKernelInfo record
 
-nkNanoKernelInfo			record	0,increment
-ExceptionCauseCounts	ds.l	32			; counters per exception cause
-NanoKernelCallCounts	ds.l	16			; counters per NanoKernel call
-ExternalIntCount		ds.l	1			; count of External Interrupts
-MisalignmentCount		ds.l	1			; count of Misalignment Interrupts
-FPUReloadCount			ds.l	1			; count of FPU reloads on demand
-DecrementerIntCount		ds.l	1			; count of Decrementer Interrupts
-QuietWriteCount			ds.l	1			; count of Writes to Quiet Read-Only memory
-HashTableCreateCount	ds.l	1			; count of Hash Table Entry creations
-HashTableDeleteCount	ds.l	1			; count of Hash Table Entry deletions
-HashTableOverflowCount	ds.l	1			; count of Hash Table Entry overflows
-EmulatedUnimpInstCount	ds.l	1			; count of Emulated unimplemented instructions
-NCBPtrCacheMissCount	ds.l	1			; count of NCB Pointer cache misses
-ExceptionPropagateCount	ds.l	1			; count of Exceptions propagated to system
-ExceptionForcedCount	ds.l	1			; count of Exceptions forced to system
-						align	8			; align for 64 bit time base counters
-SysContextCpuTime		ds.l	2			; CPU Time used by System Context
-AltContextCpuTime		ds.l	2			; CPU Time used by Alternate Context
-						align	32			; pad to nice cache block alignment
-Size					equ		*-nkNanoKernelInfo
+NKNanoKernelInfo		record	0,increment
+ExceptionCauseCounts	ds.l	32			; 000, kdp+dc0 ; counters per exception cause
+NanoKernelCallCounts	ds.l	16			; 080, kdp+e40 ; counters per NanoKernel call
+ExternalIntCount		ds.l	1			; 0c0, kdp+e80 ; count of External Interrupts
+MisalignmentCount		ds.l	1			; 0c4, kdp+e84 ; count of Misalignment Interrupts
+FPUReloadCount			ds.l	1			; 0c8, kdp+e88 ; count of FPU reloads on demand
+DecrementerIntCount		ds.l	1			; 0cc, kdp+e8c ; count of Decrementer Interrupts
+QuietWriteCount			ds.l	1			; 0d0, kdp+e90 ; count of Writes to Quiet Read-Only memory
+HashTableCreateCount	ds.l	1			; 0d4, kdp+e94 ; count of Hash Table Entry creations
+HashTableDeleteCount	ds.l	1			; 0d8, kdp+e98 ; count of Hash Table Entry deletions
+HashTableOverflowCount	ds.l	1			; 0dc, kdp+e9c ; count of Hash Table Entry overflows
+EmulatedUnimpInstCount	ds.l	1			; 0e0, kdp+ea0 ; count of Emulated unimplemented instructions
+NCBPtrCacheMissCount	ds.l	1			; 0e4, kdp+ea4 ; count of NCB Pointer cache misses
+ExceptionPropagateCount	ds.l	1			; 0e8, kdp+ea8 ; count of Exceptions propagated to system
+ExceptionForcedCount	ds.l	1			; 0ec, kdp+eac ; count of Exceptions forced to system
+SysContextCpuTime		ds.l	2			; 0f0, kdp+eb0 ; CPU Time used by System Context
+AltContextCpuTime		ds.l	2			; 0f8, kdp+eb4 ; CPU Time used by Alternate Context
+
+;	This stuff is new (starts at 0x100)
+
+blueProcessID			ds.l	1			; 100, kdp+ec0 ; ID of the blue process.
+blueTaskID				ds.l	1			; 104, kdp+ec4 ; ID of the blue task.
+pageQueueID				ds.l	1			; 108, kdp+ec8 ; ID of the page fault queue.
+TaskCount				ds.l	1			; 10c, kdp+ecc ; Number of tasks.
+FreePoolExtendCount		ds.l	1			; 110, kdp+ed0 ; Number of pages given to the nanokernel.
+
+;rsrv1					ds.l	3			; 114, kdp+ed4 ; reserved???
+
+;	My additions
+
+						org		$11c
+ConfigFlags				ds.l	1			; 11c, kdp+edc ; includes ScreenConsole ... TODO put flag equs here
+NanodbgrFlagShift		equ		1
+NanodbgrFlagBit			equ		31 - NanodbgrFlagShift
+LogFlagShift			equ		3
+LogFlagBit				equ		31 - LogFlagShift
+;	bit 31 always set on replacement, bit 27 set on replacement with ROM 2.7f3 or later
+
+						org		$128
+VMDispatchCountTblPtr	ds.l	1			; 128, kdp+ee8
+						ds.l	1
+						ds.l	1
+MPDispatchCountTblPtr	ds.l	1			; 134, kdp+ef4 ; ???????
+AddrSpcSetCtr			ds.l	1			; 138, kdp+ef8 ; incremented by SetAddrSpcRegisters
+IDCtr					ds.l	1			; 13c, kdp+efc
+
+						ds.b	$20
+Size					equ		*
+						endr
+
+
+
+;_______________________________________________________________________
+;	Processor Info Record
+;
+;	Used to pass Processor information from the NanoKernel to user mode
+;	software.
+;_______________________________________________________________________
+
+ProcessorInfoPtr		equ		$68FFEFD8	; logical address of ProcessorInfo record
+ProcessorInfoVer		equ		$68FFEFDC	; version number of ProcessorInfo record
+ProcessorInfoLen		equ		$68FFEFDE	; length of ProcessorInfo record
+
+ProcessorInfo			record	0,increment
+ProcessorVersionReg		ds.l	1			; 000, kdp+f20 ; contents of the PVR special purpose register
+CpuClockRateHz			ds.l	1			; 004, kdp+f24 ; CPU Clock frequency
+BusClockRateHz			ds.l	1			; 008, kdp+f28 ; Bus Clock frequency
+DecClockRateHz			ds.l	1			; 00c, kdp+f2c ; Decrementer Clock frequency
+
+Ovr
+PageSize				ds.l	1			; 010, kdp+f30 ; number of bytes in a memory page
+DataCacheTotalSize		ds.l	1			; 014, kdp+f34 ; number of bytes in the Data Cache
+InstCacheTotalSize		ds.l	1			; 018, kdp+f38 ; number of bytes in the Instruction Cache
+CoherencyBlockSize		ds.w	1			; 01c, kdp+f3c ; number of bytes in a Coherency Block
+ReservationGranuleSize	ds.w	1			; 01e, kdp+f3e ; number of bytes in a Reservation Granule
+CombinedCaches			ds.w	1			; 020, kdp+f40 ; 1 <- combined or no cache, 0 <- split cache
+InstCacheLineSize		ds.w	1			; 022, kdp+f42 ; number of bytes in a Line of the Instruction Cache
+DataCacheLineSize		ds.w	1			; 024, kdp+f44 ; number of bytes in a Line of the Data Cache
+DataCacheBlockSizeTouch	ds.w	1			; 026, kdp+f46 ; number of bytes in a Block for DCBT DCBTST
+InstCacheBlockSize		ds.w	1			; 028, kdp+f48 ; number of bytes in a Block of the Instruction Cache
+DataCacheBlockSize		ds.w	1			; 02a, kdp+f4a ; number of bytes in a Block of the Data Cache
+InstCacheAssociativity	ds.w	1			; 02c, kdp+f4c ; Associativity of the Instruction Cache
+DataCacheAssociativity	ds.w	1			; 02e, kdp+f4e ; Associativity of the Data Cache
+
+TransCacheTotalSize		ds.w	1			; 030, kdp+f50 ; number of entries in the Translation Cache
+TransCacheAssociativity	ds.w	1			; 032, kdp+f52 ; Associativity of the Translation Cache
+OvrEnd
+
+;	These fields were added to report information about back-side L2 caches
+
+ProcessorL2DSize		ds.l	1			; 034, kdp+f54 ; Size of back-side L2 Dcache
+ProcessorL2ISize		ds.l	1			; 038, kdp+f58 ; Size of back-side L2 Icache
+ProcessorL2Combined		ds.w	1			; 03c, kdp+f5c ; 1 <- combined or no cache, 0 <- split cache
+ProcessorL2IBlockSize	ds.w	1			; 03e, kdp+f5e ; Block size of back-side I L2 cache
+ProcessorL2DBlockSize	ds.w	1			; 040, kdp+f60 ; Block size of back-side D L2 cache
+ProcessorL2IAssoc		ds.w	1			; 042, kdp+f62 ; Associativity of L2 I
+ProcessorL2DAssoc		ds.w	1			; 044, kdp+f64 ; Associativity of L2 D
+
+filler1					ds.w	1			; 046, kdp+f66 ; align to long
+
+;	   ProcessorFlags - Definitions for the processor flags field. These are bit positions,
+;						as in 1 << hasVMX, and not masks.
+hasL2CR					equ		0
+hasPLRUL1				equ		1
+hasTAU					equ		2
+hasVMX					equ		3
+unknownFlag				equ		4
+hasExtraBATs			equ		5
+ProcessorFlags			ds.l	1			; 048, kdp+f68 ; flags to specify processor features
+
+						align	5			; pad to nice cache block alignment
+						
+						org		$05e
+SetToZero				ds.w	1			; 05e, kdp+f7e ; by same code that sets below
+CpuClockRateHzCopy		ds.l	1			; 060, kdp+f80 ; copies by Init.s
+BusClockRateHzCopy		ds.l	1			; 064, kdp+f84 ; copies by Init.s
+DecClockRateHzCopy		ds.l	1			; 068, kdp+f88 ; copies by Init.s
+
+						ds.b	$34
+Size					equ		*
+						endr
+
+
+
+;_______________________________________________________________________
+;	Hardware Info Record
+;
+;	Used to pass hardware information from the NanoKernel to user mode
+;	software.
+;_______________________________________________________________________
+
+NKHWInfoPtr				equ		$68FFEFD0	; logical address of HWInfo record
+NKHWInfoVer				equ		$68FFEFD4	; version number of HWInfo record
+NKHWInfoLen				equ		$68FFEFD6	; length of HWInfo record
+
+NKHWInfo				record	0,increment
+MacROM_Base				ds.l	1			; 000, irp+f00 ; base address (physical) of Mac ROM
+DeviceTreeBase			ds.l	1			; 004, irp+f04 ; base address of the copied device tree properties
+UniversalInfoTableBase	ds.l	1			; 008, irp+f08 ; base address of the Universal Info Table
+ConfigInfoTableBase		ds.l	1			; 00c, irp+f0c ; base address of the Config Info Table
+VectorLookupTable		ds.l	1			; 010, irp+f10 ; base address of the interrupt vector lookup table (short *)
+VectorMaskTable			ds.l	1			; 014, irp+f14 ; base address of the interrupt vector mask table (long *)
+
+OpenPICBaseAddr			ds.l	1			; 018, irp+f18 ; OpenPIC base address
+
+ISAMaster8259			ds.l	1			; 01c, irp+f1c ; ISA Master 8259 ports (char *)
+ISASlave8259			ds.l	1			; 020, irp+f20 ; ISA Slave 8259 ports (char *)
+InterruptAck8259		ds.l	1			; 024, irp+f24 ; address to read to ack 8259 interrupt (long *)
+
+											; interrupt pending bits (actively changing)
+
+PendingInts				ds.l	2			; 028, irp+f28 ; 64 bits of pending interrupts
+
+											; some Mac I/O device base addresses
+
+ADB_Base				ds.l	1			; 030, irp+f30 ; base address of ADB
+SCSI_DMA_Base			ds.l	1			; 034, irp+f34 ; base address of SCSI DMA registers
+
+											; RTAS related stuff
+
+RTAS_PrivDataArea		ds.l	1			; 038, irp+f38 ; RTAS private data area 
+MacOS_NVRAM_Offset		ds.l	1			; 03c, irp+f3c ; offset into nvram to MacOS data
+
+RTAS_NVRAM_Fetch		ds.l	1			; 040, irp+f40 ; token for RTAS NVRAM fetch
+RTAS_NVRAM_Store		ds.l	1			; 044, irp+f44 ; token for RTAS NVRAM store
+RTAS_Get_Clock			ds.l	1			; 048, irp+f48 ; token for RTAS clock get
+RTAS_Set_Clock			ds.l	1			; 04c, irp+f4c ; token for RTAS clock set
+RTAS_Restart			ds.l	1			; 050, irp+f50 ; token for RTAS Restart
+RTAS_Shutdown			ds.l	1			; 054, irp+f54 ; token for RTAS Shutdown
+RTAS_Restart_At			ds.l	1			; 058, irp+f58 ; token for RTAS system startup at specified time
+RTAS_EventScan			ds.l	1			; 05c, irp+f5c ; token for RTAS event scan
+RTAS_Check_Exception	ds.l	1			; 060, irp+f60 ; token for RTAS check exception
+RTAS_Read_PCI_Config	ds.l	1			; 064, irp+f64 ; token for RTAS read PCI config
+RTAS_Write_PCI_Config	ds.l	1			; 068, irp+f68 ; token for RTAS write PCI config
+
+											; SIO interrupt source numbers for the MPIC
+
+SIOIntVect				ds.w	1			; 06c, irp+f6c ; SIO (8259 cascade vector) vector number
+SIOIntBit				ds.w	1			; 06e, irp+f6e ; SIO (8259 cascade vector) bit number
+
+Signature				ds.l	1			; 070, irp+f70 ; signature for this record ('Hnfo')
+
+											; more interrupt source numbers
+
+SpuriousIntVect			ds.w	1			; 074, irp+f74 ; spurious vector number
+
+CPU_ID					ds.w	1			; 076, irp+f76 ; the ID of this CPU (universal-tables-related)
+
+SCCAIntVect				ds.w	1			; 078, irp+f78 ; SCC A (non-DMA) vector number
+SCCBIntVect				ds.w	1			; 07a, irp+f7a ; SCC B (non-DMA) vector number
+SCSIIntVect				ds.w	1			; 07c, irp+f7c ; SCSI vector number
+SCSIDMAIntVect			ds.w	1			; 07e, irp+f7e ; SCSI DMA vector number
+VIAIntVect				ds.w	1			; 080, irp+f80 ; VIA vector number
+VIAIntBit				ds.w	1			; 082, irp+f82 ; VIA bit number
+ADBIntVect				ds.w	1			; 084, irp+f84 ; vector number
+NMIIntVect				ds.w	1			; 086, irp+f86 ; NMI vector number
+NMIIntBit				ds.w	1			; 088, irp+f88 ; NMI bit number
+
+											; current (actively changing) interrupt handling variables
+
+ISAPendingInt			ds.w	1			; 08a, irp+f8a ; currently pending ISA/8259 interrupt
+CompletedInts			ds.b	8			; 08c, irp+f8c ; completed interrupts
+
+nkHWInfoFlagSlowMESH	equ		1			; set if fast MESH doesn't work on this box
+nkHWInfoFlagAsynchMESH	equ		2			; set if Synchronous MESH doesn't work on this box
+nkHWInfoFlagNoCopySWTLB	equ		4			; set if the software TLB walk code for 603 should NOT be copied
+HardwareInfoFlags		ds.l	1			; 094, irp+f94 ; 32 bits of flags (see enum above)
+
+RTAS_Get_PowerOn_Time	ds.l	1			; 098, irp+f98 ; token for RTAS getting time for system startup
+
+						ds.b	$24
+Size					equ		*
+						endr
+
+
+
+;_______________________________________________________________________
+;	Processor State Record
+;
+;	Used to save the state of the processor across sleep.
+;_______________________________________________________________________
+
+NKProcessorStatePtr		equ		$68FFEFC8	; logical address of ProcessorState record
+NKProcessorStateVer		equ		$68FFEFCC	; version number of ProcessorState record
+NKProcessorStateLen		equ		$68FFEFCE	; length of ProcessorState record
+
+NKProcessorState		record	0,increment
+saveDBAT0u				ds.l	1			; 000 ; place to store DBAT0U
+saveDBAT0l				ds.l	1			; 004 ; place to store DBAT0L
+saveDBAT1u				ds.l	1			; 008 ; place to store DBAT1U
+saveDBAT1l				ds.l	1			; 00c ; place to store DBAT1L
+saveDBAT2u				ds.l	1			; 010 ; place to store DBAT2U
+saveDBAT2l				ds.l	1			; 014 ; place to store DBAT2L
+saveDBAT3u				ds.l	1			; 018 ; place to store DBAT3U
+saveDBAT3l				ds.l	1			; 01c ; place to store DBAT3L
+
+saveIBAT0u				ds.l	1			; 020 ; place to store IBAT0U
+saveIBAT0l				ds.l	1			; 024 ; place to store IBAT0L
+saveIBAT1u				ds.l	1			; 028 ; place to store IBAT1U
+saveIBAT1l				ds.l	1			; 02c ; place to store IBAT1L
+saveIBAT2u				ds.l	1			; 030 ; place to store IBAT2U
+saveIBAT2l				ds.l	1			; 034 ; place to store IBAT2L
+saveIBAT3u				ds.l	1			; 038 ; place to store IBAT3U
+saveIBAT3l				ds.l	1			; 03c ; place to store IBAT3L
+
+saveSPRG0				ds.l	1			; 040 ; place to store SPRG0
+saveSPRG1				ds.l	1			; 044 ; place to store SPRG1
+saveSPRG2				ds.l	1			; 048 ; place to store SPRG2
+saveSPRG3				ds.l	1			; 04c ; place to store SPRG3
+
+saveL2CR				ds.l	1			; 050 ; place to store Arthur's L2CR
+
+saveSRR0				ds.l	1			; 054 ; place to store SRR0
+saveSRR1				ds.l	1			; 058 ; place to store SRR1
+saveTBU					ds.l	1			; 05c ; place to store TBU
+saveTBL					ds.l	1			; 060 ; place to store TBL
+saveHID0				ds.l	1			; 064 ; place to store HID0
+saveDEC					ds.l	1			; 068 ; place to store DEC
+saveMSR					ds.l	1			; 06c ; place to store MSR
+saveSDR1				ds.l	1			; 070 ; place to store SDR1
+
+											; saveKernelDataPtr needs to always be right after saveReturnAddr
+											; because of how the code works.  DO NOT CHANGE THIS ORDERING!
+
+saveReturnAddr			ds.l	1			; 074 ; place to store the addr to jump to.
+saveKernelDataPtr		ds.l	1			; 078 ; place to store the KernelDataPtr
+saveContextPtr			ds.l	1			; 07c ; place to store the ContextPtr
+Size					equ		*
 						endr
 
 

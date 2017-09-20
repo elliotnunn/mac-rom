@@ -182,7 +182,7 @@ Debugging		equ	0					; disable debugging checks
 
 ;______________________________________________________________________
 ;
-; Routine:		CountADBs
+; Routine:		CountADBs 2b380
 ; Arguments:	None
 ; Output:		D0.W	Number of ADB entries
 ; Function:		This routine counts the number of entries in the ADB
@@ -210,7 +210,7 @@ FirstCount
 
 ;______________________________________________________________________
 ;
-; Routine:		GetIndADB
+; Routine:		GetIndADB 2b39a
 ; Arguments:	DO.W	Index from 1 to the value returned by CountADBs
 ;				A0		Pointer to buffer in which DeviceType, OrigAddr,
 ;						ServiceAddr, DataAddr are returned (10 bytes)
@@ -245,7 +245,7 @@ LoadBuf		MOVE.B	FDBDevTy(A1), (A0)+		; Return DeviceType
 			Title	'KbdADB - ADB Manager  -  GetADBInfo / SetADBInfo / FindFDBInfo'
 ;______________________________________________________________________
 ;
-; Routine:		GetADBInfo
+; Routine:		GetADBInfo 2b3c6
 ; Arguments:	DO.B	ADBAddr
 ;				A0		Pointer to buffer in which DeviceType, OrigAddr,
 ;						ServiceAddr, DataAddr are returned (10 bytes)
@@ -261,7 +261,7 @@ GetADBInfoTrap
 
 ;______________________________________________________________________
 ;
-; Routine:		SetADBInfo
+; Routine:		SetADBInfo 2b3cc
 ; Arguments:	DO.B	ADBAddr
 ;				A0		Pointer to buffer containing ServiceAddr and
 ;						DataAddr (8 bytes)
@@ -282,7 +282,7 @@ DoneSet		RTS
 
 ;______________________________________________________________________
 ;
-; Routine:		FindFDBInfo
+; Routine:		FindFDBInfo 2b3da
 ; Arguments:	DO.B	FDBAddr
 ; Output:		D0.L	0 if found, -1 if not
 ;				A1		Real address of FDB record if found.
@@ -317,7 +317,7 @@ DoneFind
 			Title	'KbdADB - ADB Manager  -  ADBOp'
 ;_______________________________________________________________________
 ;
-;  Routine:		ADBOp
+;  Routine:		ADBOp 2b3fc
 ;  Inputs:		A0.L - pointer to ADBOpBlock paramater block
 ;				D0.B - ADB command/address byte to send
 ;
@@ -379,7 +379,7 @@ ADBOpTrap								; a0-a1/d1-d2 saved by OsTrap dispatch
 			Title	'KbdADB - ADB Manager  -  RunADBRequest'
 ;_______________________________________________________________________
 ;
-;  Routine:		RunADBRequest
+;  Routine:		RunADBRequest 2b44c
 ;  Inputs:		A3 - pointer to ADBBase
 ;
 ;  Outputs:		D2 - length of transmit buffer data
@@ -424,7 +424,7 @@ RunADBRequest
 			Title	'KbdADB - ADB Manager  -  ExplicitRequestDone'
 ;_______________________________________________________________________
 ;
-;  Routine:		ExplicitRequestDone
+;  Routine:		ExplicitRequestDone 2b47e
 ;  Inputs:		D2 - length of receive buffer data
 ;				D3 - command byte / SRQ flag (bit 31)
 ;				A2 - pointer to buffer containing receive data
@@ -482,7 +482,7 @@ ExplicitRequestDone
 			Title	'KbdADB - ADB Manager  -  ImplicitRequestDone'
 ;_______________________________________________________________________
 ;
-;  Routine:		ImplicitRequestDone
+;  Routine:		ImplicitRequestDone 2b4b4
 ;  Inputs:		D2 - length of receive buffer data
 ;				D3 - command byte / SRQ flag (bit 31)
 ;				A2 - pointer to buffer containing receive data
@@ -524,7 +524,7 @@ ImplicitRequestDone
 			Title	'KbdADB - ADB Manager  -  RequestDone'
 ;_______________________________________________________________________
 ;
-;  Routine:		RequestDone
+;  Routine:		RequestDone 2b4d4
 ;  Inputs:		D2 - length of receive buffer data
 ;				D3 - command byte / SRQ flag (bit 31)
 ;				A0 - pointer to buffer to pass to completion routine
@@ -559,36 +559,73 @@ RequestDone	move.l	a0,-(sp)			; copy buffer address to A0 save area on stack
 
 			TestFor	SupportsIdle
 			BEQ.S	@notsupported
-			_IdleUpdate					; this is activity, stay at full speed
+
+			MoveA.L	(PmgrBase), A1
+			CmpI.L	#sleepConst, PmgrRec.SleepSaveFlag(A1)
+			BEQ.B	@definitelyNot
+			BTst.B	#$2, $129(A1)
+			BEQ.B	@nearEnd
+@definitelyNot
+
+			Move.L	(A7), D3
+			Move.B	D3, D0
+			LsR.B	#$4, D0
+			Bsr		FindFDBInfo
+			Move.B	$1(A1), D0
+			MoveA.L	$4(A7), A1
+			Move.L	(A1), D3
+			CmpI.B	#$2, D0
+			BNE.B	@noTesting
+			BTst.L	#$17, D3
+			BNE.B	@idleDone
+			Bra.B	@nearEnd
+@noTesting
+			MoveA.L	(PmgrBase), A1
+			CmpI.L	#sleepConst, PmgrRec.SleepSaveFlag(A1)
+			BEQ.B	@idleDone
+			CmpI.B	#$3, D0
+			BNE.B	@idleDone
+@nearEnd
+			Move.L	D0, -(A7)
+			Move.L	#$10001, D0
+			_PowerDispatch
+			Move.L	(A7)+, D0
+@idleDone
 @notsupported
 
 			movem.l	(sp)+,d0/a0/a1/a2	; setup cmd, buffer, handler, data
-													;									(13).start
-			TestFor	SupportsIdle
-			beq.s	@continue
-			move.l	d0,-(sp)						; save d0 temporarily on the stack						<t10> ag
-			move.l	#((UsrActivity<<16)|\	; set for user activity								<K2>
-					(IdleUpdateDisp<<0)),d0	; idle update selector								<K2>
-			_PowerDispatch							; call power manager
-			move.l	(sp)+,d0						; restore d0											<t10> ag
-@continue
 			move.l	a1,d1							; test to see if handler address is valid
 			beq.s	@noHandler						; if not, don't call it
 
 			BTST	#fDBInit,FDBFlag(A3)			; is ADB initialization in progress?
 			BNE.S	@JustDoIt						; -> yes, calling the handler now is allowed
 
+			MOVE.L	D0,D2
+			AND		#$F,D2
+			CMP.B	#$C,D2
+			BNE		@justDoIt
+
 ;  jump thru the ProductInfo table to check if a keyswitch is in the secure position					<H4>
 
 			MOVEA.L	UnivInfoPtr,A1					; point to the ProductInfo table					<H4>
 			ADDA.L	ProductInfo.ADBDebugUtilPtr(A1),A1 ;  and get the address of its ADB table			<H4>
 			MOVE.L	4*adbKeySwSecure(A1),D2			; get the offset to the keyswitch code				<H4>
-			BEQ.S	@JustDoIt						; -> no keyswitch check, so just call the handler	<H4>
+			BEQ.S	@MaybeDoIt						; -> no keyswitch check, so just call the handler	<H4>
 			MOVEM.L	D0/D1/A0/A2,-(SP)				;													<H4>
 			ADDA.L	D2,A1							; calculate the routine's address					<H4>
 			JSR		(A1)							;  and call it										<H4>
 			MOVEM.L	(SP)+,D0/D1/A0/A2				;													<H4>
 			BEQ.S	@noHandler						; -> the keyswitch is secure, so don't call the handler
+
+@MaybeDoIt	BTST.B	#3,$240A
+			BEQ.S	@JustDoIt
+
+			MOVE.L	PmgrBase,A1
+			CMP.L	#sleepConst,PmgrRec.SleepSaveFlag(A1)
+			BEQ.S	@noHandler
+
+			BTST.B	#2,PmgrRec.PmgrFlags2(A1)
+			BNE.B	@noHandler
 
 @JustDoIt	MOVEA.L	D1,A1							; get the handler's address							<H4>
 			jsr		(a1)							; call the handler
@@ -602,7 +639,7 @@ RequestDone	move.l	a0,-(sp)			; copy buffer address to A0 save area on stack
 			Title	'KbdADB - ADB Manager  -  Initialization'
 ;______________________________________________________________________
 ; 
-;	ADBReInit - ReInitialize the Front Desk Bus
+;	ADBReInit 2b5aa - ReInitialize the Front Desk Bus
 ;		
 ;______________________________________________________________________
 
@@ -638,7 +675,7 @@ iLocalData	EQU		iDeviceTy
 
 ;______________________________________________________________________
 ; 
-;	ADBProc - this routine lives in the JADBProc vector and is called
+;	ADBProc 2b5d0 - this routine lives in the JADBProc vector and is called
 ;			  by ADBReInit before and after initialization
 ;
 ;______________________________________________________________________
@@ -695,6 +732,7 @@ ADBProc
 ;______________________________________________________________________
 
 PostInit								; <SM3> rb
+; 2b610
 			WITH ExpandMemRec,KybdDriverData	; 							<SM3> rb
 			
 			_CountADBs					; Get the number of ADB devices
@@ -728,14 +766,14 @@ PostInit								; <SM3> rb
 			ENDWITH						; <SM3> rb
 ;______________________________________________________________________
 ; 
-;	InitADBDrvr - this routine bring in all appropriate 'ADBS' resources and
+;	InitADBDrvr 2b64c - this routine bring in all appropriate 'ADBS' resources and
 ;              execute the initialization routines.
 ;
 ;______________________________________________________________________
 
 InitADBDrvr	_CountADBs						; get the number of valid ADB entries
 			Move	D0,D3					; save it in D3
-			BEQ.S	DoneSrv					; If none, nothing to do
+			BEQ		DoneSrv					; If none, nothing to do
 			MoveQ	#1,D4					; start at first entry
 			Link	A6,#iLocalData			; reserve stack frame
 FSrvLoop	
@@ -759,9 +797,7 @@ FSrvLoop
 			_DetachResource					; detach it
 			
 			Move.L	D1,A0					; put handle in A0
-			Move.L	(A0),D0					; dereference handle
-			_StripAddress					; make it a 24-bit address
-			Move.L	D0,A0					; put it in A0
+			Move.L	(A0),A0					; dereference handle
 			Move.B	iADBAddr(A6),D0			; put ADB Address in D0
 			Move.B	iDeviceTy(A6),D1		; put device type in D1
 			JSR		(A0)					; execute the service routine
@@ -777,7 +813,7 @@ DoneSrv
 
 ;_______________________________________________________________________
 ;
-; InitADB - Initialize state variables
+; InitADB 2b69c - Initialize state variables
 ;
 ;_______________________________________________________________________
 
@@ -795,6 +831,50 @@ InitADB		MOVE.L 	#FDBDSize,D0		; get local data area length
 			BSR 	RSetKMap			; reset the keyboard map, etc.
 			LEA 	FDBTask,A0 			; setup the FDB VBL task
 			MOVE.L	A0,JKybdTask		; lomem vector
+
+			BTst.B	#$2, ($2408)
+			BEQ.B	@dontHitExpandMem
+			import	IOPR_ADB
+			Lea.L	IOPR_ADB, A0
+			Move.L	A0, ([ExpandMem],$294)
+@dontHitExpandMem
+
+			Move.L	UnivROMFlags, D0
+
+			AndI.L	#$E, D0
+			BEQ.B	@escape
+
+			CmpI.L	#$A, D0
+			BEQ.B	@escape
+
+			CmpI.L	#$C, D0
+			BEQ.B	@second
+
+			CmpI.L	#$8, D0
+			BEQ.B	@fourth
+
+			CmpI.L	#$2, D0
+			BNE.B	@third
+
+@first		Lea.L	($FFFDB592).L, A0
+			Lea.L	@first(A0.L), A0
+			Bra.B	@done
+
+@second		Lea.L	($FFFDB5A2).L, A0
+			Lea.L	@second(A0.L), A0
+			Bra.B	@done
+
+@third		Lea.L	($FFFDB5CE).L, A0
+			Lea.L	@third(A0.L), A0
+			Bra.B	@done
+
+@fourth		Lea.L	($FFFDB5DE).L, A0
+			Lea.L	@fourth(A0.L), A0
+
+@done		MoveA.L	(UnivInfoPtr), A1
+			SubA.L	A1, A0
+			Move.L	A0, $48(A1)
+@escape
 
 ;  jump thru the ProductInfo table to call the hardware-dependent initialization code
 
@@ -838,7 +918,7 @@ ReInit		ori.w	#HiIntMask,sr		; mask out interrupts
 
 ;_______________________________________________________________________
 ;
-; InitDevT - Initialize the Device Table
+; InitDevT 2b7a0 - Initialize the Device Table
 ;
 ;	NOTE:	everything after BusReset below is part of an ADB completion
 ;			routine, and thus is run at interrupt level 1.  No calls
@@ -853,17 +933,19 @@ InitDevT	bsr		BusReset			; reset all devices on the bus
 @PollNext	move.b	d0,InitAddr(a3)		; save device address
 			bsr		TalkR3				; issue a Talk R3 command (asynchronously)
 			move.b	InitAddr(a3),d0		; restore poll address
-			tst.b	(a0)+				; test reply length, see if device returned data
+			tst.b	(a0)				; test reply length, see if device returned data
 			beq.s	@NoDevice			; no, nothing to install 
 
 ; there is a response from the device in the address, so update the
 ; device table according to the device
 
+@whoaGoBack
 			moveq.l	#0,d1				; zero extend for indexing
 			move.b	DevTOffset(a3),d1	; get offset to devicetable
-			move.b	1(a0),FDBDevTy(a3,d1.w)	; copy device handler ID into table
+			move.b	2(a0),FDBDevTy(a3,d1.w)	; copy device handler ID into table
 			move.b	d0,FDBOAddr(a3,d1.w); save device address
 			move.b	d0,FDBAddr(a3,d1.w)	; save device address
+			move.b	d0,FDBOAddr(a3,d1.w); save device address
 
 			cmpi.b	#KbdAddr,d0			; is it a keyboard type device?
 			bne.s	@notKbd				; no, branch
@@ -878,10 +960,29 @@ InitDevT	bsr		BusReset			; reset all devices on the bus
 			move.w	HasDev(a3),d2		; get value in HasDev
 			bset.l	d0,d2				; remember which address has device
 			move.w	d2,HasDev(A3)		; save it
+			Bra		@skipNewNoDeviceCode
 @NoDevice
+
+			BTst.B	#$2, ($2408)
+			BEQ.B	@skipNewNoDeviceCode
+
+			Tst.L	([$2B6],$29C)
+			BEQ.B	@skipNewNoDeviceCode
+
+			MoveM.L	D0/A0-A3, -(A7)
+			MoveA.L	([$2B6],$29C), A1
+			MoveA.L	A0, A2
+			AndI	#$FF, D0
+			OrI		#$200, D0
+			Jsr		(A1)
+			MoveM.L	(A7)+, D0/A0-A3
+			Tst.B	(A0)
+			BNE.B	@whoaGoBack
+@skipNewNoDeviceCode
+
 			addq.b	#1,d0				; advance device address
 			cmpi.b	#NumFDBAdr,d0		; has it polled all addresses yet?
-			bne.s	@PollNext			; no, go to poll next device
+			bne		@PollNext			; no, go to poll next device
 
 ; ChgAddr - check the device address to identify multiple devices on 
 ; the same address
@@ -922,7 +1023,7 @@ ChgNext
 ;   to the old address by issuing a Listen R3.
 
 			Move.B	InitAddr(A3),D0		; get address
-			BSR.s	TalkR3				; issue a Talk R3 command					<1.6>
+			BSR		TalkR3				; issue a Talk R3 command					<1.6>
 
 ; MovBack - A Talk R3 has just been issued, a timeout in S1 indicates no
 ;   more device in original address, we want to move the device back to 
@@ -931,21 +1032,40 @@ ChgNext
 			tst.b	(a0)				; did the device return data
 			beq.S	@1					; no, branch 
 ; no timeout indication, 
-			BSR.S	CopyEntry			; copy entry into device table
+@whoaGoBack
+			BSR		CopyEntry			; copy entry into device table
 			Move.B	FDBByte1(A3),FDBDevTy(A3,D1.W)	; get new handle ID into table
 			BRA.S	ChgNext				; go to change next device
 ; there is timeout indication
 @1
+			BTst.B	#$2, ($2408)
+			BEQ.B	@skipNewTimeoutCode
+
+			Move.B	$16F(A3), D0
+			Tst.L	([$2B6],$29C)
+			BEQ.B	@skipNewTimeoutCode
+
+			MoveM.L	D0/A1-A2, -(A7)
+			MoveA.L	([$2B6],$29C), A1
+			MoveA.L	A0, A2
+			AndI	#$FF, D0
+			OrI		#$300, D0
+			Jsr		(A1)
+			MoveM.L	(A7)+, D0/A1-A2
+			Tst.B	(A0)
+			BNE.B	@whoaGoBack
+@skipNewTimeoutCode
+
 			Move.B	InitAddr(A3),D1		; get address to change back to
 			Move.B	NewAddr(A3),D0		; get address to talk to
-			bsr.s	ListenR3			; send a listen R3 command					<1.6>
+			bsr		ListenR3			; send a listen R3 command					<1.6>
 
 ; CKNewAdr - check the new address by issuing a Talk R3, to see if
 ;   there is still any device left.  If yes, add entry into device 
 ;   table, but if not, just go to change next device address
 
 			Move.B	NewAddr(A3),D0		; get address
-			BSR.S	TalkR3				; issue a talk R3							<1.6>
+			BSR		TalkR3				; issue a talk R3							<1.6>
 
 ; AddEntry - a Talk R3 command has just been issed to the new address, 
 ;   if there is no timeout in S1, one or more device is still in that
@@ -964,7 +1084,7 @@ ExitEntry
 
 ;_______________________________________________________________________
 ;
-; CopyEntry - copy the device entry from the original address to the 
+; CopyEntry 2b8ea - copy the device entry from the original address to the 
 ;   new address, a Talk R3 had just been issued 
 ;		
 ;		Called by:  MoveBack and AddEntry
@@ -1003,7 +1123,7 @@ CopyEntry
 
 ;_______________________________________________________________________
 ;
-; BusReset - issue a Reset command
+; BusReset 2b930 - issue a Reset command
 ;
 ;   On entry, (SP) has completion routine address										<1.6>
 ;
@@ -1017,7 +1137,7 @@ BusReset	moveq.l	#0,d0				; address zero
 
 ;_______________________________________________________________________
 ;
-; Talk R3 - issue a Talk R3 command
+; Talk R3 2b938 - issue a Talk R3 command
 ;
 ;   On entry, D0 has device address
 ;             (SP) has completion routine address										<1.6>
@@ -1031,7 +1151,7 @@ TalkR3		moveq.l	#talkCmd+3,d1		; talk command, register 3
 
 ;_______________________________________________________________________
 ;
-; ListenR3 - issue a listen R3 command
+; ListenR3 2b93e - issue a listen R3 command
 ;
 ;   On entry, D0 has device address to send the command
 ;			  D1 has new device address to change to
@@ -1058,7 +1178,7 @@ MakeAsyncRequest
 
 ;_______________________________________________________________________
 ;
-; GNextAddr - get next address to change 
+; GNextAddr 2b964 - get next address to change 
 ;
 ;_______________________________________________________________________
 
@@ -1081,7 +1201,7 @@ GNextAddr	MoveQ	#0,D0
 
 ;_______________________________________________________________________
 ;
-; GEmptyAddr - get empty address space
+; GEmptyAddr 2b986 - get empty address space
 ;
 ;   on return:
 ;       D0 = empty address or
@@ -1100,7 +1220,7 @@ GEmptyAddr	MoveQ	#0,D1
 
 ;_______________________________________________________________________
 ;
-; FDBTask - FDB VBL Task
+; FDBTask 2b998 - FDB VBL Task
 ;
 ;_______________________________________________________________________
 
@@ -1119,7 +1239,7 @@ KbdDRTS 	RTS
 
 ;______________________________________________________________________
 ;
-;	DefaultDev - check mouse and keyboard in the device table, if they 
+;	DefaultDev 2b9ac - check mouse and keyboard in the device table, if they 
 ;				 are not there, set them up as default device anyway.
 ;
 ;______________________________________________________________________
@@ -1143,7 +1263,7 @@ ChkMouse	moveq	#1,d0					; post processing											<H6>
 
 ;______________________________________________________________________
 ;
-; Routine:		flushkbds
+; Routine:		flushkbds 2b9de
 ; Arguments:	none
 ; Output:		none
 ; Function:		this routine finds all kbd devices, and sends a flush command to them
@@ -1167,6 +1287,7 @@ waitForKeys	equ			(4+4)				; add 100% margin
 @type		cmp.b	#kbdAddr,origADBAddr(a0); is this a keyboard
 			bne.s	@next					; not a keyboard, next device
 			bsr.s	sendFlush				; send a flush command to kbd
+			bsr.s	newAdbFunc
 			bra.s	@next					; next device
 			
 @done		movea.l	#waitForKeys,a0			; wait for keys
@@ -1176,9 +1297,34 @@ waitForKeys	equ			(4+4)				; add 100% margin
 			movem.l	(sp)+,@saved			; restore registers
 			rts
 
+
 ;______________________________________________________________________
 ;
-; Routine:		sendFlush
+; Routine:		newAdbFunc 2ba12
+; Arguments:	a0
+; Output:		none
+; Function:
+; Note:			
+;______________________________________________________________________
+
+newAdbFunc
+@saved		reg		d0/d1/a0
+
+			movem.l	@saved,-(sp)
+
+			move.l	6(a0),a0
+			addq.l	#4,a0
+			clr.l	(a0)+
+			clr.l	(a0)
+			bsr		RSetKmap
+
+			movem.l	(sp)+,@saved			; restore registers
+			rts
+
+
+;______________________________________________________________________
+;
+; Routine:		sendFlush 2ba2a
 ; Arguments:	d0.b	adb id
 ; Output:		none
 ; Function:		this routine sends a "flush" command to the adb device at d0.b
@@ -1225,7 +1371,7 @@ CompleteFlush
 			Title	'KbdADB - ADB KeyBoard Driver'
 ;______________________________________________________________________
 ;
-; Routine:		KbdDrvr
+; Routine:		KbdDrvr 2ba72
 ; Arguments:	D0.B	ADB Command
 ;				A0		ADB Buffer address
 ;				A1		ADB Completion Routine Address (= KbdServ)
@@ -1288,7 +1434,7 @@ KbdDrvr
 
 ;______________________________________________________________________
 ;
-; Routine:		KeyIn
+; Routine:		KeyIn 2ba9e
 ; Arguments:	D0.B	Raw Keycode
 ;				D3.L	Device Type, Orig Addr, ADB Addr, Unused
 ;				A2		Private data area
@@ -1373,7 +1519,7 @@ NextWord
 
 ;______________________________________________________________________
 ;
-; Routine:		PostIt
+; Routine:		PostIt 2bb2c
 ; Arguments:	D0.W	ASCII Code
 ;				D3.W	ADB Address in high byte and raw keycode in low byte
 ; Output:		None
@@ -1415,7 +1561,7 @@ PostKeyUp
 
 ;______________________________________________________________________
 ;
-; FoundEx
+; FoundEx 2bb64
 ; An exception exists for this particular keystroke.  Process it appropriately.
 ;______________________________________________________________________
 FoundEx
@@ -1491,7 +1637,7 @@ FoundEx
 
 ;______________________________________________________________________
 ;
-; Routine:		KbdListen
+; Routine:		KbdListen 2bbee
 ; Arguments:	D0.B	ADB Command
 ;				D1.L	DeviceType, OrigAddr, ADBAddr, Unused (byte order)
 ;				A0		ADB Buffer Address
@@ -1553,7 +1699,7 @@ KbdListen
 
 ;______________________________________________________________________
 ;
-; Routine:		KbdBufFree
+; Routine:		KbdBufFree 2bc36
 ; Arguments:	D0.B	ADB Command
 ;				D1.L	DeviceType, OrigAddr, ADBAddr, Unused (byte order)
 ;				A0		ADB Buffer Address
@@ -1573,7 +1719,7 @@ KbdBufFree
 
 ;______________________________________________________________________
 ;
-;	KbdInstall - allocate memory for keyboard information and put in ADB record,
+;	KbdInstall 2bc3c - allocate memory for keyboard information and put in ADB record,
 ;				 loading resources as necessary.
 ;
 ;______________________________________________________________________
@@ -1605,6 +1751,13 @@ FirstInstall
 			BEQ.S	NotKbd					; Skip if NIL
 			MOVE.L	D0, A0
 			MOVE.L	(A0), KCHRPtr(A2)		; Dereference and put away
+
+			MOVE.L	A1, -(SP)
+			MOVE.L	ExpandMem, A1
+			TST.L	ExpandMemRec.emKeyCache(A1)
+			BNE.S	@no
+			MOVE.L	(A0), ExpandMemRec.emKeyCache(A1)
+@no			MOVE.L	(SP)+, A1
 
 			SUBQ.L	#4, SP					; Make room for result
 			MOVE.L	#'KMAP', -(SP)			; ResType = KCHR
@@ -1718,6 +1871,7 @@ kchrTableNoLink	equ	kchrTable-return	; kchrTable offset before link					<SM10> r
 			endr
 
 KeyTrans
+; 2bcb8
 ;------------------------------------------------------------------------------
 			with	ktFrame,SMgrRecord
 ; if SMgr not initialized or no itlk, skip
@@ -1909,7 +2063,7 @@ KeyTrans
 ; Macintosh keyboard mapping hook, which relies on the new KeyTrans trap.
 ; -----------------------------------------------------------------------------
 
-KeyHook 	PROC
+KeyHook 	PROC	EXPORT
 			with	ExpandMemRec
 			bra.s	SkipHeader				; skip the header.
 

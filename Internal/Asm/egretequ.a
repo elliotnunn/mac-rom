@@ -109,6 +109,7 @@ ContinueComp	ds.l	1				; vector to power message continue procedure				<SM5>
 deferredPDM		ds.l	1				; pointer to PDM deferred task to post alert				<SM5>
 prevPollStack	ds.l	1				; keep address of any other poll stack						<SM6>
 SpareComp3		ds.l	1				; spare vector #3											<SM5>
+				ds.b	$178-$64		; new
 EgretGlobSize	EQU		*
 			  ENDR
 
@@ -273,7 +274,8 @@ EnDisPDM		equ		$21				; Enable/Disable PowerDown Message							<T2>
 RdWrIIC			equ		$22				; Read or Write IIC (I sqared C)							<SM3>[rbm]<3>
 WakeUpMode		equ		$23				; Enable/Disable WakeUpMode									<P1>
 TimerTickle		equ		$24				; ShutDown Timer Tickle										<P1>
-MaxPseudoCmd	equ		TimerTickle		; largest possible pseudo command number					<P1>
+; more commands apparently added
+MaxPseudoCmd	equ		$2A				; largest possible pseudo command number					<P1>
 
 ;
 ;__________________________________________________________________________________________________

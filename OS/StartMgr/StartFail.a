@@ -287,23 +287,12 @@ CritErr		MOVEM.L A0-A7/D0-D7,SERegs			; save all regs for debug					<26Aug85>
 
 			LSR.L	#2,D3						; Compute number of longs on screen.		<C152>
 
-		if hasMMU then							;											<1.7>
-			MOVEQ	#true32b,D0					; set 32-bit addressing mode	
-			_SwapMMUMode						;
-			MOVE.B	D0,-(SP)					; save the previous mode
-		endif									;											<1.7>
-
 			MOVEQ	#-1,D0						; This should be black.						<C152>
 
 @FillLoop	MOVE.L	D0,(A2)+					; Fill a long.								<C152>
 			SUBQ.L	#1,D3						; Countdown.								<C152>
 			BHI.S	@FillLoop					; Loop until done.							<C152>
 
-		if hasMMU then							;									<1.7>
-			MOVE.B	(SP)+,D0					; get the previous addressing mode back
-			_SwapMMUMode						; flip back to previous addressing mode
-		endif									;									<1.7>
-			
 ; Okay, here are the values we still consider important at this point:
 ;
 ;	A3		=	pointer to the center of the screen.
@@ -343,7 +332,7 @@ CritErr		MOVEM.L A0-A7/D0-D7,SERegs			; save all regs for debug					<26Aug85>
 
 			BSR6	DeadMac 					; plot the dead Mac icon
 
-SkipDisplay	BigJmp	TMRestart,a0				; go to Test Manager entry point			<C27/30may86><1.4><2.0><2.1>
+SkipDisplay	BRA.S	*
 
 TinyTable	DC.W	$0000,$FFFF,$FFFF,$FFFF		; whiteColor
 			DC.W	$0000,$0000,$0000,$0000		; black
@@ -370,13 +359,6 @@ TinyTable	DC.W	$0000,$FFFF,$FFFF,$FFFF		; whiteColor
 ;-----------------------------------------------------------------------------
 
 FailData	
-		if hasMMU then							;									<1.7>
-			MOVEQ	#true32b,D1					; put in D1 for a second
-			EXG		D1,D0						; get true32b in D0, save D0 in D1
-			_SwapMMUMode						; switch to 32-bit addressing
-			MOVE.B	D0,-(SP)					; save the previous addressing mode
-			EXG		D1,D0						; get D0 back in D0
-		endif									;									<1.7>
 FailLoop
 			ROL.L	#4,D0						; get nibble in low order
 
@@ -408,11 +390,6 @@ chLoop		MOVE.B	(A1),D5 					; get the next byte
 			ADDQ.W	#1,A2						; point to the next character's position	<1.3>
 
 			DBRA	D4,FailLoop					; loop until all characters are drawn
-			
-		if hasMMU then							;									<1.7>
-			MOVE.B	(SP)+,D0					; get the old addressing mode back
-			_SwapMMUMode						; restore the addressing mode
-		endif									;									<1.7>
 			
 			JMP		(A6)						; return to caller
 						
@@ -458,12 +435,6 @@ DeadMac
 			LEA		SadMacIcon,A0				;point to the "Sad Mac" icon				<1.3>
 			MOVE.L	IconTLAddr,A2				; figure out where the topLeft corner is	<1.3>
 
-		if hasMMU then							;											<1.7>
-			MOVEQ	#true32b,D0					; flip to 32-bit mode						
-			_SwapMMUMode						; switch to 32-bit addressing			
-			MOVE.B	D0,-(SP)					; save the previous mode
-		endif									;											<1.7>
-
 			MOVEQ	#6,D1						; move the icon down 6 lines				<1.9>
 			MULU	D2,D1						; 											<1.9>
 			ADDA.L	D1,A2						;											<1.3><1.9>
@@ -476,10 +447,6 @@ DeadMac
 			ADDA.W	D2,A2						; move down to the next screen line			<1.3><1.9>
 			DBRA	D1,@BlastIcon				; keep looping until all 32 lines are copied<1.3><1.9>
 
-		if hasMMU then							;											<1.7>
-			MOVE.B	(SP)+,D0					; switch back to previous addressing mode
-			_SwapMMUMode						; flip back
-		endif									;											<1.7>
 			RTS6								; return to caller							<1.3>
 
 

@@ -15,8 +15,8 @@ MMUObjs 		=					"{ObjDir}MMU.a.o"								¶
 									"{ObjDir}MMUTables.a.o"							¶
 									"{ObjDir}GetReal.a.o"
 
-"{LibDir}MMU.lib"				Ä	{MMUObjs}
-	Lib {StdLibOpts} {MMUObjs} -o "{Targ}"
+# "{LibDir}MMU.lib"				Ä	{MMUObjs}
+# 	Lib {StdLibOpts} {MMUObjs} -o "{Targ}"
 
 
 

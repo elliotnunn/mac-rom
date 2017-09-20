@@ -45,8 +45,8 @@ HFSObjs							=	"{LibDir}BTreeMgr.lib"							¶
 									"{ObjDir}DiskCache.a.o"
 
 
-"{LibDir}HFS.lib"				Ä 	{HFSObjs}
-	Lib {StdLibOpts} -o "{Targ}" {HFSObjs}
+# "{LibDir}HFS.lib"				Ä 	{HFSObjs}
+# 	Lib {StdLibOpts} -o "{Targ}" {HFSObjs}
 
 
 "{ObjDir}BTAlloc.a.o"			Ä	"{ObjDir}StandardEqu.d"							¶

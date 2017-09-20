@@ -237,6 +237,8 @@ SearchWindow
 				MOVE	windowKind(A0),D0		; get the unit number from window
 				BPL.S	noGoodSearch			; if not sys. kind, ignore it
 				NOT 	D0						; flip it (bitwise)
+				CMP		UnitNtryCnt,D0
+				BPL.S	noGoodSearch
 				ASL 	#2,D0					; * 4
 				MOVE.L	UTableBase,A0			; point to the driver table
 				MOVE.L	0(A0,D0),A0 			; get the handle
@@ -255,12 +257,12 @@ SendDrvrMsg
 				MOVEQ	#64,D0					;message 64 is "feedEvent"
 ;
 SendDCommon
-				LINK	A6,#-32 				;get some space for the control p-block
-				LEA 	IORefNum-32(A6),A0		;point A0 at the block
+				LINK	A6,#-$32 				;get some space for the control p-block
+				LEA 	IORefNum-$32(A6),A0		;point A0 at the block
 				MOVE.W	DCtlRefNum(A1),(A0)+	;set up the refNum
 				MOVE.W	D0,(A0)+				;set up the control "opCode"
 				MOVE.L	A3,(A0) 				;set up event ptr as parameter
-				LEA 	-32(A6),A0				;point to pBlock
+				LEA 	-$32(A6),A0				;point to pBlock
 				_Control  ,IMMED				;make the control call
 ;
 				UNLK	A6						;de-allocate parameter block
@@ -304,11 +306,11 @@ DiskHandler		tst.w	EvtMessage(A3)			;if an Eject event,			<C150/09sep86>
 				jsr		(A0)					;eject the disk				<C150/09sep86>
 				bra.s	DoneSysEvt				;mark as taken, no error	<C150/09sep86>
 
-@1				SUB.W	#24,SP					;allocate 24 bytes on stack
+@1				SUB.W	#64,SP
 				MOVE.L	SP,A0					;point to it
 				MOVE.W	EvtMessage+2(A3),IODrvNum(A0) ;get the "disk ID" parameter
 				_MountVol						;tell OS to do its thing
-				ADD.W	#24,SP					;deallocate space on stack
+				ADD.W	#64,SP					;deallocate space on stack
 				MOVE.W	D0,EvtMessage(A3)		;return result to application
 				BRA 	DoneSEvt				;always return "FALSE"
 
@@ -652,10 +654,14 @@ SystemTask
 
 ; begin roll-in HMSystemTaskPatch patch												<11>
 
-				IMPORT	ptchHMGetBalloons		;									<11>
+				MOVE.L	ExpandMem,A0
+				MOVE.L	$78(A0),D0
+				BEQ.S	@BalloonsOff
 
-				JSR		ptchHMGetBalloons		; what is the state of What Is? mode?		<11>
-				BEQ.S	@BalloonsOff			; no, let's not scan for a content window	<11>
+				CLR		-(SP)
+				_HMGetBalloons
+				TST.B	(SP)+
+				BEQ.S	@BalloonsOff
 
 				SUBQ	#2,SP					; make room for a dummy OSErr		<11>
 				_HMBalloonBulk					;									<11>
@@ -668,7 +674,7 @@ SystemTask
 				IMPORT	NMTask					;									<V1.1>
 				JSR		NMTask					;Give time to Notification Manager	<V1.1>
 
-				MOVEM.L D3/A3,-(SP) 			;save some work registers
+				MOVEM.L D2-D4/A3-A4,-(SP) 		;save some work registers
 ;
 ; if this is a re-entrant call, just punt
 ;
@@ -701,7 +707,9 @@ SystemTask
 
 NotSWindow
 				MOVE.L	UTableBase,A3			;point to the driver table
+				MOVE.L	A3,A4
 				MOVE.W	UnitNtryCnt,D3			;get number of entries
+				MOVE.L	D3,D4
 ;
 ; here is the main loop for SystemTask.  For each driver that's installed, see if
 ; it needs time.  If so, send it the RUN message.
@@ -729,9 +737,10 @@ SysTLoop
 				MOVEQ	#0,D0					;zero high part of D0
 				MOVE.W	DCtlDelay(A1),D0		;get delay tick count
 				BEQ.S	DoItNow 				;if zero, always do it
-				ADD.L	DCtlCurTicks(A1),D0 	;figure out next time to call it
-				CMP.L	Ticks,D0				;has that time passed yet?
-				BGT.S	NextTSys				;if not, don't call it
+				MOVE.L	Ticks,D2
+				SUB.L	DCtlCurTicks(A1),D2
+				CMP.L	D0,D2
+				BCS.S	NextTSys
 ;
 ; its time to give it a call
 ;
@@ -741,12 +750,18 @@ DoItNow
 ;
 ; here is the bottom of the main loop.	See if there are any more entries to process
 ;
+				CMP.L	UTableBase,A4
+				BNE.S	NotSWindow
+
+				CMP		UnitNtryCnt,D4
+				BNE.S	NotSWindow
+
 NextTSys
 				SUBQ.W	#1,D3
 				BGT.S	SysTLoop				;loop if there's more to do
 				_SetPort						;restore it
 				CLR.B	TaskLock				;flag that we're done
-TaskDone		MOVEM.L (SP)+,D3/A3 			;restore work registers
+TaskDone		MOVEM.L (SP)+,D2-D4/A3-A4 		;restore work registers
 				RTS 							;return to caller
 ;
 ; PROCEDURE SystemMenu(menuResult: LongInt);
@@ -774,8 +789,8 @@ SystemMenu
 				SWAP	D1								;put the high word back
 				MOVE.L	D1,-(SP)						;move it onto the stack
 				PEA		(SP)							;push the address
-				IMPORT	CHANGEMENURESULTFORINPUTMETHOD
-				JSR		CHANGEMENURESULTFORINPUTMETHOD	;and send it to the input method
+				MOVE	#35,D0
+				_TSMDispatch							;and send it to the input method
 				ADDQ	#4,SP							;get rid of space for menuresult
 				MOVE.L	(SP)+,(SP)						;strip parameter
 				RTS										;return to caller
@@ -893,8 +908,8 @@ DoneSEdit
 OpenDeskAcc
 				CLR.W	8(SP)			   ;return 0 as the default
 
-				SUB 	#32,SP			   ;get 32 bytes for a parameter block
-				MOVE.L	36(SP),IOFileName(SP)  ;set up name
+				SUB 	#$32,SP			   ;get 32 bytes for a parameter block
+				MOVE.L	$36(SP),IOFileName(SP) ;set up name
 				CLR.W	IODrvNum(SP)	   ;use default volume
 				MOVE.W	#$0040, IOFileType(SP) ;clear type byte, special permissions to ID OpenDeskAcc
 				CLR.L	IOOwnBuf(SP)	   ;use system buffer
@@ -904,7 +919,7 @@ OpenDeskAcc
 				BNE.S	DoneOpenDAcc	   ;if an error, don't return refNum
 
 				MOVE.W	IORefNum(SP),D0    ;get the refNum
-				MOVE	D0,40(SP)		   ;return the refNum
+				MOVE	D0,$3A(SP)		   ;return the refNum
 
 ; figure out the DCE ptr
 
@@ -926,7 +941,7 @@ OpenDeskAcc
 				_ShowWindow 					;show it!
 
 DoneOpenDAcc
-				ADD.W	#32,SP					;strip the pBlock
+				ADD.W	#$32,SP					;strip the pBlock
 				MOVE.L	(SP)+,(SP)				;strip parameter
 				RTS
 
@@ -935,11 +950,11 @@ DoneOpenDAcc
 
 CloseDeskAcc
 				MOVE.W	4(SP),D0				;get the refNum
-				SUB 	#30,SP					;get space for param block
+				SUB 	#$32,SP					;get space for param block
 				MOVE.W	D0,IORefNum(SP) 		;set up refNum
 				MOVE.L	SP,A0
 				_Close							;close it!
-				ADD 	#30,SP					;pop off param block
+				ADD 	#$32,SP					;pop off param block
 TwoByteExit
 				MOVE.L	(SP)+,A0
 				ADDQ	#2,SP

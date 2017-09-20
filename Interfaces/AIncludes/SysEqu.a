@@ -674,7 +674,7 @@ btQType			EQU			21						; B*Tree Manager
 ; Device Control Entry Definition
 ;dCtlEntrySize used to be only 40 bytes!
 
-dCtlEntrySize 	EQU 		$34   					; length of a DCE [52 bytes]
+dCtlEntrySize 	EQU 		$38   					; length of a DCE [52 bytes]
 dCtlDriver		EQU 		0 						; driver [handle]
 dCtlFlags 		EQU 		4 						; flags [word]
 dCtlQueue 		EQU 		6 						; queue header

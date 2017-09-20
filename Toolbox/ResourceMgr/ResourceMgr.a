@@ -1011,9 +1011,6 @@ RMGRVersion 	DC.W	1				; Resource Manager version number
 InitRSRCMgr	ST		SysMap				; flag that resources are not inited
 			CLR.L	TopMapHndl			; tell the res mgr that it's start time
 
-			Move.B	MMFlags,-(SP)		; save the memory Manager flag
-			BSET.B	#MMStartMode,MMFlags; set for 32 bit system heap
-
 			move.l	ExpandMem,a0							; init override flags 		<SM48> kc
 			clr.b	ExpandMemRec.emScanOverrideMaps(a0)		; turn off ScanOverrideMaps	<SM48> kc
 			clr.w	ExpandMemRec.emLastMapOverridden(a0)	; flush override cache.		<SM48> kc
@@ -1023,7 +1020,6 @@ InitRSRCMgr	ST		SysMap				; flag that resources are not inited
 			_InitResources				; Init ROM resource file
 			ADDQ	#2, SP				; Assume success
 
-			MOVE.B	(SP)+,MMFlags		; restore memory manager flag
 			RTS
 
 
@@ -1109,7 +1105,7 @@ InitResources
 
 ;_______________________________________________________________________________
 ;
-; Routine:		RomOverRide (utility)
+; Routine:		RomOverRide 65446 (utility)
 ;
 ; Arguments:	None
 ;
@@ -1126,13 +1122,41 @@ ROVR			EQU 	$524F7672		; ROVR = 'ROvr' (type of override rsrc)
 
 RomOverRide 							; new routine									<27aug85> BBM
 		SUBQ	#4,SP					; Save room on stack for handle
-		MOVE.L	#ROVR,-(SP) 			; rsrc type for override
+		PEA		ROVR					; rsrc type for override
+		MOVE.W	#0,-(SP)				; rsrc ID of 0
+		MOVE	#-1,RomMapInsert
+		_GetResource					; get the override rsrc
+		SUBQ	#4,SP					; Save room on stack for handle
+		PEA		ROVR 					; rsrc type for override
 		MOVE.W	#0,-(SP)				; rsrc ID of 0
 		_GetResource					; get the override rsrc
+		MOVEQ.L	#0,D1
 		MOVE.L	(SP)+,D0				; Check to see if it exists
-		BEQ.S	ROvrOut					; if handle is zero then just return
+		BEQ.S	@Lx
 		MOVE.L	D0,A0					; get ready to execute this resource
 		MOVE.L	(A0),A0 				; dereference handle
+
+		Move	$8(A0), D1
+@Lx		MoveA.L	(SP)+, A1
+		Move.L	A1, D2
+		BEQ.S	@L0
+		MoveA.L	(A1), A0
+		Move	$8(A0), D2
+@L0		Cmp		D2, D1
+		BHI.S	@L2
+		Tst.L	D0
+		BEQ.S	@L1
+		Cmp.L	A1, D0
+		BEQ.S	@L1
+		Move.L	A1, -(SP)
+		Move.L	D0, -(SP)
+		_ReleaseResource
+		MoveA.L	(SP)+, A1
+@L1		Move.L	A1, D0
+		BEQ.S	ROvrOut
+@L2		MoveA.L	D0, A0
+		MoveA.L	(A0), A0
+
 FPCallROvr								; FlashPort hint attachment point <bt>
 		JSR 	(A0)					; and execute handle
 ROvrOut	RTS 							; and return
@@ -1280,7 +1304,7 @@ ReDoMap 								; new routine
 		moveq	#$20,d0					; size of null map
 		lea		NullRF,a0				; get null map from rom
 		move.l	(A4),A1 				; Dereference handle to destination
-		_BlockMove						; move map down
+		_BlockMoveData					; move map down
 		move.w	#1,MRefNum(a1)			; and stuff the rom map refnum (so getcurmap works)
 
 		clr.w	-(sp)					; get a buffer on the stack to read in index
@@ -1783,7 +1807,7 @@ vNewMap 								; Def to build dispatch entry					<27oct85> BBM
 		ADDA.L	#HdrSize,A0 			; ... finish calc for source
 		LEA 	HSCache,A1				; Destination for blockmove
 		MOVE.L	#PreSize,D0 			; size for blockmove							<11jul85> BBM
-		_BlockMove						; move the key data to the stack
+		_BlockMoveData					; move the key data to the stack
 		MOVEA.L A0,A1					; restore A1
 		SUBA.L	#HdrSize,A1 			; ... finish restoring A1
 		BSR 	PreFormat				; check the preload format of this file			<SM25> CSS 	
@@ -1824,7 +1848,7 @@ vNewMap 								; Def to build dispatch entry					<27oct85> BBM
 		; a new map is first created and only set after the appropriate Resource overrides
 		; calls have been made.
 	
-		andi.b	#kAllButOverrideAttributesMask,mInMemoryAttr(a1)	
+		andi.b	#kDecompressionPasswordMask,mInMemoryAttr(a1)	
 
 		; Successful load.	Return with D6=refnum of file and D0=1 for "newmap" flag
 
@@ -4572,7 +4596,7 @@ vCheckLoad										; Def to build dispatch entry
 				tst.b	(sp)+
 				bne.s	@system_rsrc					; if so, branch
 				move.l	(a4),a0							; a0 <- ptr to map
-				btst.b	#mapForceSysHeap,MAttr(a0)		; should all entries in map go in system heap?
+				btst.b	#overrideNextMapBit,MAttr(a0)	; should all entries in map go in system heap?
 				beq.s	@GoOnCheckLoad					; if not, branch
 @system_rsrc
 				bset	#ResSysHeap,RAttr(a2)			; get into the system heap (and stay there!)
@@ -5806,7 +5830,7 @@ LoadResource
 		MOVE.L	D0,A0					; handle in A0
 		MOVE.L	ROMBASE,A1
 		CMP.L	(A0),A1					; resource in ROM
-		BPL.S	@2						; Nope
+		BHI.S	@2						; Nope
 		CLR.W	ResErr					; since we found a ROM resource, and we assume it is ok. <SM43> CSS
 		BRA.S 	 @9						; yes, done
 @2
@@ -6324,7 +6348,7 @@ CopyStr
 		MOVEQ	#0, D0					; Zero high order bits.
 		MOVE.B	(A0), D0				; Get length of string
 		ADDQ.W	#1, D0					; include length byte.							<14jun85> BBM
-		_BlockMove						; Copy the string to A1
+		_BlockMoveData					; Copy the string to A1
 		RTS 							; and return.
 
 ;_______________________________________________________________________________

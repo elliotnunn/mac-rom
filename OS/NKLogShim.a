@@ -1,0 +1,68 @@
+; To print a C string:
+;		PEA		@cstring
+;		MOVE	$-3, -(SP)
+;		DC.W	$AA7F
+
+; To print a hex string:
+;		MOVE.L	#value, -(SP)
+;		MOVE	#2, -(SP)		; 1: byte, 2: word, else: long
+;		MOVE	$-2, -(SP)
+;		DC.W	$AA7F
+
+
+NKLog	PROC	EXPORT
+		CmpI	#-3, $4(SP)
+		BEQ.S	NKxprintf
+
+		CmpI	#-2, $4(SP)		; 
+		BEQ.S	NKPrintHex
+
+		Pea.L	@errStr			; ERROR
+		Clr		-(SP)
+		Bsr		NKxprintf
+
+		MoveQ.L	#$0, D0
+		Move	$4(SP), D0
+		Move.L	D0, -(SP)
+		Move.L	#$2, -(SP)
+		Clr		-(SP)
+		Bsr		NKPrintHex
+		Rts
+
+		string	Pascal
+@errStr	dc.b	'Unknown MPDispatch selector: ', 0, 0
+
+
+NKxprintf
+
+		MoveA.L	$6(SP), A0
+
+@loop	Move.B	(A0)+, D0		; iterate over string to get it in physical RAM?
+		BNE.S	@loop
+
+		MoveA.L	$6(SP), A0
+
+		MoveQ.L	#96, D0			; call NKXprintf
+		dc.w	$fe1f
+
+		MoveA.L	(SP)+, A0		; return
+		AddQ.L	#$6, SP
+		Jmp		(A0)
+
+
+NKPrintHex
+
+		MoveA.L	$A(SP), A0		; r3 arg (value to print)
+		Move.L	$6(SP), D1		; r4 arg (1: byte, 2: 2byte, else: 4byte)
+
+		MoveQ.L	#97, D0			; call NKPrintHex
+		dc.w	$fe1f
+
+		MoveA.L	(SP)+, A0		; return
+		dc.w	$defc, $000A
+;		AddA.W	#$A, SP
+		Jmp		(A0)
+
+
+
+		END
