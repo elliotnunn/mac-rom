@@ -1,0 +1,134 @@
+#if 0
+
+# ---------- START OF MPW SHELL SCRIPT ----------
+
+# Get the root to work on.
+
+Set ToolPath "{0}Tool"
+Set Repo "`Files -f "{0}" | StreamEdit -e '1 Replace /[Â:]*:[Â:]*°/ -n'`"
+Set ObjFile "{TempFolder}ConvertLineEndingsTool.o"
+
+
+# Make sure the fast C newline-replacer is available!
+
+
+If "`Exists "{ToolPath}"`" == ""
+	SC -w off -o "{ObjFile}" "{0}"
+	ILink -d -t MPST -c 'MPS ' -o "{ToolPath}" "{Libraries}Stubs.o" "{CLibraries}StdCLib.o" "{Libraries}MacRuntime.o" "{Libraries}IntEnv.o" "{Libraries}Interface.o" "{ObjFile}"
+End
+
+
+# Run it!
+
+Echo "# Suggested command to convert TEXT file line-endings:"
+Echo "{ToolPath} ¶¶"
+
+Files -f -r -o -s -t TEXT "{Repo}" | StreamEdit -e '1,° Change "    " . " ¶¶"'
+Echo "    Dev:Null"
+
+Exit
+
+# ---------- END OF MPW SHELL SCRIPT ----------
+
+#endif
+
+// ---------- START OF C PROGRAM ----------
+
+#include <stdio.h>
+
+int main(int argc, char **argv)
+{
+	long buflen = 0x1000000;
+	char *buf;
+	FILE *f;
+	int i;
+	int first_i = 1;
+	size_t didread;
+	char fromc = 10;
+	char toc = 13;
+	int didctr = 0, didntctr = 0;
+	
+	if(argc < 2)
+	{
+		printf("# USAGE: %s [-unix] FILE ...\n", argv[0]);
+		return 1;
+	}
+	
+	if(!strcmp(argv[first_i], "-unix"))
+	{
+		fromc = 13;
+		toc = 10;
+		first_i++;
+	}
+	
+	// Get the largest possible buffer
+	buf = (char *)malloc(buflen);
+	while(buflen && !buf)
+	{
+		buflen >>= 1;
+		buf = (char *)malloc(buflen);
+	}
+	
+	if(!buf) return 1;
+	
+	//printf("# %db buffer\n", buflen);
+	
+	for(i=first_i; i<argc; i++)
+	{
+		int fif = 0;
+		
+		if(!strcmp(argv[i], "Dev:Null")) continue;
+		
+		f = fopen(argv[i], "r+");
+		if(!f) return 1;
+		
+		do
+		{
+			long j;
+			int fib = 0;
+			
+			didread = fread(buf, 1, buflen, f);
+			
+			for(j=0; j<didread; j++)
+			{
+				if(buf[j] == fromc)
+				{
+					buf[j] = toc;
+					fib = 1;
+				}
+			}
+			
+			if(fib)
+			{
+				fseek(f, -didread, SEEK_CUR);
+				fwrite(buf, 1, didread, f);
+				fseek(f, 0, SEEK_CUR);				/* not sure why it needs this to work */
+				fif = 1;
+			}			
+		} while(didread == buflen);
+		
+		fclose(f);
+		
+		if(fif)
+		{
+			if(toc == 10)
+				printf("# >X ");
+			else
+				printf("# X> ");
+			didctr ++;
+		}
+		else
+		{
+			printf("# --- ");
+			didntctr++;
+		}
+		
+		printf("%s\n", argv[i]);
+	}
+	
+	printf("# Files changed: %d. Files unchanged: %d.\n", didctr, didntctr);
+	
+	return 0;
+}
+
+// ---------- END OF C PROGRAM ----------
