@@ -352,6 +352,6 @@ Clean							Ä
 
 #include {MakeDir}MainCode.make
 
-##include {DeclDir}DeclData.make
+#include {DeclDir}DeclData.make
 
 ##include {ResourceDir}Resources.make
