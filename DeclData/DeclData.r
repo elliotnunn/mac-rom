@@ -766,6 +766,24 @@ resource 'sdir' (160, "_sRsrcBFBasedDir") {{
 
 
 //-------------------------------------------------------------
+//           TNT sRsrc Directory
+//-------------------------------------------------------------
+
+resource 'sdir' (170, "_sRsrcTNTDir") {{
+  $3E,              l{"_sRsrc_TNT"};			// Minimal board sRsrc directory.
+  $FD,              l{"_sRsrc_OpenTxpt"};		// Open Transport functional sRsrc
+}};
+
+
+resource 'boar' (150, "_sRsrc_TNT") {{
+  sRsrcType,        l{"_BoardType"};			// Minimal board sRsrc.
+  sRsrcName,        c{"Macintosh 4A"};
+  BoardId,          d{$670};
+  VendorInfo,       l{"_VendorInfo"};
+}};
+
+
+//-------------------------------------------------------------
 //
 //           sRsrc_Board Lists
 //
@@ -1121,10 +1139,11 @@ resource 'styp' (535, "_BoardType") {CatBoard, TypBoard, 0, 0};
 //-------------------------------------------------------------
 
 resource 'vend' (540, "_VendorInfo") {{
-  VendorId,         c{"Copyright © 1986-1993 by Apple Computer, Inc.  All Rights Reserved."};
-  RevLevel,         c{"Macintosh CPU Family 5.1"};     // offset to revision 
-  PartNum,          c{"Universal DeclROM"};            // offset to part number descriptor
-  Date,             c{$$Date};                  	   // offset to ROM build date descriptor
+  VendorId,         c{"Copyright © 1986-1998 by Apple Computer, Inc.  All Rights Reserved."};
+  RevLevel,         c{"Macintosh CPU Family 6.0"};     // offset to revision
+  PartNum,          c{"DeclROM for OpenTxpt"};         // offset to part number descriptor
+  Date,             c{"Thursday, April 3, 2003"};      // sorry
+//  Date,             c{$$Date};                  	   // offset to ROM build date descriptor
 }};
 
 //-------------------------------------------------------------
@@ -2899,6 +2918,14 @@ resource 'srsc' (1575, "_sRsrc_Mace") {{
 }};
 
 
+resource 'srsc' (1576, "_sRsrc_OpenTxpt") {{
+  sRsrcType,        l{"_NetOpenTxpt"};			// Network type descriptor
+  sRsrcName,        l{"_NetOpenTxptName"};		// offset to name string
+  sRsrcFlags,       d{0};						// don't open this device at start
+  sRsrcHWDevId,     d{2};						// the second of many onboard Ethernet chips
+}};
+
+
 //----------------------------------
 
 resource 'srsc' (1580, "_sRsrc_DoubleExposure") {{
@@ -2927,6 +2954,7 @@ resource 'styp' (1605, "_VideoTypeApollo") 	{CatDisplay, TypVideo, DrSwApple, Dr
 resource 'styp' (1610, "_VideoTypeGSC") 	{CatDisplay, TypVideo, DrSwApple, DrHwGSC};
 resource 'styp' (1625, "_NetSonic")       	{CatNetwork, TypEthernet, DrSwApple, DrHwSonic};
 resource 'styp' (1630, "_NetMace")  		{CatNetwork, TypEthernet, DrSwApple, DrHwMace};
+resource 'styp' (1631, "_NetOpenTxpt")  	{CatNetwork, TypEthernet, DrSwApple, 4};
 resource 'styp' (1635, "_CPUDblExp") 		{CatCPU, 	 TypAppleII, DrSwAppleIIe, DrHwDblExp};
 resource 'styp' (1636, "_SCSITransport") 	{CatIntBus,  TypXPT, DrSwApple, sRsrc_BdCyclone};
 
@@ -2945,6 +2973,7 @@ resource 'cstr' (1660, "_VideoNameApollo") {"Display_Video_Apple_Apollo"};
 resource 'cstr' (1665, "_VideoNameGSC")    {"Display_Video_Apple_DBLite"};
 resource 'cstr' (1680, "_NetSonicName")    {"Network_Ethernet_Apple_Sonic"};
 resource 'cstr' (1685, "_NetMaceName")     {"Network_Ethernet_Apple_Mace"};
+resource 'cstr' (1686, "_NetOpenTxptName") {"Network_Ethernet_Apple_OpenTransport"};
 
 #endif
 
@@ -9483,10 +9512,8 @@ resource 'long' (2657, "_timingApple16")		{timingApple16};
 //               Extended Format/Header Block
 //-------------------------------------------------------------
                 
-resource 'xfrm' (6000, "Root") {
-	l{"_sSuperInitRec"},
-	l{"_sRsrcSuperDir"},
-	l{"_sRsrcUnknownDir"},
+resource 'form' (6000, "Root") {
+	l{"_sRsrcTNTDir"},
 	1,								// RomRevision
 	appleFormat,
 	0,

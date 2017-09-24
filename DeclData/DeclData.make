@@ -30,14 +30,6 @@ PDMMaceDir	=	{MaceDir}PDMMaceEnet:
 #include {PDMMaceDir}PDMEnet.Make
 
 DeclResources =	"{RsrcDir}DeclData.rsrc"					¶
-				"{RsrcDir}PrimaryInit.rsrc"					¶
-				"{RsrcDir}SecondaryInit.rsrc"				¶
-				"{RsrcDir}SuperInit.rsrc"					¶
-				"{RsrcDir}DeclDataMace.rsrc"				¶
-				"{RsrcDir}DeclDataPDMMace.rsrc"				¶
-				"{RsrcDir}DeclDataSonic.rsrc"				¶
-				"{RsrcDir}DeclDataVideo.rsrc"				¶
-				"{RsrcDir}Gamma.rsrc"				
 
 DeclHeaders	=	"{ObjDir}StandardEqu.d"						¶
 				"{AIncludes}GestaltEqu.a"					¶
