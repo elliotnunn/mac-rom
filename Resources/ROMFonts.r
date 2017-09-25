@@ -837,44 +837,6 @@ data 'FONT' (12, sysheap) {
 	$"00 00 00 00 00 00 00 00 01 0B 03 0A 6D B6"          /* ............m∂ */
 };
 
-#if !hasAMIC 						/* on PDM, use sample simple beep <SM3> */
-
-resource 'snd ' (1, "Simple Beep", purgeable) {
-	FormatOne {{squareWaveSynth, 0}},
-	{
-		noData, timbreCmd {90},
-		noData, ampCmd {224},
-		noData, freqCmd {69},
-		noData, waitCmd {40},
-		noData, ampCmd {200},
-		noData, waitCmd {40},
-		noData, ampCmd {192},
-		noData, waitCmd {40},
-		noData, ampCmd {184},
-		noData, waitCmd {40},
-		noData, ampCmd {176},
-		noData, waitCmd {40},
-		noData, ampCmd {168},
-		noData, waitCmd {40},
-		noData, ampCmd {160},
-		noData, waitCmd {40},
-		noData, ampCmd {144},
-		noData, waitCmd {40},
-		noData, ampCmd {128},
-		noData, waitCmd {40},
-		noData, ampCmd {96},
-		noData, waitCmd {40},
-		noData, ampCmd {64},
-		noData, waitCmd {40},
-		noData, ampCmd {32},
-		noData, waitCmd {40},
-		noData, ampCmd {0}
-	},
-	{ }
-};
-
-#else								/* we're a PDM with a manly simple beep  <SM3> */
-
 data 'snd ' (1, "Simple Beep", purgeable) {
 	$"0001 0001 0005 0000 00A0 0001 8051 0000"            /* .........†..ÄQ.. */
 	$"0000 0014 0000 0000 0000 15D4 5622 0000"            /* ...........‘V".. */
@@ -1229,5 +1191,3 @@ data 'snd ' (1, "Simple Beep", purgeable) {
 	$"7676 7777 7878 797A 7B7C 7C7D 7F7F 8082"            /* vvwwxxyz{||}..ÄÇ */
 	$"8285 8789 8A8C 8D8D 8D8D 8C8B 8987 8583"            /* ÇÖáâäåççççåãâáÖÉ */
 };
-
-#endif
