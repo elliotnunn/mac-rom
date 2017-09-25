@@ -178,15 +178,11 @@ Features		=	hasRISCV0ResMgrPatches					¶
 					hasFullKerning							¶
 					hasGlyphState							¶
 					hasPDMMaceEnet							¶
-					hasAppleTalkInROM						¶
 					hasMixedMode							¶
 					nonSerializedIO							¶
 					hasSCSIDiskModeFeature					¶
-					hasSysSevenResources					¶
-					hasDataAccessPACK						¶
 					hasCPUIDRegister						¶
 					has2MegROMOrMore						¶
-					hasVideoIn								¶
 					hasAsyncSCSI							¶
 					BadBlockSparingEnabled					¶
 					CubeE									¶
@@ -199,10 +195,8 @@ Features		=	hasRISCV0ResMgrPatches					¶
 					forADBKeyboards 						¶
 					forAppleTalk20							¶
 					forLocalizability						¶
-					has040MMU								¶
 					hasADBKeyLayouts						¶
 					hasAliasMgr 							¶
-					hasApple2Fonts							¶
 					hasAppleEventMgr						¶
 					hasBalloonHelp							¶
 					hasBattery								¶
@@ -240,49 +234,31 @@ Features		=	hasRISCV0ResMgrPatches					¶
 					ForROM
 
 
-ResourceFiles	=	"{RsrcDir}ATBoot.RSRC"					¶
-					"{MiscDir}AppleTalk.ROM.rsrc"			¶
-					"{RsrcDir}AppleEventMgr.rsrc"			¶
+ResourceFiles	=	"{MiscDir}ATAMgr.rsrc"					¶
+					"{MiscDir}BCScreen.rsrc"				¶
 					"{RsrcDir}CQD.rsrc"						¶
-					"{RsrcDir}ColorPicker.rsrc"				¶
-					"{RsrcDir}CommToolbox.rsrc"				¶
-					"{RsrcDir}ControlMgr.rsrc"				¶
-					"{RsrcDir}DataAccessMgr.rsrc"			¶
-					"{RsrcDir}DictionaryMgr.rsrc"			¶
 					"{RsrcDir}DeclData"						¶
+					"{MiscDir}DriverServices.rsrc"			¶
 					"{RsrcDir}EDisk.rsrc"					¶
-					"{RsrcDir}EditionMgr.rsrc"				¶
+					"{MiscDir}FireWire.rsrc"				¶
 					"{RsrcDir}Gibbly.rsrc"					¶
 					"{MiscDir}GoNativeResources"			¶
 					"{MiscDir}EmulatorAccelerations.rsrc"	¶
-					"{RsrcDir}HelpMgr.rsrc"					¶
-					"{RsrcDir}InSane.rsrc"					¶
-					"{RsrcDir}I2CC.rsrc"					¶
-					"{RsrcDir}I2CT.rsrc"					¶
-					"{RsrcDir}ListMgr.rsrc"					¶
+					"{MiscDir}LANDisk.rsrc"					¶
 					"{RsrcDir}MainCode.Rsrc"				¶
-					"{RsrcDir}MenuMgr.rsrc"					¶
+					"{MiscDir}MediaBay.rsrc"				¶
 					"{RsrcDir}MiscROMRsrcs.rsrc" 			¶
-					"{RsrcDir}NetBoot.rsrc"					¶
-					"{RsrcDir}PDMENET.rsrc"					¶
-					"{RsrcDir}PPC.rsrc"						¶
-					"{RsrcDir}PictUtilities.rsrc"			¶
-					"{RsrcDir}ROMApple2Fonts.rsrc"			¶
+					"{MiscDir}MultiprocessingServices.rsrc" ¶
+					"{MiscDir}NativeItt.rsrc" 				¶
+					"{MiscDir}NativeNub.rsrc" 				¶
+					"{MiscDir}PCCard.rsrc" 					¶
+					"{MiscDir}PowerMgr.rsrc" 				¶
 					"{RsrcDir}ROMFonts.rsrc" 				¶
 					"{RsrcDir}RomLayout.Rsrc"				¶
-					"{RsrcDir}SCCIOP.rsrc"					¶
-					"{RsrcDir}SWIMIOP.rsrc"					¶
 					"{RsrcDir}InSaneNFPU.rsrc" 				¶
-					"{RsrcDir}Sane.rsrc" 					¶
-					"{RsrcDir}Serial.rsrc"					¶
-					"{RsrcDir}SerialDMA.rsrc"				¶
-					"{RsrcDir}Sony.rsrc" 					¶
-					"{RsrcDir}SoundMgr.rsrc" 				¶
-					"{RsrcDir}StandardFile.rsrc" 			¶
-					"{RsrcDir}VDigC.rsrc"					¶
-					"{RsrcDir}VDigT.rsrc"					¶
-					"{MiscDir}VM.RSRC"						¶
-					"{RsrcDir}WindowMgr.rsrc"				¶
+					"{RsrcDir}SANE.rsrc" 					¶
+					"{MiscDir}SerialDMA.rsrc"				¶
+					"{MiscDir}USB.rsrc"						¶
 					"{RsrcDir}kbd.rsrc"
 
 
@@ -354,4 +330,4 @@ Clean							Ä
 
 #include {DeclDir}DeclData.make
 
-##include {ResourceDir}Resources.make
+#include {ResourceDir}Resources.make
