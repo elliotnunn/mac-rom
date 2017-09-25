@@ -113,8 +113,6 @@
 		
 		MACHINE	MC68020
 
-NewEdiskProt	EQU		1
-
 _TestManager		OPWORD  	$A06B
 
 		macro
@@ -138,7 +136,7 @@ EDiskDRVRflags	SET	EDiskDRVRflags!1<<dStatEnable
 EDiskDRVRflags	SET	EDiskDRVRflags!1<<dNeedLock
 
 		dc.b	EDiskDRVRflags,0		; drvFlags (upper byte)
-		dc.w	0						; drvDelay, no delay
+		dc.w	60						; drvDelay
 		dc.w	0						; drvEMask, no event mask
 		dc.w	0						; drvMenu, no menu
 		dc.w	EDiskOpen-EDiskDRVR		; drvOpen,   offset of OPEN routine
@@ -190,13 +188,16 @@ ControlDecode
 		dc.w	ctlDriveInfo-(*+4)
 		dc.w	infoCC					; Drive Info control call
 
+		dc.w	BrandNewFunc-(*+4)
+		dc.w	65
+
 		dc.w	-1						; indicate end of control decode table
 		dc.w	ControlErr				; return ControlErr if unknown csCode
 		title	'EDisk Driver - Open processing'
 
 ;_______________________________________________________________________
 ;
-;  Routine:		EDiskOpen
+;  Routine:		EDiskOpen 60
 ;  Inputs:		A0 - pointer to I/O ParamBlock
 ;				A1 - pointer to Device Control Entry (DCE)
 ;  Outputs:		D0 - Result Code (noErr/openErr)
@@ -224,22 +225,7 @@ ControlDecode
 
 InitTable
 		dc.l	0						; RamDisk doesn't have poll pointer
-		dc.w	RAMDiskHandler-(*+2)	; RamDisk function handler
-		dc.w	RAMDiskMediaIcon-(*+2)	; RamDisk media icon pointer
-		dc.w	RAMDiskDriveIcon-(*+2)	; RamDisk drive icon pointer
-		dc.w	RAMDiskName-(*+2)		; RamDisk drive name pointer
-		dc.l	(1<<15)+\				; volatile media
-				(0<<11)+\				; primary
-				(1<<10)+\				; fixed
-				(0<<9)+\				; iwm (not SCSI)
-				(0<<8)+\				; internal
-				ramDiskType				; RAM disk
-		dc.b	(1<<CreateWithXSums)	; flags
-		dc.b	$48						; DiskInPlaceInit = non-ejectable, re-mount
-
-InitTablePPC
-		dc.l	0						; RamDisk doesn't have poll pointer
-		dc.w	RAMDiskHandlerPPC-(*+2)	; RamDisk function handler for PowerPC
+		dc.w	RAMDiskHandler-(*+2)	; RamDisk function handler for PowerPC
 		dc.w	RAMDiskMediaIcon-(*+2)	; RamDisk media icon pointer
 		dc.w	RAMDiskDriveIcon-(*+2)	; RamDisk drive icon pointer
 		dc.w	RAMDiskName-(*+2)		; RamDisk drive name pointer
@@ -251,35 +237,7 @@ InitTablePPC
 				ramDiskType				; RAM disk
 		dc.b	(0<<CreateWithXSums)	; flags
 		dc.b	$48						; DiskInPlaceInit = non-ejectable, re-mount
-
-PrimaryROMdisk
-		dc.l	0						; RomDisk doesn't have poll pointer
-		dc.w	ROMDiskHandler-(*+2)	; RomDisk function handler
-		dc.w	ROMDiskMediaIcon-(*+2)	; RomDisk media icon pointer
-		dc.w	ROMDiskDriveIcon-(*+2)	; RomDisk drive icon pointer
-		dc.w	ROMDiskName-(*+2)		; RomDisk drive name pointer
-		dc.l	(0<<11)+\				; primary
-				(1<<10)+\				; fixed
-				(0<<9)+\				; iwm (not SCSI)
-				(0<<8)+\				; internal
-				romDiskType				; ROM disk
-		dc.b	(1<<CreateWithXSums)	; flags
-		dc.b	$08						; DiskInPlaceInit = non-ejectable
-InitEntrySize	equ		*-PrimaryROMdisk		; size of an initialization table entry
-
-SecondaryROMdisk
-		dc.l	0						; RomDisk doesn't have poll pointer
-		dc.w	ROMDiskHandler-(*+2)	; RomDisk function handler
-		dc.w	ROMDiskMediaIcon-(*+2)	; RomDisk media icon pointer
-		dc.w	ROMDiskDriveIcon-(*+2)	; RomDisk drive icon pointer
-		dc.w	ROMDiskName-(*+2)		; RomDisk drive name pointer
-		dc.l	(1<<11)+\				; secondary
-				(1<<10)+\				; fixed
-				(0<<9)+\				; iwm (not SCSI)
-				(0<<8)+\				; internal
-				romDiskType				; ROM disk
-		dc.b	(1<<CreateWithXSums)	; flags
-		dc.b	$08						; DiskInPlaceInit = non-ejectable
+InitEntrySize	equ		*-InitTable		; size of an initialization table entry
 
 EDiskOpen								; all regs saved by Device Manager
 		move.l	a0,-(sp)				; save pointer to I/O param block
@@ -303,7 +261,7 @@ EDiskOpen								; all regs saved by Device Manager
 
 		lea		InitTable,a6			; a6 := assume pointer to 68k initial values	<2>
 
-	IF newEdiskProt THEN
+	IF 0 THEN
 		cmpi.b	#EMMU1,MMUType			; check for an emulated MMU
 		bne.s	@NoEMMU
 		lea		InitTablePPC,a6			; a6 := pointer to PowerPC initial values
@@ -311,34 +269,15 @@ EDiskOpen								; all regs saved by Device Manager
 	ENDIF
 
 		move.l	BootGlobPtr,a2			; get ptr to BootGlobs							<T2>
-		move.l	sgRamDiskBase(a2),d2	; base of RAM disk								<T4>
-		move.l	d2,d3					; get a copy in d3								<T4>
+		move.l	sgRamDiskBase(a2),d1	; base of RAM disk								<T4>
+		move.l	d1,d3					; get a copy in d3								<T4>
 		add.l	sgRamDiskSize(a2),d3	; end of ram disk in d3							<T4>
 
 		suba.l	a2,a2					; a2 := HeaderInfoPtr (none for RamDisk)		<2>
-		move.l	d2,d1					; get start addr in d2							<T4>
 		moveq.l	#0,d2					; DataStartPtr := 0								<2>
 		cmp.l	d1,d3					; see if it has any bytes
 		bsr		CreateEDrive			; create the RAM disk
 @noDisk									; ENDIF
-
-;	search for, and install ROM disks
-
-		movea.l	RomBase,a2				; start searching at the base of ROM
-@RomDiskLoop							;
-		bsr.w	CheckForRomDisk			; see if it is a ROM disk
-		bne.s	@NextRomDisk			; if not, try the next block
-
-		moveq.l	#0,d1					; assume no checksums unless header says otherwise
-		move.l	a2,d2					; DataStartPtr := base of rom disk for now
-		move.l	a2,d3					; DataEndPtr := base of rom disk for now
-		bsr.s	CreateEDrive			; create the RAM disk
-		lea		SecondaryROMdisk,a6		; all future ROM disks are secondary
-
-@NextRomDisk							;
-		adda.l	#RomDiskAlign,a2		; point to next block to check
-		cmpa.l	#RomSpaceEnd,a2			; see if end reached
-		blo.s	@RomDiskLoop			; search the entire space
 
 ;	see if we have any EDisks to drive, abort OPEN if none.
 
@@ -362,20 +301,6 @@ EDiskOpen								; all regs saved by Device Manager
 		move.w	@RTS,FindDqePatch(a2)	; initialize FindDQE patch routine
 		move.w	@RTS,PrimePatch(a2)		; initialize Prime patch routine
 
-;	Install the VBL task to look for SLIM insertions and removals
-
-		lea		EDiskPollTask,a4		; get the task address
-		moveq.l	#8-1,d4					; loop counter (8 times)
-@InitPolling
-		lea		VTask(a2),a0			; a0 := pointer to VTask
-		jsr		(a4)					; poll 8 times to init inserted status
-		dbra	d4,@InitPolling			; and mount drives, and compute sizes
-
-		lea		VTask(a2),a0			; a0 <- VBL task
-		addq.w	#vType,qType(a0)		; initialize qType field
-		move.l	a4,vblAddr(a0)			; initialize vblAddr field
-		_VInstall						; install the VBL task
-
 		moveq.l	#NoErr,d0				; no error
 @OpenDone
 		movea.l	(sp)+,a0				; restore pointer to I/O param block
@@ -385,7 +310,7 @@ EDiskOpen								; all regs saved by Device Manager
 
 ;_______________________________________________________________________
 ;
-;  Routine:		CreateEDrive
+;  Routine:		CreateEDrive D8
 ;  Inputs:		ccr.z - bne if drive should be created, beq if not
 ;				A2 - HeaderInfoPtr
 ;				D1 - CheckSumPtr
@@ -413,7 +338,7 @@ CreateEDrive
 		_NewPtr	,Sys,Clear				; allocate the drive info
 		bne.s	@Done					; if can't allocate, don't create drive
 
-		add.l	#DQE-SLIMRegPtr,a0		; point to the drive queue entry				<T6>
+		lea		DQE-SLIMRegPtr(a0),a0	; point to the drive queue entry				<T6>
 
 		movea.l	a6,a3					; a3 := running pointer to init table entry
 		move.l	(a3)+,SLIMRegPtr(a0)	; initialize the SLIMRegPtr						<T6>
@@ -443,7 +368,7 @@ CreateEDrive
 		move.l	d3,RamDiskSize(a0)		; store it in globals							<T6>
 
 		addq.w	#1,qType(a0)			; use long drive size format
-		addq.w	#1,Installed(a0)		; mark the drive as installed
+		addq.b	#1,Installed(a0)		; mark the drive as installed
 		move.l	d7,d0					; get disk drive number, and refNum
 		swap	d0						; move to high word, refNum to low word
 		move.l	a0,a3					; make a copy of ptr to info
@@ -452,87 +377,17 @@ CreateEDrive
 		move.l	d1,a0					; get ptr to base of Edisk data
 		move.l	d3,d1					; get RamDiskSize
 		moveq.l	#DisableEDiskWrites,d0	; always disable writes at startup
-		bsr.w	HWDependent				; disable writing to the EDisk
+		bsr		HWDependent				; disable writing to the EDisk
+		bsr		EDiskPollTask
 
 @Done	addq.w	#1,d7					; update drive number
 		adda.w	#InitEntrySize,a6		; point to next drive init entry
 		rts								; EDisk drive is installed
-		title	'EDisk Driver - Check for ROM Disk'
-
-;_______________________________________________________________________
-;
-;  Routine:		CheckForRomDisk
-;  Inputs:		A2 - HeaderInfoPtr
-;				D7.hi - EDisk Driver RefNum
-;  Outputs:		D0 - zero if valid ROM disk header, else non-zero
-;				ccr.z - bne if invalid header
-;  Destroys:	D0, D1, A0, A3, A4
-;  Calls:		none
-;  Called by:	EDiskOpen
-;
-;  Function:	Checks the EDisk header to see if it exists (no bus error),
-;				and has a valid signature.  If it is valid, compares it
-;				against all other ROM Disks found, and if it's header block
-;				is not identical to any other ROM Disk (in case address
-;				wrap around causes repeated images), returns a result
-;				indicating that it should be created.
-;
-;_______________________________________________________________________
-
-		with	EDiskHeader
-CheckForRomDisk
-		move.w	sr,-(sp)				; save old interrupt mask
-		ori.w	#HiIntMask,sr			; disable interrupts (stealing BusErrVct)
-		move.l	BusErrVct,-(sp)			; save old bus error vector
-		lea		@NotFound,a0			; new handler address
-		move.l	a0,BusErrVct			; setup bus error handler
-		movea.l	sp,a4					; mark the stack
-
-		lea		HeaderTemplate,a3		; point to expected values
-		lea		HdrBlockSize(a2),a0		; point to header data
-		moveq.l	#(HdrDeviceSize-HdrBlockSize)/4-1,d0	; loop counter
-@SigCmpLoop
-		cmpm.l	(a0)+,(a3)+				; compare the values
-		dbne	d0,@SigCmpLoop			; compare the blocks
-@NotFound
-		movea.l	a4,sp					; pop stack in case of bus error
-		move.l	(sp)+,BusErrVct			; restore bus error vector
-		move.w	(sp)+,sr				; restore interrupt mask
-		addq.w	#1,d0					; see if we had a match
-		bne.s	@Done					; exit if not
-
-;	valid header found, now let's see if it's unique.
-
-		move.l	d7,d1					; get driver ref num
-		swap	d1						; d1.low := driver ref num
-		lea		DrvQHdr+QHead-QLink,a0	; point to the drive queue head
-@CheckNeXTDrive
-		move.l	QLink(a0),d0			; check next drive queue element
-		beq.s	@Done					; if not found, it's unique (d0=0)
-		movea.l	d0,a0					; a0 := drive queue element
-		cmp.w	dQRefNum(a0),d1			; is this one of ours
-		bne.s	@CheckNeXTDrive			; if not, check the NeXT one	
-		cmpi.b	#romDiskType,\			; it's one of ours
-				DriveInfo+3(a0)			; is it a ROM disk
-		bne.s	@CheckNeXTDrive			; if not, check the NeXT one	
-
-
-		moveq.l	#EDiskHeaderSize/4-1,d0	; compare the entire header
-		movea.l	a2,a3					; point to our header
-		movea.l	HeaderInfoPtr(a0),a4	; point to existing drive's header
-@HdrCmpLoop
-		cmpm.l	(a3)+,(a4)+				; compare the values
-		dbne	d0,@HdrCmpLoop			; compare the blocks
-		bne.s	@CheckNeXTDrive			; if not the same, check the NeXT one	
-
-@Done	tst.l	d0						; set ccr based on D0
-		rts								; all done
-		endwith
 		title	'EDisk Driver - Close processing'
 
 ;_______________________________________________________________________
 ;
-;  Routine:		EDiskClose
+;  Routine:		EDiskClose 154
 ;  Inputs:		A0 - pointer to I/O ParamBlock
 ;				A1 - pointer to Device Control Entry (DCE)
 ;  Outputs:		D0 - Result Code (closErr)
@@ -551,7 +406,7 @@ EDiskClose								; all regs saved by Device Manager
 
 ;_______________________________________________________________________
 ;
-;  Routine:		EDiskPrime
+;  Routine:		EDiskPrime 158
 ;  Inputs:		A0 - pointer to I/O ParamBlock
 ;				A1 - pointer to Device Control Entry (DCE)
 ;  Outputs:		D0 - Result Code
@@ -667,7 +522,7 @@ EDiskPrime								; all regs saved by Device Manager
 
 @ReadWrite
 		move.l	d1,d0					; get the byte count
-		_BlockMove						; move the data
+		_BlockMoveData					; move the data
 		move.l	d1,d4					; indicate all bytes moved
 		bra.s	@PrimeDone				; return with success
 		title	'EDisk Driver - Read processing'
@@ -824,7 +679,7 @@ EDiskPrime								; all regs saved by Device Manager
 
 ;_______________________________________________________________________
 ;
-;  Routine:		EDiskControl / EDiskStatus / KillIO
+;  Routine:		EDiskControl 2EE / EDiskStatus 2F4 / KillIO
 ;  Inputs:		A0 - pointer to I/O ParamBlock
 ;				A1 - pointer to Device Control Entry (DCE)
 ;  Outputs:		D0 - Result Code
@@ -857,11 +712,10 @@ HandleControlStatus
 
 		swap	d0						; get offset of routine
 		pea		(a2,d0.w)				; push address of the routine
-		bra.w	FindDQE					; find the DQE before calling routine
+		bra		FindDQE					; find the DQE before calling routine
 
 @exit	movea.l	dCtlStorage(a1),a2		; a2 := pointer to EDiskVars
-		addq.l	#4,sp					;											<SM4>
-		bra.w	EDiskDone2				; return through EDiskDone2					<SM4>
+		rts
 
 
 ctlKillIO
@@ -875,17 +729,15 @@ ctlEject
 		move.l	d1,d0					; get found status, ignore offline
 		bne.s	@EjectErr				; return error if not found
 		bclr.b	#MountedFlag,Flags(a3)	; mark it as not mounted
-		move.b	DiskInPlace(a3),d0		; see if any disk
-		ble.s	@EjectDone				; if no disk, just ignore it
-
-		subq.b	#8,d0					; see if ejectable
+		cmp.b	#8,-3(a3)
 		beq.s	@EjectDone				; if not ejectable, just ignore it
 
 ;	if disk in place was $48 (non-ejectable, but call driver anyway) we will force a
 ;	disk in place event to be posted by the polling task, to re-mount the volume.
 
 		moveq.l	#EjectEDisk,d0			; hardware dependent function code
-		bsr.w	HWDependent				; start the eject, update DiskInPlace
+		bsr		HWDependent				; start the eject, update DiskInPlace
+		bset.b	#5,dCtlFlags(a1)
 @EjectDone
 		moveq.l	#noErr,d0				; return with success
 @EjectErr
@@ -958,12 +810,10 @@ ctlFormat
 		cmpa.l	a1,a4					; see if all blocks cleared
 		bhi.s	@NextBlock				; loop through all of the blocks
 @done	move.l	d0,d2					; save error code
-	IF newEdiskProt THEN
 		; d1 := byte count
 		; a0 := source address
 		; a3 := ptr to drive queue element
 		movem.l	(sp)+,a0/d1				; restore size, length for disabling the disk
-	ENDIF
 		moveq.l	#DisableEDiskWrites,d0	; hardware dependent function code
 		bsr.w	HWDependent				; disable writing to the EDisk
 		move.l	d2,d0					; restore error code
@@ -1026,7 +876,7 @@ statDrvSts
 		clr.w	(a1)+					; return zero for track
 		lea		WriteProtected(a3),a0	; start copy with write protected flag
 		moveq.l	#(DQE-WriteProtected)+dQDrvSz2+2,d0	; number of bytes to copy
-		_BlockMove						; copy the drive info, and return noErr
+		_BlockMoveData					; copy the drive info, and return noErr
 @Done	rts								; all done
 
 
@@ -1070,7 +920,7 @@ IconCommon
 		lea		IconBuffer(a2),a1		; get buffer address (dest address)
 		move.l	a1,(a4)					; return buffer pointer
 		move.l	#IconAndMaskSize,d0		; setup byte count for icon and mask
-		_BlockMove						; copy the icon into the buffer
+		_BlockMoveData					; copy the icon into the buffer
 
 ;	copy the "Where String" into the buffer
 
@@ -1085,14 +935,50 @@ IconCommon
 		bls.s	@CopyString				; if in range just copy it
 		moveq.l	#WhereStringSize,d0		; otherwise truncate to max size
 @CopyString
-		_BlockMove						; copy the string into the buffer
+		_BlockMoveData					; copy the string into the buffer
 
 @Done	rts								; all done (d0 is noErr from _BlockMove)
+		title	'EDisk Driver - BrandNewFunc'
+
+;_______________________________________________________________________
+;
+;  Routine:		BrandNewFunc 472
+;
+;_______________________________________________________________________
+
+BrandNewFunc
+		bclr.b	#5, 4(a1)
+		beq.s	@return
+
+		move	$18(a1),d1
+		lea		DrvQHdr+QHead,a3
+
+@loop
+		move.l	(a3),d2
+		beq.s	@return
+
+		move.l	d2,a3
+		cmp		dQRefNum(a3),d1
+		bne.s	@loop
+
+		btst.b	#0,-12(a3)
+		bne.s	@loop
+
+		bsr		Mount
+		btst.b	#0,-12(a3)
+		bne.s	@loop
+
+		bset.b	#5,4(a1)
+		bra.s	@loop
+
+@return	moveq.l	#0,d0
+		rts
+
 		title	'EDisk Driver - FindDQE - Find Drive Queue Element'
 
 ;_______________________________________________________________________
 ;
-;  Routine:		FindDQE
+;  Routine:		FindDQE 4AE
 ;  Inputs:		A0 - pointer to I/O ParamBlock
 ;				A1 - pointer to Device Control Entry (DCE)
 ;  Outputs:		D0 - Drive Found and OnLine Status (noErr, NSDrvErr or offLinErr)
@@ -1111,8 +997,8 @@ IconCommon
 
 FindDQE									; find the drive queue element
 		movea.l	dCtlStorage(a1),a2		; a2 := pointer to EDiskVars
-		addq.b	#1,Active(a2)			; request in progress, exclude polling	<1.2>
 		jsr		FindDqePatch(a2)		; allow patching here
+		lea		$1c(a0),a4
 		lea		DrvQHdr+QHead-QLink,a3	; get the drive queue head
 		move.w	IODrvNum(a0),d2			; d2 := drive number
 		bpl.s	@search					; start searching if drivenum is positive
@@ -1131,34 +1017,17 @@ FindDQE									; find the drive queue element
 		bne.s	@search					; if not for our driver
 
 		moveq.l	#noErr,d1				; indicate drive is found
-
-;	now check to see if it is really present (onLine)
-
-		tst.b	DiskInPlace(a3)			; is there a disk
-		ble.s	@offLine				; return off line error if not
-
-		moveq.l	#CheckEDiskInserted,d0	; hardware dependent function code
-		bsr.s	HWDependent				; see if disk is inserted
-		beq.s	@offLine				; if not, return offline error
-		moveq.l	#noErr,d0				; indicate no disk-in-place
-
-@Done	lea		csParam(a0),a4			; point to param area
 		rts								; return with success (d0 = 0 = noErr)
-
-@offLine
-		moveq.l	#offLinErr,d0			; indicate no disk-in-place
-		bra.s	@Done					; return with error
-
 
 @notFound
 		moveq.l	#NSDrvErr,d1			; indicate no such drive error
 		moveq.l	#NSDrvErr,d0			; indicate no such drive error
-		bra.s	@Done					; return with error
+		rts
 		title	'EDisk Driver - EDiskDone - Command Completion'
 
 ;_______________________________________________________________________
 ;
-;  Routine:		EDiskDone
+;  Routine:		EDiskDone 4E4
 ;  Inputs:		A2 - pointer to EDiskVars
 ;				D0 - Result Code
 ;  Destroys:		
@@ -1171,8 +1040,6 @@ FindDQE									; find the drive queue element
 ;_______________________________________________________________________
 
 EDiskDone
-		subq.b	#1,Active(a2)			; request complete, allow polling		<1.2>
-EDiskDone2								;										<H6><SM4>
 		movea.l	DCEpointer(a2),a1		; setup DCE pointer in a1 for JIODone
 		btst.b	#NoQueueBit-8,(sp)+		; check for immediate request			<1.2>
 		bne.s	@immed					; if immediate, don't use jIODone		<1.2>
@@ -1185,7 +1052,7 @@ EDiskDone2								;										<H6><SM4>
 
 ;_______________________________________________________________________
 ;
-;  Routine:		HWDependent
+;  Routine:		HWDependent 4FC
 ;  Inputs:		A3 - pointer to DriveQElement for specified drive
 ;				D0 - function selector
 ;  Outputs:		none
@@ -1201,6 +1068,9 @@ HWDependent
 		move.l	HWDepProcPtr(a3),-(sp)	; get the handler address
 		rts								; jump to it
 
+;ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
+; PowerPC Edisk Routines
+;ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 RAMDiskHandler
 		move.b	@decode(pc,d0.w),d0		; get the routine offset
 		jmp		@decode(pc,d0.w)		; jump to it
@@ -1222,53 +1092,7 @@ RAMDiskHandler
 		rts
 @checkReadOnly
 		moveq.l	#0,d0					; never read only
-@enableWrites
-		movem.l	a0-a1/d1,-(sp)			; save registers								<T5>
-		moveq	#8,d0					; _EDiskProtect selector						 |
-		move.l	CheckSumPtr(a3),a0		; put base addr of ram disk in a0				 v
-		move.l	#0,a1					; indicate we want to unprotect edisk
-		_HwPriv							; unprotect the disk
-		movem.l	(sp)+,a0-a1/d1
-		bclr	#EDiskProtect,Flags(a3)	; indicate the disk is not protected
 		rts
-@disableWrites
-		movem.l	a0-a1/d1,-(sp)			; save registers
-		moveq	#8,d0					; _EDiskProtect selector
-		move.l	CheckSumPtr(a3),a0		; put base addr of ram disk in a0
-		move.l	#1,a1					; indicate we want to protect edisk
-		_HwPriv							; write-protect the disk						 ^
-		movem.l	(sp)+,a0-a1/d1			; restore registers								 |
-		bset	#EDiskProtect,Flags(a3)	; indicate the disk is protected
-		rts								;												<T5>
-@eject	clr.b	DiskInPlace(a3)			; mark it as offline
-@done	rts
-
-
-	IF newEdiskProt THEN
-;ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
-; PowerPC Edisk Routines
-;ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
-RAMDiskHandlerPPC
-		move.b	@decode(pc,d0.w),d0		; get the routine offset
-		jmp		@decode(pc,d0.w)		; jump to it
-@decode
-		assert	(*-@decode)=CheckEDiskInserted
-		dc.b	@checkInserted-@decode
-		assert	(*-@decode)=CheckEDiskReadOnly
-		dc.b	@checkReadOnly-@decode
-		assert	(*-@decode)=EnableEDiskWrites
-		dc.b	@enableWrites-@decode
-		assert	(*-@decode)=DisableEDiskWrites
-		dc.b	@disableWrites-@decode
-		assert	(*-@decode)=EjectEDisk
-		dc.b	@eject-@decode
-		align	2
-
-@checkInserted
-		moveq.l	#-1,d0					; always inserted
-		rts
-@checkReadOnly
-		moveq.l	#0,d0					; never read only
 @enableWrites
 	; a3 = ptr to driveQElement
 	; d1 = transfer length
@@ -1305,41 +1129,12 @@ RAMDiskHandlerPPC
 		bset	#EDiskProtect,Flags(a3)	; indicate the disk is protected
 		rts								;
 
-@eject	clr.b	DiskInPlace(a3)			; mark it as offline
-@done	rts
-
-	ENDIF
-
-ROMDiskHandler
-		move.b	@decode(pc,d0.w),d0		; get the routine offset
-		jmp		@decode(pc,d0.w)		; jump to it
-@decode
-		assert	(*-@decode)=CheckEDiskInserted
-		dc.b	@checkInserted-@decode
-		assert	(*-@decode)=CheckEDiskReadOnly
-		dc.b	@checkReadOnly-@decode
-		assert	(*-@decode)=EnableEDiskWrites
-		dc.b	@enableWrites-@decode
-		assert	(*-@decode)=DisableEDiskWrites
-		dc.b	@disableWrites-@decode
-		assert	(*-@decode)=EjectEDisk
-		dc.b	@eject-@decode
-		align	2
-
-@checkInserted
-@checkReadOnly
-		moveq.l	#-1,d0					; always inserted, always read only
-@enableWrites
-@disableWrites
-		rts
-
-@eject	clr.b	DiskInPlace(a3)			; mark it as offline
-@done	rts
+@eject	rts
 		title	'EDisk Driver - EDiskPollTask - Drive Polling Task'
 
 ;_______________________________________________________________________
 ;
-;  Routine:		EDiskPollTask
+;  Routine:		EDiskPollTask 57A
 ;  Inputs:		A0 - address of VTask (passed by Vertical Retrace Manager)
 ;  Outputs:		none
 ;  Destroys:	
@@ -1352,98 +1147,9 @@ ROMDiskHandler
 ;_______________________________________________________________________
 
 EDiskPollTask							; a0-a3/d0-d3 saved by int handler
-		lea		EDiskVars-VTask(a0),a2	; a2 := pointer to EDiskVars
-		lea		DrvQHdr+QHead-QLink,a3	; get the drive queue head
-		movea.l	DCEpointer(a2),a1		; get DCE pointer
-		move.w	dCtlRefNum(a1),d3		; d3 := driver refnum
-
-		tst.b	Active(a2)				; see if request in progress
-		beq.s	@next					; if not, start searching the drive queue
-
-		addq.w	#1,VTask+vblCount(a2)	; if active, try again real soon
-		rts								; return
-
-@search	movea.l	d2,a3					; a3 := DriveQElement
-		cmp.w	dQRefNum(a3),d3			; see if we are the driver
-		beq.s	@CheckDrive				; check our drives
-@next	move.l	QLink(a3),d2			; check next drive queue element
-		bne.s	@search					; search until end of drive queue
-
-		move.w	#EDiskPollRate,VTask+vblCount(a2)	; re-initialize the VBL count
-		rts								; return
-
-
-@CheckDrive
-		moveq.l	#CheckEDiskInserted,d0	; hardware dependent function code
-		bsr.w	HWDependent				; see if disk is inserted
-		addq.w	#1,d0					; ccr.x := 1 if EDisk inserted
-		move.b	InsertedStatus(a3),d1	; prepare to shift in new inserted status
-		addx.b	d1,d1					; shift in new inserted status
-		move.b	d1,InsertedStatus(a3)	; update inserted status
-		moveq.l	#InsertedMask,d0		; prepare to de-bounce, and test inserted
-
-		and.b	d0,d1					; see if offline, without bounce
-		bne.s	@CheckOnLine			; if not offline, check online or bounce
-
-@OffLine
-		tst.b	DiskInPlace(a3)			; check online status
-		bpl.s	@next					; if not ejecting, do nothing
-		clr.b	DiskInPlace(a3)			; now mark it offline (ejected)
-		bra.s	@next					; eject complete, check next drive
-
-
-@CheckOnLine
-		cmp.b	d0,d1					; see if online, without bounce
-		bne.s	@next					; if bouncing, ignore it until it stops
-		tst.b	DiskInPlace(a3)			; check online status
-		bmi.s	@next					; if ejecting, do nothing
-		beq.s	@OnLine					; if was offline, and just went online
-
-@mount	btst.b	#MountedFlag,Flags(a3)	; see if it was mounted
-		bne.s	@next					; if already mounted, don't do it again
-		moveq.l	#DiskInsertEvt,d0		; disk inserted event (zero high word)
-		movea.l	d0,a0					; disk inserted event passed in a0
-		move.w	DQDrive(a3),d0			; disk drive number in low word
-		_PostEvent						; post the disk inserted event
-		bne.s	@next					; if error, don't mark as mounted
-		bset.b	#MountedFlag,Flags(a3)	; mark it as mounted
-@toNext	bra.s	@next					; check the next drive
-
-@OnLine
-@SetupDriveInfo
 		move.b	DiskInPlaceInit(a3),\
 				DiskInPlace(a3)			; mark it as inserted
 		clr.b	WriteProtected(a3)		; mark it as writeable (assume RAM)
-		move.l	HeaderInfoPtr(a3),d0	; see if it supports headers
-		beq.s	@SetupRAMDisk			; if no headers, must be a RAM based disk
-
-		with	EDiskHeader
-		movea.l	d0,a0					; a0 points to device header
-		move.l	HdrFormatTime(a0),\
-				FormatTime(a3)			; get the unique ID from the header
-		move.l	HdrFormatTicks(a0),\
-				FormatTicks(a3)			; get the unique ID from the header
-
-;	see if device is ROM or RAM
-
-		moveq.l	#CheckEDiskReadOnly,d0	; hardware dependent function code
-		bsr.w	HWDependent				; see if disk is read only
-		move.b	d0,WriteProtected(a3)	; setup the RAM=$00 / ROM=$FF flag
-		bne.s	@SetupROMDisk			; if ROM disk, all info comes from header
-
-		tst.l	SLIMRegPtr(a3)			; see if this is a SLIM (which needs to be sized)
-		beq.s	@SetupRAMDisk			; if not, base and end must already be valid
-
-		moveq.l	#EnableEDiskWrites,d0	; hardware dependent function code
-		bsr.w	HWDependent				; allow writes while sizing
-		bsr.w	ComputeSLIMSize			; see how big the SLIM card is
-		add.l	a0,d0					; compute end ptr
-		move.l	d0,DataEndPtr(a3)		; setup pointer to end of device data
-		adda.w	#EDiskHeaderSize,a0		; point past the header
-		move.l	a0,CheckSumPtr(a3)		; checksums start just after the header
-		moveq.l	#DisableEDiskWrites,d0	; hardware dependent function code
-		bsr.w	HWDependent				; no writes now
-		endwith
 
 @SetupRAMDisk
 		movem.l	CheckSumPtr(a3),d0/d1/d2; get checksum/start/end ptrs
@@ -1475,138 +1181,22 @@ EDiskPollTask							; a0-a3/d0-d3 saved by int handler
 @DriveSizeOK
 		rol.l	#16-9,d2				; convert to blocks, and swap halves
 		move.l	d2,dqDrvSz(a3)			; fill in the drive size (in blocks)
-		bra.w	@mount					; now mount the drive
 
+Mount	btst.b	#MountedFlag,Flags(a3)	; see if it was mounted
+		bne.s	@done					; if already mounted, don't do it again
+		moveq.l	#DiskInsertEvt,d0		; disk inserted event (zero high word)
+		movea.l	d0,a0					; disk inserted event passed in a0
+		move.w	DQDrive(a3),d0			; disk drive number in low word
+		_PostEvent						; post the disk inserted event
+		bne.s	@done					; if error, don't mark as mounted
+		bset.b	#MountedFlag,Flags(a3)	; mark it as mounted
 
-@SetupROMDisk
-		move.l	a0,d0					; remember header address
-		lea		HeaderTemplate,a1		; point to expected values
-		with	EDiskHeader
-		lea		HdrBlockSize(a0),a0		; point to header data
-		moveq.l	#(HdrDeviceSize-HdrBlockSize)/4-1,d2	; loop counter
-@cmpLoop
-		cmpm.l	(a0)+,(a1)+				; compare the values
-		dbne	d2,@cmpLoop				; compare the blocks
-		beq.s	@SigOK					; get header info if signature valid
-
-		move.l	d0,d1					; start ptr is header ptr
-		move.l	d1,d2					; end ptr is start ptr
-		bra.s	@UpdateBasePtrs			; create an empty ROM disk (pretty useless)
-
-@SigOK	move.l	(a0)+,d0				; get device size
-		addq.w	#HdrCheckSumOff-HdrFormatTime,a0	; point to checksum offset in header
-		lea		CheckSumPtr(a3),a1		; point to checksum ptr in drive info
-
-		moveq.l	#(HdrMediaIconOff-\
-				HdrCheckSumOff)/4-1,d2	; loop for next 3 fields
-
-		tst.l	SLIMRegPtr(a3)			; see if this is a SLIM (which is ejectable)
-		bne.s	@offsetLoop				; if ejectable, don't get the icon info
-
-		moveq.l	#(HdrDriveInfo-\
-				HdrCheckSumOff)/4-1,d2	; loop for next 6 fields
-
-		move.l	HdrDriveInfo-HdrCheckSumOff(a0),d1	; get drive info
-		beq.s	@offsetLoop				; if none specified, use default
-		move.l	d1,DriveInfo(a3)		; setup new drive info
-@offsetLoop
-		addq.l	#4,a1					; leave pointer alone, assume default
-		move.l	(a0)+,d1				; get the offset
-		beq.s	@nextOffset				; if none, ignore it
-		cmp.l	d0,d1					; see if offset is reasonable
-		bhi.s	@nextOffset				; if offset past end of device, ignore it
-		add.l	HeaderInfoPtr(a3),d1	; add device base to offset
-		move.l	d1,-4(a1)				; update the pointer
-@nextOffset
-		dbra	d2,@offsetLoop			; loop through all of the fields
-
-		movem.l	DataStartPtr(a3),d1/d2	; get start/end ptrs
-		bra.s	@SetupDriveSize			; setup the drive queue size info
-		endwith
-		title	'EDisk Driver - ComputeSLIMSize - Get Signature Information'
-
-;_______________________________________________________________________
-;
-;  Routine:		ComputeSLIMSize
-;  Inputs:		A0 - pointer to base of SLIM address space for this card
-;  Outputs:		D0 - Device Size in bytes
-;  Destroys:	A1, D1, D2
-;  Calls:		none
-;  Called by:	
-;
-;  Function:	Returns the device size for the specified SLIM card.
-;
-;_______________________________________________________________________
-
-SegmentSize	equ	512*1024				; slims have up to 4 512K byte segments
-
-ComputeSLIMSize
-		adda.l	#4*SegmentSize,a0		; point past end of last segment
-		movea.l	a0,a1					; save copy of end address
-		moveq.l	#%0000,d0				; assume all 4 segments are missing
-		move.l	#'Gary',d1				; rotating pattern
-		moveq.l	#4-1,d2					; loop counter
-@FillLoop
-		suba.l	#SegmentSize,a0			; point to base of previous segment
-		move.l	(a0),-(sp)				; save the old contents
-		rol.l	#8,d1					; change the pattern
-		move.l	d1,(a0)					; write to the ram
-		cmp.l	(a0),d1					; see if we can read it back
-		bne.s	@NotRAM1				; if not, it's not RAM
-		not.l	d1						; complement the pattern
-		move.l	d1,(a0)					; write to the ram
-		cmp.l	(a0),d1					; see if we can read it back
-		bne.s	@NotRAM2				; if not, it's not RAM
-		bset.l	d2,d0					; indicate that the segment is RAM
-@NotRAM2
-		not.l	d1						; restore pattern
-@NotRAM1
-		dbra	d2,@FillLoop			; loop through all 4 segments
-
-		not.l	d1						; get expected pattern
-		moveq.l	#4-1,d2					; loop counter
-@CheckLoop
-		suba.l	#SegmentSize,a1			; point to base of previous segment
-		rol.l	#8,d1					; change the pattern
-		cmp.l	(a1),d1					; see if we can read it back
-		beq.s	@IsRAM					; if so, it's RAM that didn't wrap around
-		bclr.l	d2,d0					; indicate that the segment isn't RAM
-@IsRAM
-		dbra	d2,@CheckLoop			; loop through all 4 segments
-
-		moveq.l	#4-1,d2					; loop counter
-@RestoreLoop
-		move.l	(sp)+,(a1)				; restore the old contents
-		adda.l	#SegmentSize,a1			; point to base of next segment
-		dbra	d2,@RestoreLoop			; loop through all 4 segments
-
-		move.b	@SizesTable(d0.w),d0	; encode the segment present bits
-		moveq.l	#19,d1					; shift amount
-		lsl.l	d1,d0					; convert segment count to byte count
-		rts								; all done
-
-@SizesTable	
-		dc.b	0						; 0000 - RAM, 0.0MB, 0 segments
-		dc.b	1						; 0001 - RAM, 0.5MB, 1 segment
-		dc.b	0						; 0010 - RAM, illegal configuration
-		dc.b	2						; 0011 - RAM, 1.0MB, 2 segments
-		dc.b	0						; 0100 - RAM, illegal configuration
-		dc.b	0						; 0101 - RAM, illegal configuration
-		dc.b	0						; 0110 - RAM, illegal configuration
-		dc.b	3						; 0111 - RAM, 1.5MB, 3 segments
-		dc.b	0						; 1000 - RAM, illegal configuration
-		dc.b	0						; 1001 - RAM, illegal configuration
-		dc.b	0						; 1010 - RAM, illegal configuration
-		dc.b	0						; 1011 - RAM, illegal configuration
-		dc.b	0						; 1100 - RAM, illegal configuration
-		dc.b	0						; 1101 - RAM, illegal configuration
-		dc.b	0						; 1110 - RAM, illegal configuration
-		dc.b	4						; 1111 - RAM, 2.0MB, 4 segments
+@done	rts
 		title	'EDisk Driver - CreateEDiskHeader - Create Header Information'
 
 ;_______________________________________________________________________
 ;
-;  Routine:		CreateEDiskHeader
+;  Routine:		CreateEDiskHeader 5E0
 ;  Inputs:		A3 - pointer to Drive Queue Element for specified drive
 ;  Destroys:	A0, A1, D0, D1, D2, D3
 ;  Calls:		none
@@ -1671,29 +1261,12 @@ HeaderTemplate
 
 		string	pascal					; name strings have leading length byte
 
-	IF not padForOverPatch THEN			; removing string to adjust for mods	<H1>
-		align	2
-SlimDrive0Name
-		dc.b	'Upper SLIM Drive'
-	ENDIF
-
-		align	2
-SlimDrive1Name
-		dc.b	'Lower SLIM Drive'
-
-		align	2
-ROMDiskName
-		dc.b	'Internal ROM Disk'
-
 		align	2
 RAMDiskName
 		dc.b	'Internal RAM Disk'
 
 		align	2
-		title	'EDisk Driver - RAM / ROM Disk Icons'
-
-ROMDiskMediaIcon
-ROMDiskDriveIcon
+		title	'EDisk Driver - RAM Disk Icons'
 
 RAMDiskMediaIcon
 RAMDiskDriveIcon
