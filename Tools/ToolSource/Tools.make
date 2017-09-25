@@ -17,3 +17,10 @@ LibFiles-68K    =	¶
 
 "{RsrcDir}RomLink"					Ä	"{ToolSrcDir}RomLink.c.o"
 	ILink -d -t 'MPST' -c 'MPS ' -o {Targ} {LibFiles-68k} "{ToolSrcDir}RomLink.c.o"
+
+
+"{ToolSrcDir}RomLayout.c.o"			Ä	"{ToolSrcDir}RomLayout.c"
+	SC -o {Targ} "{ToolSrcDir}RomLayout.c"
+
+"{ToolDir}RomLayout"				Ä	"{ToolSrcDir}RomLayout.c.o"
+	ILink -d -t 'MPST' -c 'MPS ' -o {Targ} {LibFiles-68k} "{ToolSrcDir}RomLayout.c.o"
