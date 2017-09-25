@@ -1142,7 +1142,7 @@ resource 'vend' (540, "_VendorInfo") {{
   VendorId,         c{"Copyright © 1986-1998 by Apple Computer, Inc.  All Rights Reserved."};
   RevLevel,         c{"Macintosh CPU Family 6.0"};     // offset to revision
   PartNum,          c{"DeclROM for OpenTxpt"};         // offset to part number descriptor
-  Date,             c{"Thursday, April 3, 2003"};      // sorry
+  Date,             c{"Tuesday, September 3, 2002"};      // sorry
 //  Date,             c{$$Date};                  	   // offset to ROM build date descriptor
 }};
 
