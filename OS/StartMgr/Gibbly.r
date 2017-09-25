@@ -79,35 +79,8 @@ resource 'gbly' (-16385, sysHeap) {
 
 resource 'rovm' ( 0, locked) {
 	{
-	'pixs', -14335; 'pixs', -14334; 'pixs', -10199; 'pixs', -10200; 'pixs', -10201; 'pixs', -10202;
-	'pixs', -10203; 'pixs', -10204; 'pixs', -10205; 'pixs', -10206; 'pixs', -10207; 'pixs', -10208;
-	'CDEF', 0; 'CDEF', 1;
-	'WDEF', 0; 'WDEF', 1; 'WDEF', 126;
-//	'wctb', 0;
-//	'cctb', 0;
-	'CURS', 1; 'CURS', 2; 'CURS', 3; 'CURS', 4;
-	'MBDF', 0;
-	'MDEF', 0;
-//	'ppat', 16; 'ppat', 18;
-	'ics#', -16386;
-	'ics4', -16386;
-	'ics8', -16386;
-	'rtt#', -5728;
-//	'ppcc', -5856;
-	'KCAP', 1; 'KCAP', 2; 'KCAP', 4; 'KCAP', 5; 
-	'KCHR', 0;
-	'KMAP', 0; 'KMAP', 2;
-	'LDEF', 0; 'LDEF', 19; 'LDEF', -32510; 'LDEF', -32512;
-	'PACK', 0; 'PACK', 12;
-	'PACK', 3; 'PACK', 7; 'PACK', 8; 'PACK', 9; 'PACK', 11; 'PACK', 13; 'PACK', 14; 'PACK', 15;
-	'clut', 1; 'clut', 2; 'clut', 4; 'clut', 5; 'clut', 8; 'clut', 9; 'clut', 127;
-//	'ppci', -16409;
-//	'cmtb', -32508; 'cmtb', -32509; 'cmtb', -32510; 'cmtb', -32511; 'cmtb', -32512;
-	'mitq', 0;
-	'proc', -32512; 'proc', -32511; 'proc', -32510; 'proc', -16498; 'proc', -16497; 'proc', -5728, 'proc', -5727;
-	'pslt', 20; 'pslt', 26;
-	'snd ', 1;
-	'wedg', -5759; 'wedg', -5760;
+	'accl', 0; 'accl', 2; 'accl', 4; 'accl', 5; 'accl', 7; 
+	'clut', 1; 'clut', 2; 'clut', 4; 'clut', 8;
 	};
 };
 
