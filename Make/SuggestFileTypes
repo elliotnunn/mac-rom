@@ -35,6 +35,9 @@ For RootFolder in `Files -f "{Tree}" | StreamEdit -e '¥,° Replace /Å:.Å/ -n'`
 		Else If "{UntypedFile}" =~ /Å.rsrc/
 			Set NewT "rsrc"
 			Set NewC "RSED"
+		Else If "{UntypedFile}" =~ /ÅGoNativeResources/
+			Set NewT "rsrc"
+			Set NewC "RSED"
 		End
 		
 		Echo "  SetFile -t ¶"{NewT}¶" -c ¶"{NewC}¶" ¶"{UntypedFile}¶""
