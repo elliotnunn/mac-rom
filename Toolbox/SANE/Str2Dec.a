@@ -249,9 +249,7 @@ Start
 				MOVEM.L 		D2-D7/A2-A3,-(SP) ; save working registers
 				MOVEM.L 		D(A6),D4-D6 	; D4<--&D, D5<--&INDEX, D6<--&S
 
-				MOVE.L			D6,D0			; D0 <--&S								<v1.2>
-				_StripAddress					; sanitized address						<v1.2>
-				MOVEA.L			D0,A0			; &S for calc of first char				<v1.2>
+				MOVE.L			D6,A0			; D0 <--&S								<v1.2>
 				MOVEA.L 		D5,A1			; copy &index for indirect ref
 				MOVEQ			#0,D6			; prepare to reuse D6
 				MOVE.B			(A0),D6 		; length byte of S
