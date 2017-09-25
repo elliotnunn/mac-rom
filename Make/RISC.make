@@ -265,7 +265,7 @@ ResourceFiles	=	"{MiscDir}ATAMgr.rsrc"					¶
 RomMondo						Ä	FeatureSet "{ImageDir}RomMondo"
 
 
-"{ImageDir}RomMondo"			Ä	{ResourceFiles}
+"{ImageDir}RomMondo"			Ä	{ResourceFiles} "{ToolDir}RomLayout"
 	RomLayout	-mf "{RsrcDir}RomLayout.Rsrc" -o "{Targ}" -log "{ImageDir}RomInfo"
 
 
