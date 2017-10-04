@@ -1,3 +1,6 @@
+; This ROM implementation of the MPDispatch trap (AA7F) only implements two
+; selectors, both for writing to the NanoKernel framebuffer/serial log.
+
 ; To print a C string:
 ;		PEA		@cstring
 ;		MOVE	#-3, -(SP)
@@ -10,7 +13,7 @@
 ;		DC.W	$AA7F
 
 
-NKLog	PROC	EXPORT
+MPDispatchStubTrap		PROC	EXPORT
 		CmpI	#-3, $4(SP)
 		BEQ.S	NKxprintf
 

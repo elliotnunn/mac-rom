@@ -963,7 +963,7 @@ FirstTool
 	ToolBox	$26E								; toolbox trap $26E (unknown)		<C146> <C413>
 	ToolBox	$26F								; toolbox trap $26F (unknown)		<C146> <C413>
 	DCB.L	15,0								; toolbox trap $270-$27E (unknown)		<C146>
-	ToolBox	$27F,NKLog
+	ToolBox	$27F,MPDispatchStubTrap
 	DCB.L	16,0								; toolbox trap $280-$28F (unknown)		<C146>
 	ToolBox	$290,InitPalettes					; toolbox trap $290		<02Jun87 DAF>
 	ToolBox	$291,NewPalette						; toolbox trap $291		<02Jun87 DAF>
