@@ -93,7 +93,7 @@ OSObjs	= 							"{ObjDir}BCScreenRelated.o"						¶
 									"{ObjDir}MiscPatches.a.o"						¶
 									"{ObjDir}PowerMgr.o"							¶
 									"{ObjDir}VMPatches.a.o"							¶
-									"{ObjDir}NKLogShim.a.o"							¶
+									"{ObjDir}MPDispatchStub.a.o"					¶
 									"{ObjDir}Dispatch.a.o"							¶
 									"{ObjDir}UniversalTables.a.o"					¶
 									"{ObjDir}NKEventGroupRelated.a.o"				¶
@@ -283,8 +283,8 @@ OSObjs	= 							"{ObjDir}BCScreenRelated.o"						¶
 	Asm {StdAOpts} -o "{Targ}" "{OSDir}VMPatches.a"
 
 
-"{ObjDir}NKLogShim.a.o"			Ä	"{OSDir}NKLogShim.a"
-	Asm {StdAOpts} -o "{Targ}" "{OSDir}NKLogShim.a"
+"{ObjDir}MPDispatchStub.a.o"	Ä	"{OSDir}MPDispatchStub.a"
+	Asm {StdAOpts} -o "{Targ}" "{OSDir}MPDispatchStub.a"
 
 
 "{ObjDir}NKEventGroupWrapper.a.o"	Ä	"{OSDir}NKEventGroupWrapper.a"
