@@ -1,12 +1,12 @@
 ; To print a C string:
 ;		PEA		@cstring
-;		MOVE	$-3, -(SP)
+;		MOVE	#-3, -(SP)
 ;		DC.W	$AA7F
 
 ; To print a hex string:
 ;		MOVE.L	#value, -(SP)
 ;		MOVE	#2, -(SP)		; 1: byte, 2: word, else: long
-;		MOVE	$-2, -(SP)
+;		MOVE	#-2, -(SP)
 ;		DC.W	$AA7F
 
 
