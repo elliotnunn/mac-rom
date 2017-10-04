@@ -1491,9 +1491,12 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 
 			IMPORT	InterC_1cc0_MoveUnivInfoToSysHeap
 			BSR.L	InterC_1cc0_MoveUnivInfoToSysHeap
-			BSR.L	initGestalt						; initialize Gestalt									<SM39>
-			BSR.L	FiddleWithEmulator
-			BSR.L	InitIntHandler					; initialize interrupt vectors and dispatch tables
+			IMPORT	SayHello_initGestalt
+			BSR.L	SayHello_initGestalt
+			IMPORT	SayHello_FiddleWithEmulator
+			BSR.L	SayHello_FiddleWithEmulator
+			IMPORT	SayHello_InitIntHandler
+			BSR.L	SayHello_InitIntHandler
 
 			BSR		CheckForEgretOrCuda				; Do we have an Egret/Caboose/Cuda?						<mc2>
 			BNE.S	@EInitDone						; -> Nope, don't be callin' shit
@@ -1514,7 +1517,8 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 *************************************************************************************************
 ; 244
 
-			BSR.L	InitRSRCMgr						; initialize the Resource Manager
+			IMPORT	SayHello_InitRSRCMgr
+			BSR.L	SayHello_InitRSRCMgr
 			BSR.L	NMInit							; Initialize the Notification Manager
 		
 			CLR.W	-(SP)							; pass the INIT message to ShutDown
@@ -1539,14 +1543,14 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 @noPower
 
 ; 268
-			IMPORT	InterC_1690_CodeRegister
-			BSR.L	InterC_1690_CodeRegister
+			IMPORT	SayHello_InterC_1690_CodeRegister
+			BSR.L	SayHello_InterC_1690_CodeRegister
 
-			IMPORT	InterC_15c0_CodePrepare2
-			BSR.L	InterC_15c0_CodePrepare2
+			IMPORT	SayHello_InterC_15c0_CodePrepare2
+			BSR.L	SayHello_InterC_15c0_CodePrepare2
 
-			IMPORT	EXPANSIONBUSMGRFIRSTFUNC
-			BSR.L	EXPANSIONBUSMGRFIRSTFUNC
+			IMPORT	SayHello_EXPANSIONBUSMGRFIRSTFUNC
+			BSR.L	SayHello_EXPANSIONBUSMGRFIRSTFUNC
 
 			BSR.L	CompBootStackOld				; lifted from SetUpSysAppZone
 			MOVE.L	A0,SP
@@ -1566,8 +1570,8 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			IMPORT	InterC_2090_PowerMgr
 			BSR		InterC_2090_PowerMgr
 
-			IMPORT	InterC_2a80_EtherPrintfLib
-			BSR.L	InterC_2a80_EtherPrintfLib
+			IMPORT	SayHello_InterC_2a80_EtherPrintfLib
+			BSR.L	SayHello_InterC_2a80_EtherPrintfLib
 			MOVE.L	(SP)+, ToolScratch
 
 
@@ -1577,8 +1581,10 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 
 			BSR.L	InitDTQueue						; initialize the Deferred Task Manager Queue
 
-			BSR.L	EnableOneSecInts				; allow the clock interrupts
-			BSR.L	Enable60HzInts					; allow vbl interrupts
+			IMPORT	SayHello_EnableOneSecInts
+			BSR.L	SayHello_EnableOneSecInts				; allow the clock interrupts
+			IMPORT	SayHello_Enable60HzInts
+			BSR.L	SayHello_Enable60HzInts					; allow vbl interrupts
 
 ;----------------------------------------------------------------
 ; Enable processor interrupts, after which we can start wanging real hw
@@ -1586,11 +1592,11 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 
 			MOVE	#$2000,SR						; supervisor state, interrupts on
 
-			IMPORT RSETKMAP
-			BSR.L     RSETKMAP
+			IMPORT SayHello_RSETKMAP
+			BSR.L     SayHello_RSETKMAP
 
-			IMPORT	InterC_2bc0_DebugPrint
-			BSR.L	InterC_2bc0_DebugPrint
+			IMPORT	SayHello_InterC_2bc0_DebugPrint
+			BSR.L	SayHello_InterC_2bc0_DebugPrint
 
 			MOVEQ.L	#10, D0
 			_NewHandle ,Sys,Immed
@@ -1621,8 +1627,8 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 
 			BSR		InitDeviceMgr					; Init unit I/O table and install the drivers.
 
-			IMPORT	InitDeviceDispatch
-			BSR.L	InitDeviceDispatch
+			IMPORT	SayHello_InitDeviceDispatch
+			BSR.L	SayHello_InitDeviceDispatch
 
 			BTST.B	#$6, ($2400)
 			BNE.B	@definitely
@@ -1631,28 +1637,31 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 @definitely
 
 			BSR		NewStartInitFunc
-			BSR.L	InitSCSIMgr						; Init old and new SCSI Mgrs
+			IMPORT	SayHello_InitSCSIMgr
+			BSR.L	SayHello_InitSCSIMgr						; Init old and new SCSI Mgrs
 @dont
 
-			IMPORT	InitExpansionMgr
-			BSR.L	InitExpansionMgr
+			IMPORT	SayHello_InitExpansionMgr
+			BSR.L	SayHello_InitExpansionMgr
 
-			IMPORT	InterC_1980_Drivers
-			BSR.L	InterC_1980_Drivers
+			IMPORT	SayHello_InterC_1980_Drivers
+			BSR.L	SayHello_InterC_1980_Drivers
 
 			BSR		LoadDrivers						; load the standard drivers
 
-			BSR.L	InitADB							; initialize ADB interface
+			IMPORT	SayHello_InitADB
+			BSR.L	SayHello_InitADB							; initialize ADB interface
 
-	import	InterC_1910_USBFamilyExpertLib
-	bsr.l	InterC_1910_USBFamilyExpertLib
+			import	SayHello_InterC_1910_USBFamilyExpertLib
+			bsr.l	SayHello_InterC_1910_USBFamilyExpertLib
 
 			BSR		InitCrsrMgr						; Initialize cursor variables
 
-			IMPORT	InitBCScreen
-			BSR.L	InitBCScreen
+			IMPORT	SayHello_InitBCScreen
+			BSR.L	SayHello_InitBCScreen
 
-			BSR.L	TEGlobalInit					; initialize TextEdit vectors
+			IMPORT	SayHello_TEGlobalInit
+			BSR.L	SayHello_TEGlobalInit					; initialize TextEdit vectors
 
 ;----------------------------------------------------------------
 ; Create a temporary application heap.  Load boot block buffer
@@ -1678,9 +1687,11 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			LEA		BootGlobalsSize(SP), A6			; boot blocks load pt
 			LEA 	QDBootGlobalsSize(SP),A5		; leaving room for globals
 
-			BSR.L	EnableSlotInts					; enable NuBus slot interrupts
+			IMPORT	SayHello_EnableSlotInts
+			BSR.L	SayHello_EnableSlotInts					; enable NuBus slot interrupts
 
-			BSR.L	InitFasterInvals				; init the expandmem variable for WindowMgr
+			IMPORT	SayHello_InitFasterInvals
+			BSR.L	SayHello_InitFasterInvals				; init the expandmem variable for WindowMgr
 
 		IF hasPwrControls THEN
 			BSR.L	PowerDownAll					; power down all peripheral subsystems
@@ -1697,8 +1708,8 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 
 
 
-			import	InterC_2780_FireWire
-			bsr.l	InterC_2780_FireWire
+			import	SayHello_InterC_2780_FireWire
+			bsr.l	SayHello_InterC_2780_FireWire
 
 
 ;----------------------------------------------------------------
@@ -1716,26 +1727,29 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 
 			BTST	#$1, $2409
 			BEQ.B	@dont_do_mysterious_thing
-			IMPORT	LoadPCCardLib
-			BSR.L	LoadPCCardLib
+			IMPORT	SayHello_LoadPCCardLib
+			BSR.L	SayHello_LoadPCCardLib
 @dont_do_mysterious_thing
 
-	IMPORT	InterC_2a20_SCSITargetMode
-	BSR.L	InterC_2a20_SCSITargetMode
+	IMPORT	SayHello_InterC_2a20_SCSITargetMode
+	BSR.L	SayHello_InterC_2a20_SCSITargetMode
 
 	BTst.B	#5, $2408
 	BEQ.B	@nodiskmode
-			BSR.L	SCSIDiskMode					; check if we should be in SCSI Disk Mode				<SM16>
+			import	SayHello_SCSIDiskMode
+			BSR.L	SayHello_SCSIDiskMode					; check if we should be in SCSI Disk Mode				<SM16>
 @nodiskmode
 
-			BSR.L	INITSCSIBOOT					; allocate some memory for SCSI booting
+
+			IMPORT	SayHello_INITSCSIBOOT
+			BSR.L	SayHello_INITSCSIBOOT					; allocate some memory for SCSI booting
 													; and load third party SIMs (SCSI Interface
 													; modules
 
-			IMPORT	ATAMgr_5dae0
-			BSR.L	ATAMgr_5dae0
-			IMPORT	ATAMgr_5dde0
-			BSR.L	ATAMgr_5dde0
+			IMPORT	SayHello_ATAMgr_5dae0
+			BSR.L	SayHello_ATAMgr_5dae0
+			IMPORT	SayHello_ATAMgr_5dde0
+			BSR.L	SayHello_ATAMgr_5dde0
 
 			IMPORT	InterC_2130_CardBus
 			BSR		InterC_2130_CardBus
@@ -1747,7 +1761,7 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 *																								*
 *************************************************************************************************
 
-			BRA		BootMe								; Exit Stage Right
+			BRA BootMe								; Exit Stage Right
 
 
 
@@ -3952,7 +3966,7 @@ NewStartInitFunc
 
 
 
-
+			export	FiddleWithEmulator
 FiddleWithEmulator
 ; 1180
 			Move.L    #'ppcf', D0

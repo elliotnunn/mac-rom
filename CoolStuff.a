@@ -1,0 +1,419 @@
+SayHello_initGestalt PROC EXPORT
+
+	IMPORT	initGestalt
+	
+	MACHINE	MC68030
+	
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+	bra.l	initGestalt
+	
+	string	C
+@myString
+	dc.b	'*68k: initGestalt^n'
+
+
+SayHello_FiddleWithEmulator PROC EXPORT
+
+	IMPORT	FiddleWithEmulator
+	
+	MACHINE	MC68030
+	
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+	bra.l	FiddleWithEmulator
+	
+	string	C
+@myString
+	dc.b	'*68k: FiddleWithEmulator^n'
+
+
+SayHello_InitIntHandler PROC EXPORT
+
+	IMPORT	InitIntHandler
+	
+	MACHINE	MC68030
+	
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+	bra.l	InitIntHandler
+	
+	string	C
+@myString
+	dc.b	'*68k: InitIntHandler^n'
+
+
+SayHello_InitRSRCMgr PROC EXPORT
+
+	IMPORT	InitRSRCMgr
+	
+	MACHINE	MC68030
+	
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+	bra.l	InitRSRCMgr
+	
+	string	C
+@myString
+	dc.b	'*68k: InitRSRCMgr^n'
+
+
+SayHello_FINDSTARTUPDEVICE PROC EXPORT
+
+	IMPORT	BootMe
+	
+	MACHINE	MC68030
+	
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+	
+	link	A4, #-$5A
+
+	import	ReturnToFSD
+	bra.l	ReturnToFSD
+
+	string	C
+@myString
+	dc.b	'*68k: FINDSTARTUPDEVICE^n'
+
+
+
+
+
+
+SAYHELLO_ATAMGR_5DAE0 proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	ATAMGR_5DAE0
+	bra.l	ATAMGR_5DAE0
+
+	string	C
+@myString
+	dc.b	'*68k: ATAMGR_5DAE0^n'
+
+SAYHELLO_ATAMGR_5DDE0 proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	ATAMGR_5DDE0
+	bra.l	ATAMGR_5DDE0
+
+	string	C
+@myString
+	dc.b	'*68k: ATAMGR_5DDE0^n'
+
+SAYHELLO_INITSCSIBOOT proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INITSCSIBOOT
+	bra.l	INITSCSIBOOT
+
+	string	C
+@myString
+	dc.b	'*68k: INITSCSIBOOT^n'
+
+SAYHELLO_LOADPCCARDLIB proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	LOADPCCARDLIB
+	bra.l	LOADPCCARDLIB
+
+	string	C
+@myString
+	dc.b	'*68k: LOADPCCARDLIB^n'
+
+SAYHELLO_INTERC_2A20_SCSITARGETMODE proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INTERC_2A20_SCSITARGETMODE
+	bra.l	INTERC_2A20_SCSITARGETMODE
+
+	string	C
+@myString
+	dc.b	'*68k: INTERC_2A20_SCSITARGETMODE^n'
+
+SAYHELLO_SCSIDISKMODE proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	SCSIDISKMODE
+	bra.l	SCSIDISKMODE
+
+	string	C
+@myString
+	dc.b	'*68k: SCSIDISKMODE^n'
+
+SAYHELLO_INTERC_2780_FIREWIRE proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INTERC_2780_FIREWIRE
+	bra.l	INTERC_2780_FIREWIRE
+
+	string	C
+@myString
+	dc.b	'*68k: INTERC_2780_FIREWIRE^n'
+
+SAYHELLO_INITFASTERINVALS proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INITFASTERINVALS
+	bra.l	INITFASTERINVALS
+
+	string	C
+@myString
+	dc.b	'*68k: INITFASTERINVALS^n'
+
+SAYHELLO_ENABLESLOTINTS proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	ENABLESLOTINTS
+	bra.l	ENABLESLOTINTS
+
+	string	C
+@myString
+	dc.b	'*68k: ENABLESLOTINTS^n'
+
+SAYHELLO_TEGLOBALINIT proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	TEGLOBALINIT
+	bra.l	TEGLOBALINIT
+
+	string	C
+@myString
+	dc.b	'*68k: TEGLOBALINIT^n'
+
+SAYHELLO_INITBCSCREEN proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INITBCSCREEN
+	bra.l	INITBCSCREEN
+
+	string	C
+@myString
+	dc.b	'*68k: INITBCSCREEN^n'
+
+SAYHELLO_INTERC_1910_USBFAMILYEXPERTLIB proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INTERC_1910_USBFAMILYEXPERTLIB
+	bra.l	INTERC_1910_USBFAMILYEXPERTLIB
+
+	string	C
+@myString
+	dc.b	'*68k: INTERC_1910_USBFAMILYEXPERTLIB^n'
+
+SAYHELLO_INITADB proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INITADB
+	bra.l	INITADB
+
+	string	C
+@myString
+	dc.b	'*68k: INITADB^n'
+
+SAYHELLO_INTERC_1980_DRIVERS proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INTERC_1980_DRIVERS
+	bra.l	INTERC_1980_DRIVERS
+
+	string	C
+@myString
+	dc.b	'*68k: INTERC_1980_DRIVERS^n'
+
+SAYHELLO_INITSCSIMGR proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INITSCSIMGR
+	bra.l	INITSCSIMGR
+
+	string	C
+@myString
+	dc.b	'*68k: INITSCSIMGR^n'
+
+SAYHELLO_INITDEVICEDISPATCH proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INITDEVICEDISPATCH
+	bra.l	INITDEVICEDISPATCH
+
+	string	C
+@myString
+	dc.b	'*68k: INITDEVICEDISPATCH^n'
+
+SAYHELLO_INTERC_2BC0_DEBUGPRINT proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INTERC_2BC0_DEBUGPRINT
+	bra.l	INTERC_2BC0_DEBUGPRINT
+
+	string	C
+@myString
+	dc.b	'*68k: INTERC_2BC0_DEBUGPRINT^n'
+
+SAYHELLO_INTERC_2A80_ETHERPRINTFLIB proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INTERC_2A80_ETHERPRINTFLIB
+	bra.l	INTERC_2A80_ETHERPRINTFLIB
+
+	string	C
+@myString
+	dc.b	'*68k: INTERC_2A80_ETHERPRINTFLIB^n'
+
+SAYHELLO_INTERC_1690_CODEREGISTER proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INTERC_1690_CODEREGISTER
+	bra.l	INTERC_1690_CODEREGISTER
+
+	string	C
+@myString
+	dc.b	'*68k: INTERC_1690_CODEREGISTER^n'
+
+SAYHELLO_INTERC_15C0_CODEPREPARE2 proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INTERC_15C0_CODEPREPARE2
+	bra.l	INTERC_15C0_CODEPREPARE2
+
+	string	C
+@myString
+	dc.b	'*68k: INTERC_15C0_CODEPREPARE2^n'
+
+SAYHELLO_EXPANSIONBUSMGRFIRSTFUNC proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	EXPANSIONBUSMGRFIRSTFUNC
+	bra.l	EXPANSIONBUSMGRFIRSTFUNC
+
+	string	C
+@myString
+	dc.b	'*68k: EXPANSIONBUSMGRFIRSTFUNC^n'
+
+SAYHELLO_INITEXPANSIONMGR proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	INITEXPANSIONMGR
+	bra.l	INITEXPANSIONMGR
+
+	string	C
+@myString
+	dc.b	'*68k: INITEXPANSIONMGR^n'
+
+SAYHELLO_RSETKMAP proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	RSETKMAP
+	bra.l	RSETKMAP
+
+	string	C
+@myString
+	dc.b	'*68k: RSETKMAP^n'
+
+SAYHELLO_ENABLE60HZINTS proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	ENABLE60HZINTS
+	bra.l	ENABLE60HZINTS
+
+	string	C
+@myString
+	dc.b	'*68k: ENABLE60HZINTS^n'
+
+SAYHELLO_ENABLEONESECINTS proc export
+	machine	MC68030
+	pea		@myString
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	import	ENABLEONESECINTS
+	bra.l	ENABLEONESECINTS
+
+	string	C
+@myString
+	dc.b	'*68k: ENABLEONESECINTS^n'
+
+
+
+
+
+
+	END

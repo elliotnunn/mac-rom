@@ -273,8 +273,12 @@ FindStartupDevice	PROC	EXPORT
 
 			IMPORT	GetDefaultStartup			; StartSearch.a
 		
-			link	A4, #frameSize
+			IMPORT	SayHello_FindStartupDevice
+			BRA.L	SayHello_FindStartupDevice
 			
+			export ReturnToFSD
+ReturnToFSD
+
 			BSR		EmbarkOnSearch				; Initialize our state.
 
 			BSR		LoadSlotDrivers				; Default is a slot device, execute boot code
@@ -354,7 +358,7 @@ FindStartupDevice	PROC	EXPORT
 			IMPORT	PMIDLERELATEDDRIVERCALL
 			BSR.L	PMIDLERELATEDDRIVERCALL
 			IMPORT	INTERC_2750
-			BSR.L	INTERC_2750
+			BSR		INTERC_2750
 
 
 @FirstEntry

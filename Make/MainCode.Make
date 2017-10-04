@@ -87,10 +87,14 @@ MainCodeLibs = 												¶
 #															¶
 #	Keep DispTable at end									¶
 #															¶
-				"{ObjDir}DispTable.a.o"												
+				"{ObjDir}DispTable.a.o" "{ObjDir}CoolStuff.a.o"												
 #
 # end of ROM
 #
+
+
+"{ObjDir}CoolStuff.a.o"			Ä	"{Sources}CoolStuff.a"
+	Asm {StdAOpts} -o "{Targ}" "{Sources}CoolStuff.a"
 
 
 #
