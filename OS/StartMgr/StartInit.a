@@ -1545,8 +1545,8 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			IMPORT	InterC_15c0_CodePrepare2
 			BSR.L	InterC_15c0_CodePrepare2
 
-			IMPORT	EXPANSIONBUSMGRFIRSTFUNC
-			BSR.L	EXPANSIONBUSMGRFIRSTFUNC
+			IMPORT	EBM_FAKE_FIRSTFUNC
+			BSR.L	EBM_FAKE_FIRSTFUNC
 
 			BSR.L	CompBootStackOld				; lifted from SetUpSysAppZone
 			MOVE.L	A0,SP

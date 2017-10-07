@@ -1,0 +1,48 @@
+EBM_FAKE_FIRSTFUNC PROC EXPORT
+
+
+	IMPORT	BaseOfROM
+	MACHINE	MC68030
+	
+
+	pea		@str1
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	bsr.l	(BaseOfROM + $49590)
+
+	pea		@str2
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	bsr.l	(BaseOfROM + $471DE)
+
+	pea		@str3
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	bsr.l	(BaseOfROM + $44FF0)
+
+	pea		@str4
+	move	#-3,-(sp)
+	dc.w	$aa7f
+
+	rts
+
+
+	STRING	C
+@str1
+	dc.b	'*68k: Entered fake FirstFunc^n'
+	ALIGN	2
+@str2
+	dc.b	'*68k: returned from 49590^n'
+	ALIGN	2
+@str3
+	dc.b	'*68k: returned from 471DE^n'
+	ALIGN	2
+@str4
+	dc.b	'*68k: returned from 44FF0 ... returning^n'
+	ALIGN	2
+
+
+	END
