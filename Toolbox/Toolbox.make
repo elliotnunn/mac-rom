@@ -8,7 +8,7 @@ ToolboxObjs	= 						"{ObjDir}PackageMgr.a.o"						¶
 									"{ObjDir}Munger.a.o"							¶
 									"{ObjDir}DeskMgr.a.o"							¶
 									"{ObjDir}GetMgr.a.o"							¶
-									"{ObjDir}TextEdit.lib"							¶
+									"{ObjDir}TextEdit.a.o"							¶
 									"{ObjDir}ScrapMgr.a.o"							¶
 									"{LibDir}Printing.lib"							¶
 									"{ObjDir}SexyDate.a.o"
@@ -37,6 +37,9 @@ ToolboxObjs	= 						"{ObjDir}PackageMgr.a.o"						¶
 
 "{ObjDir}GetMgr.a.o"				Ä	"{ToolboxDir}GetMgr:GetMgr.a"
 	Asm {StdAOpts} -o "{Targ}" "{ToolboxDir}GetMgr:GetMgr.a"
+
+"{ObjDir}TextEdit.a.o"				Ä	"{ToolboxDir}TextEdit:TextEdit.a" "{ToolboxDir}TextEdit:IncludeTextEdit.a"
+	Asm {StdAOpts} -o "{Targ}" "{ToolboxDir}TextEdit:IncludeTextEdit.a"
 
 "{ObjDir}SexyDate.a.o"				Ä	"{ToolboxDir}SexyDate.a"
 	Asm {StdAOpts} -o "{Targ}" "{ToolboxDir}SexyDate.a"

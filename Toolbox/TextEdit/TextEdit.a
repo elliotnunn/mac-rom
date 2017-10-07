@@ -1233,7 +1233,6 @@ TextEdit	Proc		Export
 			Export		vChar2Pixel
 			
 ; sets up vectors to be used for patching TextEdit and clears ExpandMem TE globals <28June89smb>
-			Export		GestaltTEVersion					; <13>
 			Export		TEGlobalInit					; <13>
 ;-------------------------------------------------------------------------------------------------
 
@@ -1254,6 +1253,7 @@ AddrTable	DC.W		iTEStylPaste-AddrTable				; 0
 			DC.W		iTECustomHook-AddrTable				; 12
 			DC.W		iTENumStyles-AddrTable				; 13
 			DC.W		iTEFeatureFlag-AddrTable			; 14
+			DC.W		NewTextEditEntryPoint-AddrTable		; 15
 
 ;-------------------------------------------------------------------------------------------------
 
@@ -1335,44 +1335,8 @@ VectorLoop
 LoopXit
 			movem.l	(sp)+,a2/a3
 			
-; when TextEdit 3.0 is ptch0, need this code			
-			move.l	#gestaltTextEditVersion, d0	; <8Aug89smb>
-			lea		GestaltTEVersion, a0
-			_NewGestalt
 			rts
 
-;----------------------------------------------------------------------
-;			PROCEDURE GestaltTEVersion
-;			<8Aug89smb>
-;			The following Gestalt Function is an interface using the Gestalt
-;			mechanism to determine the current version of TextEdit.
-;
-;			 FUNCTION	GestaltTEVersion (	gestaltSelector: 	OSType;
-;											VAR gestaltResult:	Longint;): OSErr;
-;
-;			The versions for the gestaltTextEditVersion selector are:
-;				gestaltUndefSelectorErr = old styled TextEdit (pre-MacIIci TE)
-;			All the following versions of TE are based on the SMgr-compatible version:
-;				gestaltTE1 (1) = MacIIci ROM/PTCH 67c
-;				gestaltTE2 (2) = 604 Script Systems PTCH 67c (Script bug fixes for MacIIci)
-;				gestaltTE3 (3) = 604 Script Systems ptch0/parallels Big Bang (for MacII, MacSE, Mac+)
-;				gestaltTE4 (4) = Big Bang ptch0/PTCH 67c
-;				gestaltTE5 (5) = TextWidthHook available in System 7
-;
-;			THE OBVIOUS: since this is here for the MacIIci ROM patch, we have 
-;			hardcoded the ONLY value that is appropriate to be returned! sigh.
-;_________________________________________________________________________________
-
-GestaltTEVersion
-
-			move.l	(sp)+,a0			; return address
-			move.l	(sp)+,a1			; address of result
-			move.l		#gestaltTE5, (a1)	; 													<19>
-			adda.w	#4,sp				; pop the selector type
-			move.w	#noErr,(sp)			; it always works
-			jmp		(a0)
-
-;formFeed
 ;----------------------------------------------------------------------
 ;
 ;			PROCEDURE TEInit
@@ -8254,7 +8218,7 @@ CopyGuts
 			Bsr			GetStyle				; get the style ptr
 			AddQ.L		#2,A0					; skip 1st entry				** <C207/13oct86/MBK> **
 			MoveQ		#stRecSize-2,D0			; size of a style rec-2			** <C381/6nov86/MBK> **
-			_BlockMove							; copy style to scrap
+			_BlockMoveData						; copy style to scrap
 
 			MoveQ		#0,D0					; it's a long word				** <C207/13oct86/MBK> **
 			Move.W		startChar(A2),D0		; get start offset of this style
@@ -8461,7 +8425,7 @@ DeleteStyle
 			Move.L		A2,A1					; destination of move
 			Move.L		A2,A0
 			Add.L		D4,A0					; source of move
-			_BlockMove
+			_BlockMoveData
 
 @2			MoveM.L		(SP)+,D0/D2-D6/A2		; restore stuff
 
@@ -10937,7 +10901,7 @@ MakeRoom
 			Add.L		D2,A1					; destination
 			Move.L		D3,D0					; length
 			_StripAddress						; clean up high byte of length <5June89smb>
-			_BlockMove							; make room
+			_BlockMoveData						; make room
 
 
 			MoveM.L		(SP)+,D2-D3/A2
@@ -11140,7 +11104,7 @@ AddStyle
 
 @1			Sub.W		D0,D3					; get the index
 			Move.L		#stRecSize,D0			; size of record
-			_BlockMove							; copy it to styleRec array
+			_BlockMoveData						; copy it to styleRec array
 
 			Move.W		D3,D0					; return the index
 
@@ -13963,7 +13927,7 @@ styleLoop	Move.W		styleIndex(A2),D0		; else, index to style
 
 			Move.L		#stRecSize,D0			; length of a styleRec
 			Move.L		A4,A1					; ptr to temp storage
-			_BlockMove							; copy to temp location for mod
+			_BlockMoveData						; copy to temp location for mod
 
 			Move.L		A2,A0					; current style
 			Move.L		D3,D0					; selStart, selEnd
@@ -14939,7 +14903,7 @@ iGetStylScrap
 			Lea			2(A0),A0				; skip over stCount to stHeight		<C971/RWW102387>
 
 			Move.L		#scrpRecSize-4,D0		; amount to copy					<C971/RWW102387>
-			_BlockMove							; from NullStRec to StScrpRec		<C971/RWW102387>
+			_BlockMoveData						; from NullStRec to StScrpRec		<C971/RWW102387>
 			Bra.S		EndGet					; we're outta here					<C971/RWW102387>
 @05												;									<C971/RWW102387>
 
@@ -15495,6 +15459,53 @@ ContGuts
 			Rts
 
 			EndWith		;contArgs
+
+;formFeed
+;----------------------------------------------------------------------
+;
+;	NewTextEditEntryPoint
+;
+;----------------------------------------------------------------------
+NewTextEditEntryPoint
+			Move		$20(A3), D0
+			Cmp			$22(A3), D0
+			BLT.B		@L1
+			Move.L		(A2)+, -(A7)
+			_SetEmptyRgn
+			Bra.B		@L3
+@L1			Move.L		$56(A3), -(A7)
+			Lea.L		DT0, A0
+			Move.L		A0, $56(A3)
+			_OpenRgn
+			Move		$24(A3), -(A7)
+			OrI			#$FF00, $24(A3)
+			Pea.L		$10(A3)
+			Move.L		A4, -(A7)
+			_TEUpdate
+			Move		(A7)+, $24(A3)
+			Move.L		(A2), -(A7)
+			_CloseRgn
+			SubQ		#$4, A7
+			_NewRgn
+			Move.L		(A7)+, D0
+			BEQ.B		@L2
+			Move.L		D0, -(A7)
+			Move.L		D0, -(A7)
+			Move.L		(A2), -(A7)
+			Move.L		(A2), -(A7)
+			Move.L		D0, -(A7)
+			Pea.L		$8(A3)
+			_RectRgn
+			_SectRgn
+			_DisposeRgn
+@L2			AddQ		#$4, A2
+			Move.L		(A7)+, $56(A3)
+@L3			Clr			(A2)
+			MoveQ.L		#$A, D0
+			Bra			StdExit2
+
+DT0			_FrameRect
+			Rts
 
 
 ; *************************************************************************************************
