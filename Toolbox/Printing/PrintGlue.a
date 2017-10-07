@@ -362,7 +362,12 @@ GotPDEF
 		_GetHandleSize					; How big is our PDEF Handle					<LW2> fau
 		cmp.l		#32,D0				; Is it "small"									<LW2> fau
 		bhi.s		@RealPDEF			; no, don't flush the cache						<LW2> fau
-		jsr			([jCacheFlush])		; else, flush the caches.						<LW2> fau
+		move.l		A0,-(SP)
+		move.l		(A0),A0
+		move.l		D0,A1
+		import		FLUSHCRANGE
+		bsr.l		FLUSHCRANGE			; else, flush the caches.
+		move.l		(SP)+,A0
 @RealPDEF										;										<LW2> fau
 		_HLock
 ;<22Feb87> JNP Restore curMap before jumping into the print code.
@@ -375,7 +380,7 @@ GotPDEF
 		Add.b	ParmByt(a6),d0
 		Sub.w	d0,sp					; We know the thing isn't actually more than a word wide
 		Move.l	sp,a1					; Beginning of destination
-		_BlockMove						; Note: Leaves d0 = 0
+		_BlockMoveData					; Note: Leaves d0 = 0
 ; Call the routine.  The offset into the PDEF to jump to is given by the glue parameter
 		Move.b	CodeOfs(a6),d0			; Get offset (note high part of d0 is still 0)
 		Andi.b	#$7F,d0					; Mask off the unlock bit that is stored there
@@ -543,9 +548,17 @@ SetError
 LLOut
 		Add.w	#IOQElSize,sp			; Strip parameter block
 		Move.w	d0,PrintVars+iPrErr		; Set return code
-GlueOut
+GlueOut	
 ;
 ; Get the number of bytes of parameter to this entry in d1
+		Move.l	sp,-(sp)
+		Moveq.l	#0,d0
+		Move.b	FuncByt(a6),d0
+		Lsr.b	#3,d0
+		Move.l	d0,-(sp)
+		Import	PRINTINGNEWFUNC_337D0
+		Bsr		PRINTINGNEWFUNC_337D0
+		Addq	#8,sp
 		Moveq	#0,d1
 		Move.b	ParmByt(a6),d1			; Get from the table, source of all knowledge...
 ; Copy the function value, if any, back up to the caller's stack frame
@@ -670,7 +683,7 @@ kAliasID		EQU		-8192							; System Printer alias's resID
 				MOVE.B	(A0), D0			; which is this long
 				ADDQ.B	#1, D0				; plus that length byte!
 				LEA		sysFileSpec + FSSpec.name(A6), A1	; to the FSSpec
-				_BlockMove
+				_BlockMoveData
 				
 		; ResolveDriver: Resolve the alias using the system file's FSSpec.
 

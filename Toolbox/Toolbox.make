@@ -10,7 +10,7 @@ ToolboxObjs	= 						"{ObjDir}PackageMgr.a.o"						¶
 									"{ObjDir}GetMgr.a.o"							¶
 									"{ObjDir}TextEdit.lib"							¶
 									"{ObjDir}ScrapMgr.a.o"							¶
-									"{ObjDir}Printing.a.o"							¶
+									"{LibDir}Printing.lib"							¶
 									"{ObjDir}SexyDate.a.o"
 
 
@@ -44,6 +44,7 @@ ToolboxObjs	= 						"{ObjDir}PackageMgr.a.o"						¶
 
 # The following libs are *not* part of Toolbox.lib
 
+PrintingDir					= "{ToolBoxDir}Printing:"
 AliasMgrDir 				= "{ToolBoxDir}AliasMgr:"
 ComponentMgrDir 			= "{ToolBoxDir}ComponentMgr:"
 DataAccessDir 				= "{ToolBoxDir}DataAccessMgr:"
@@ -61,6 +62,7 @@ FontMgrDir 					= "{ToolBoxDir}FontMgr:"
 SANEDir 					= "{ToolBoxDir}SANE:"
 InSaneDir 					= "{ToolBoxDir}InSANE:"
 
+#include "{PrintingDir}Printing.make"
 #include "{AliasMgrDir}AliasMgr.make"
 #include "{ComponentMgrDir}ComponentMgr.make"
 #include "{DataAccessDir}DataAccessMgr.make"
