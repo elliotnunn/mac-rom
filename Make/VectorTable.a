@@ -3099,58 +3099,58 @@ WINDOWMGR_VEC01D4				vIndirect	$2084,	$01d4,	A1
 
 ;============================== Expansion Bus Manager Vectors
 
-EXPANSIONBUSMGR_VEC0004			vIndirect	$208c,	$0004,	A7
-EXPANSIONBUSMGR_VEC0008			vIndirect	$208c,	$0008,	A7
-EXPANSIONBUSMGR_VEC000C			vIndirect	$208c,	$000c,	A7
-EXPANSIONBUSMGR_VEC0010			vIndirect	$208c,	$0010,	A7
-EXPANSIONBUSMGR_VEC0014			vIndirect	$208c,	$0014,	A7
-EXPANSIONBUSMGR_VEC0018			vIndirect	$208c,	$0018,	A7
-EXPANSIONBUSMGR_VEC001C			vIndirect	$208c,	$001c,	A7
-EXPANSIONBUSMGR_VEC0020			vIndirect	$208c,	$0020,	A7
-EXPANSIONBUSMGR_VEC0024			vIndirect	$208c,	$0024,	A7
-EXPANSIONBUSMGR_VEC0028			vIndirect	$208c,	$0028,	A7
-EXPANSIONBUSMGR_VEC002C			vIndirect	$208c,	$002c,	A7
-EXPANSIONBUSMGR_VEC0030			vIndirect	$208c,	$0030,	A7
-EXPANSIONBUSMGR_VEC0034			vIndirect	$208c,	$0034,	A7
-EXPANSIONBUSMGR_VEC0038			vIndirect	$208c,	$0038,	A7
-EXPANSIONBUSMGR_VEC003C			vIndirect	$208c,	$003c,	A7
-EXPANSIONBUSMGR_VEC0040			vIndirect	$208c,	$0040,	A7
-EXPANSIONBUSMGR_VEC0044			vIndirect	$208c,	$0044,	A7
-EXPANSIONBUSMGR_VEC0048			vIndirect	$208c,	$0048,	A7
-EXPANSIONBUSMGR_VEC004C			vIndirect	$208c,	$004c,	A7
-EXPANSIONBUSMGR_VEC0050			vIndirect	$208c,	$0050,	A7
-EXPANSIONBUSMGR_VEC0054			vIndirect	$208c,	$0054,	A7
-EXPANSIONBUSMGR_VEC0058			vIndirect	$208c,	$0058,	A7
-EXPANSIONBUSMGR_VEC005C			vIndirect	$208c,	$005c,	A7
-EXPANSIONBUSMGR_VEC0060			vIndirect	$208c,	$0060,	A7
-EXPANSIONBUSMGR_VEC0064			vIndirect	$208c,	$0064,	A7
-EXPANSIONBUSMGR_VEC0068			vIndirect	$208c,	$0068,	A7
-EXPANSIONBUSMGR_VEC006C			vIndirect	$208c,	$006c,	A7
-EXPANSIONBUSMGR_VEC0070			vIndirect	$208c,	$0070,	A7
-EXPANSIONBUSMGR_VEC0074			vIndirect	$208c,	$0074,	A7
-EXPANSIONBUSMGR_VEC0078			vIndirect	$208c,	$0078,	A7
-EXPANSIONBUSMGR_VEC007C			vIndirect	$208c,	$007c,	A7
-EXPANSIONBUSMGR_VEC0080			vIndirect	$208c,	$0080,	A7
-EXPANSIONBUSMGR_VEC0084			vIndirect	$208c,	$0084,	A7
-EXPANSIONBUSMGR_VEC0088			vIndirect	$208c,	$0088,	A7
-EXPANSIONBUSMGR_VEC008C			vIndirect	$208c,	$008c,	A7
-EXPANSIONBUSMGR_VEC0090			vIndirect	$208c,	$0090,	A7
-EXPANSIONBUSMGR_VEC0094			vIndirect	$208c,	$0094,	A7
-EXPANSIONBUSMGR_VEC0098			vIndirect	$208c,	$0098,	A7
-EXPANSIONBUSMGR_VEC0100			vIndirect	$208c,	$0100,	A7
+DevTreeRoot						vIndirect	$208c,	$0004,	A7		; _ExpansionBusDispatch selector  4
+EXPANSIONBUSMGR_VEC0008			vIndirect	$208c,	$0008,	A7		; _ExpansionBusDispatch selector 21
+EXPANSIONBUSMGR_VEC000C			vIndirect	$208c,	$000c,	A7		; _ExpansionBusDispatch selector 22
+EXPANSIONBUSMGR_VEC0010			vIndirect	$208c,	$0010,	A7		; _ExpansionBusDispatch selector 23
+EXPANSIONBUSMGR_VEC0014			vIndirect	$208c,	$0014,	A7		; _ExpansionBusDispatch selector 24
+EXPANSIONBUSMGR_VEC0018			vIndirect	$208c,	$0018,	A7		; _ExpansionBusDispatch selector 30
+EXPANSIONBUSMGR_VEC001C			vIndirect	$208c,	$001c,	A7		; _ExpansionBusDispatch selector 31
+ExpVRemove						vIndirect	$208c,	$0020,	A7		; _ExpansionBusDispatch selector  3
+DevTreeDelNode					vIndirect	$208c,	$0024,	A7		; _ExpansionBusDispatch selector  7
+DevTreeSetProperty				vIndirect	$208c,	$0028,	A7		; _ExpansionBusDispatch selector  8
+EXPANSIONBUSMGR_VEC002C			vIndirect	$208c,	$002c,	A7		; _ExpansionBusDispatch selector 15
+EXPANSIONBUSMGR_VEC0030			vIndirect	$208c,	$0030,	A7		; _ExpansionBusDispatch selector 16
+DevTreeGetProperty				vIndirect	$208c,	$0034,	A7		; _ExpansionBusDispatch selector  9
+EXPANSIONBUSMGR_VEC0038			vIndirect	$208c,	$0038,	A7		; _ExpansionBusDispatch selector 11
+EXPANSIONBUSMGR_VEC003C			vIndirect	$208c,	$003c,	A7		; _ExpansionBusDispatch selector 10
+EXPANSIONBUSMGR_VEC0040			vIndirect	$208c,	$0040,	A7		; _ExpansionBusDispatch selector 12
+DevTreeAddNode					vIndirect	$208c,	$0044,	A7		; _ExpansionBusDispatch selector  6
+DevTreeNodeInfo					vIndirect	$208c,	$0048,	A7		; _ExpansionBusDispatch selector  5
+EXPANSIONBUSMGR_VEC004C			vIndirect	$208c,	$004c,	A7		; _ExpansionBusDispatch selector 13
+EXPANSIONBUSMGR_VEC0050			vIndirect	$208c,	$0050,	A7		; _ExpansionBusDispatch selector 14
+ExpMgrConfigReadByte			vIndirect	$208c,	$0054,	A7		; _ExpansionBusDispatch selector 32
+ExpMgrConfigReadWord			vIndirect	$208c,	$0058,	A7		; _ExpansionBusDispatch selector 33
+ExpMgrConfigReadLong			vIndirect	$208c,	$005c,	A7		; _ExpansionBusDispatch selector 34
+ExpMgrConfigWriteByte			vIndirect	$208c,	$0060,	A7		; _ExpansionBusDispatch selector 35
+ExpMgrConfigWriteWord			vIndirect	$208c,	$0064,	A7		; _ExpansionBusDispatch selector 36
+ExpMgrConfigWriteLong			vIndirect	$208c,	$0068,	A7		; _ExpansionBusDispatch selector 37
+ExpMgrIOReadByte				vIndirect	$208c,	$006c,	A7		; _ExpansionBusDispatch selector 38
+ExpMgrIOReadWord				vIndirect	$208c,	$0070,	A7		; _ExpansionBusDispatch selector 39
+ExpMgrIOReadLong				vIndirect	$208c,	$0074,	A7		; _ExpansionBusDispatch selector 40
+ExpMgrIOWriteByte				vIndirect	$208c,	$0078,	A7		; _ExpansionBusDispatch selector 41
+ExpMgrIOWriteWord				vIndirect	$208c,	$007c,	A7		; _ExpansionBusDispatch selector 42
+ExpMgrIOWriteLong				vIndirect	$208c,	$0080,	A7		; _ExpansionBusDispatch selector 43
+ExpMgrInterruptAcknowledgeReadByte	vIndirect	$208c,	$0084,	A7	; _ExpansionBusDispatch selector 17
+ExpMgrInterruptAcknowledgeReadWord	vIndirect	$208c,	$0088,	A7	; _ExpansionBusDispatch selector 18
+ExpMgrInterruptAcknowledgeReadLong	vIndirect	$208c,	$008c,	A7	; _ExpansionBusDispatch selector 19
+ExpMgrSpecialCycleWriteLong		vIndirect	$208c,	$0090,	A7		; _ExpansionBusDispatch selector 25
+ExpMgrSpecialCycleBroadcastLong	vIndirect	$208c,	$0094,	A7		; _ExpansionBusDispatch selector 26
+EXPANSIONBUSMGR_VEC0098			vIndirect	$208c,	$0098,	A7		; _ExpansionBusDispatch selector 44
+EXPANSIONBUSMGR_VEC0100			vIndirect	$208c,	$0100,	A7		; _ExpansionBusDispatch selector 29
 EXPANSIONBUSMGR_VEC0104			vIndirect	$208c,	$0104,	A7
 EXPANSIONBUSMGR_VEC0108			vIndirect	$208c,	$0108,	A7
 EXPANSIONBUSMGR_VEC010C			vIndirect	$208c,	$010c,	A7
 EXPANSIONBUSMGR_VEC0110			vIndirect	$208c,	$0110,	A7
 EXPANSIONBUSMGR_VEC0114			vIndirect	$208c,	$0114,	A7
 EXPANSIONBUSMGR_VEC0118			vIndirect	$208c,	$0118,	A7
-EXPANSIONBUSMGR_VEC011C			vIndirect	$208c,	$011c,	A7
-EXPANSIONBUSMGR_VEC0120			vIndirect	$208c,	$0120,	A7
-EXPANSIONBUSMGR_VEC0124			vIndirect	$208c,	$0124,	A7
+EXPANSIONBUSMGR_VEC011C			vIndirect	$208c,	$011c,	A7		; _ExpansionBusDispatch selector 46
+EXPANSIONBUSMGR_VEC0120			vIndirect	$208c,	$0120,	A7		; _ExpansionBusDispatch selector 47
+EXPANSIONBUSMGR_VEC0124			vIndirect	$208c,	$0124,	A7		; _ExpansionBusDispatch selector 45
 EXPANSIONBUSMGR_VEC012C			vIndirect	$208c,	$012c,	A7
-EXPANSIONBUSMGR_VEC0130			vIndirect	$208c,	$0130,	A7
-EXPANSIONBUSMGR_VEC0134			vIndirect	$208c,	$0134,	A7
-EXPANSIONBUSMGR_VEC0138			vIndirect	$208c,	$0138,	A7
+EXPANSIONBUSMGR_VEC0130			vIndirect	$208c,	$0130,	A7		; _ExpansionBusDispatch selector 48
+EXPANSIONBUSMGR_VEC0134			vIndirect	$208c,	$0134,	A7		; _ExpansionBusDispatch selector 49
+EXPANSIONBUSMGR_VEC0138			vIndirect	$208c,	$0138,	A7		; _ExpansionBusDispatch selector 20
 EXPANSIONBUSMGR_VEC014C			vIndirect	$208c,	$014c,	A7
 EXPANSIONBUSMGR_VEC0150			vIndirect	$208c,	$0150,	A7
 EXPANSIONBUSMGR_VEC0154			vIndirect	$208c,	$0154,	A7
