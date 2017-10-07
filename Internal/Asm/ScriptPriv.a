@@ -802,9 +802,9 @@ smKeySynchKbdMenuState		EQU		-18			; synchronize kbd menu state to current proce
 
 ; private one byte SetScript/GetScript verbs - used by TextEdit in Cube-E					<59>
 
-smScriptSysBase		EQU		-26					; Roman font to use with the system font
-smScriptAppBase		EQU		-28					; Roman font to use with the application font
-smScriptFntBase		EQU		-30					; Roman font to use with all other fonts
+smScriptSysBase		EQU		-281				; Roman font to use with the system font
+smScriptAppBase		EQU		-283				; Roman font to use with the application font
+smScriptFntBase		EQU		-285				; Roman font to use with all other fonts
 ; -----------------------------------------------------------------------------
 ; Script Manager Global record
 ; -----------------------------------------------------------------------------
