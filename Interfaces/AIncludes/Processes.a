@@ -202,7 +202,8 @@ processAppSpec			EQU			56
 
 	MACRO
 	_GetFrontProcess
-	PEA			$FFFFFFFF
+	MOVEQ.L		#$FFFFFFFF,D0
+	MOVE.L		D0,-(SP)
 	MOVE.W		#$39,-(SP)
 	_OSDispatch
 	ENDM

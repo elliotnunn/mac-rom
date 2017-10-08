@@ -127,7 +127,7 @@ multColor		EQU		RGNC-2				;byte, set if source contains nonblack/white colors
 ;
 		_StackAvail 						;GET STACK AVAIL IN D0.L
 		LSR.L	#2,D0						;CONVERT BYTES TO LONGS
-		SUB.L	#qdStackXtra,D0				;SUBTRACT SLOP FACTOR		<1.2> BAL
+		SUB.L	#$200,D0					;SUBTRACT SLOP FACTOR		<1.2> BAL
 		MOVE.L	D0,STACKFREE(A6)			;AND SAVE FREE LONGS ON STACK
 		bpl.s	@stkOK
 		_stNoStack							;=>NOT ENOUGH STACK, QUIT

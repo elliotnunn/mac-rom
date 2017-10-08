@@ -687,6 +687,7 @@ int main(int argc, char **argv)
 					my_name = patchstack[pi]->name;
 
 					original_size = longfrom(mod_sizeobj + 2);
+					if(original_size & 1) original_size ++;		/* even-align the patches -- found this bug while reversing QuickDraw */
 
 					if(l) fprintf(l, "    File \"{RomDump}\"; Line 0; File \"{RomDump}\"; Find /Entry=¶\"%.*s¶\"/ # patch ID %d, ", *my_name, my_name+1, patchstack[pi]->clean_id);
 					if(l) debug_print_about_patch(l, patchstack[pi]->data, patchstack[pi]->len);

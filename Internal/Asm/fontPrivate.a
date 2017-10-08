@@ -265,70 +265,110 @@ selectInitializediskCache		equ		$0010									; <24>
 		MACRO		
 		_sbIsOutline
 		IMPORT		SplineMgr
-		MOVEQ		#sbIsOutline,D0
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#sbIsOutline,D0
+		OPT	&OLDOPT
 		_SplineMgr
 		ENDM
 		
 		MACRO		
 		_sbRetrieveGlyph
 		IMPORT		SplineMgr
-		MOVEQ		#sbRetrieveGlyph,D0
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#sbRetrieveGlyph,D0
+		OPT	&OLDOPT
 		_SplineMgr
 		ENDM
 		
 		MACRO
 		_sbKillSomeCaches
 		IMPORT		SplineMgr
-		MOVEQ		#sbKillSomeCaches,D0
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#sbKillSomeCaches,D0
+		OPT	&OLDOPT
 		_SplineMgr
 		ENDM				
 
 		MACRO
 		_sbFillWidthTab
 		IMPORT		SplineMgr
-		MOVEQ		#sbFillWidthTab,D0
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#sbFillWidthTab,D0
+		OPT	&OLDOPT
 		_SplineMgr
 		ENDM				
 
 		MACRO
 		_sbResetWorkSpace
 		IMPORT		SplineMgr
-		MOVEQ		#sbResetWorkSpace,D0
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#sbResetWorkSpace,D0
+		OPT	&OLDOPT
 		_SplineMgr
 		ENDM				
 
 		MACRO
 		_sbInitMemory
 		IMPORT		SplineMgr
-		MOVEQ		#sbInitMemory,D0
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#sbInitMemory,D0
+		OPT	&OLDOPT
 		_SplineMgr
 		ENDM				
 
 		MACRO
 		_sbSetFontState
 		IMPORT		SplineMgr
-		MOVEQ		#sbSetFontState,D0
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#sbSetFontState,D0
+		OPT	&OLDOPT
 		_SplineMgr
 		ENDM				
 
 		MACRO
 		_sbSearchForCache
 		IMPORT		SplineMgr
-		MOVEQ		#sbSearchForCache,D0
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#sbSearchForCache,D0
+		OPT	&OLDOPT
 		_SplineMgr
 		ENDM				
 
 		MACRO
 		_sbPreFlightFontMem
 		IMPORT		SplineMgr
-		MOVEQ		#sbPreFlightFontMem,D0
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#sbPreFlightFontMem,D0
+		OPT	&OLDOPT
 		_SplineMgr
 		ENDM				
 
 		MACRO
 		_fsLowestPPEM
 		IMPORT		SplineMgr
-		MOVEQ		#fsLowestPPEM,D0
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#fsLowestPPEM,D0
+		OPT	&OLDOPT
 		_SplineMgr
 		ENDM				
 
@@ -341,19 +381,31 @@ selectInitializediskCache		equ		$0010									; <24>
 		MACRO		
 		_sbFlushFonts
 		IMPORT		SplineMgr
-		MOVEQ		#sbFlushFonts,D0
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#sbFlushFonts,D0
+		OPT	&OLDOPT
 		_SplineMgr
 		ENDM
 		
 		Macro																; <24>
 		_InitializePartialFonts												; <24>
-		moveq		#selectInitializePartialFonts,d0						; <24>
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#selectInitializePartialFonts,d0						; <24>
+		OPT	&OLDOPT
 		_SplineMgr															; <24>
 		EndM																; <24>
 		
 		Macro																; <24>
 		_InitializeDiskCache												; <24>
-		moveq		#selectInitializeDiskCache,d0							; <24>
+		LCLC		&OLDOPT
+&OLDOPT	SETC		&Setting('OPT')
+		OPT			NONE
+		MOVE		#selectInitializeDiskCache,d0							; <24>
+		OPT	&OLDOPT
 		_SplineMgr															; <24>
 		EndM																; <24>
 		

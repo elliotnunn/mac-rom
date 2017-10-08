@@ -266,7 +266,7 @@ PMFlag		EQU		$8000			; flag to say it's a new pixMap
 cPortFlag	EQU		$C000			; isPixMap+isCPort
 pixVersion	EQU		$0000			; isPixMap
 
-qdStackXtra	EQU		$0640			; stack space left for interrupts		<1.4> BAL
+qdStackXtra	EQU		$0800			; stack space left for interrupts		<1.4> BAL
 
 isPixMap	EQU		15				; for testing high bit of pRowbytes
 isCPort		EQU		14				; indicates that "bitmap" belongs to port
@@ -376,7 +376,7 @@ CCSTATEREGS     EQU     CCDEPTH+2       ;[16 BYTES] STATE INFO OF SAVED DATA
 CCBYTES			EQU		CCSTATEREGS+16	;[WORD] ROWBYTES OF EXPANDED DATA
 CCMAXDEPTH		EQU		CCBYTES+2		;[WORD] MAXIMUM SCREEN DEPTH
 
-CCSAVEREC		EQU		CCMAXDEPTH+2	;SIZE OF CURSOR SAVE AREA
+CCSAVEREC		EQU		CCMAXDEPTH+2+8	;SIZE OF CURSOR SAVE AREA
 
 ;	Font Manager low mem
 ;

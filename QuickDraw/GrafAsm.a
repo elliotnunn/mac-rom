@@ -72,7 +72,7 @@ SIZEOK		_NewHandle ,CLEAR					; ask OS to do request
 ;  handle the memory full error by deep-shitting
 
 MemFull 	MOVEQ	#25,D0						;Deep Shit memory full error code
-			_SysError
+			DC.W	$A9C9						;_SysError
 JacksonPollock
 			DC.W	$A9FF						;invoke debugger just in case it comes back
 
@@ -315,7 +315,6 @@ CRSRLP		MOVE.L	(A0)+,(A4)+ 				;COPY A LONG INTO GLOBALS
 
 ; IF SCREENS NOT INITIALIZED FROM 'scrn' RESOURCE, INIT THEM
 
-			bsr.l	CheckDevices				; configure screens, if needed
 			MOVE.L	MainDevice,A0				; get main device
 			MOVE.L	A0,theGDevice				; set gDevice
 			MOVE.L	A0,srcDevice				; and srcDevice just in case

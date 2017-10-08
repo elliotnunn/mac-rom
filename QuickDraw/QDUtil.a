@@ -1389,7 +1389,7 @@ GETPIXEL
 		MOVEQ	#0,D2						;ROUTINE = GETPIXEL
 
 SHARE	LINK	A6,#VARSIZE					;ALLOCATE STACKFRAME
-		MOVEM.L	D4-D5/A2-A3,-(SP)			;SAVE WORK REGISTERS
+		MOVEM.L	D4-D6/A2-A3,-(SP)			;SAVE WORK REGISTERS
 		MOVE.L	THEGDEVICE,-(SP)			;SAVE CURRENT GRAFDEVICE
 		MOVE.L	GRAFGLOBALS(A5),A0			;POINT TO QUICKDRAW GLOBALS
 		MOVE.L	THEPORT(A0),A0				;GET THEPORT
@@ -1420,8 +1420,15 @@ OLDRB	MOVE	VLOC(A6),D4					;GET VERTICAL
 		MOVE	D4,-(SP)					;PUSH GLOBAL TOP
 		MOVE	D5,-(SP)					;PUSH GLOBAL RIGHT
 		MOVE	D4,-(SP)					;PUSH GLOBAL BOTTOM
-		MOVE.L	JShieldCursor,A1			;get lo mem vector
-		JSR 	(A1)						;and call it
+
+		MOVE.L	SP,A0
+		CLR.L	-(SP)
+		MOVE.L	A0,-(SP)
+		CLR.L	-(SP)
+		MOVE.L	#$80000,D0
+		DC.W	$ABE0						;_QDExtensions2
+		MOVE.L	(SP)+,D6
+		ADDQ	#8,SP
 
 		MOVE.L	DEVICELIST,A3				;GET FIRST IN DEVICE LIST
 
@@ -1518,9 +1525,11 @@ NOCOLOR	cmp.w	#16,pixelType(a3)			;direct device?
 
 DONE	tst.b	(sp)+						;pop and check crsrFlag
 		beq.s	@noShow						;need to show cursor?
-		_SHOWCURSOR							;show it
+		move.l	D6,-(SP)
+		move.l	#$40001,D0
+		dc.w	$ABE0						;_QDExtensions2
 @noShow	MOVE.L	(SP)+,THEGDEVICE			;RESTORE CURRENT GRAFDEVICE
-		MOVEM.L	(SP)+,D4-D5/A2-A3			;RESTORE WORK REGISTERS
+		MOVEM.L	(SP)+,D4-D6/A2-A3			;RESTORE WORK REGISTERS
 		UNLINK	PARAMSIZE,'GETCPIXEL'
 
 
@@ -4722,7 +4731,7 @@ DSTH		EQU		SRCH-4
 			MOVE.L	(A0),A0						; get SRC pointer
 			MOVE.L	(A1),A1						; get DST pointer
 			MOVE.L	D1,D0						; D0 = size
-			_BlockMove							; copy the data
+			_BlockMoveData						; copy the data
 
 DONE		MOVE.L	(SP)+,A0					; get return address
 			ADDQ	#8,SP						; strip parameters

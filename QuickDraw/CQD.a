@@ -50,6 +50,7 @@ PrNonPortable 	EQU 1
 WholeErrors 	EQU 1
 AddrModeFlag 	EQU 0
 Quicker 		EQU 1
+has32BitQD		EQU 1
 
 ROMPaletteMgr	EQU		1	;set to zero for System Disk, 1 for ROM build			<C864>
 
@@ -155,6 +156,7 @@ BlockHead	PROC		EXPORT
 		endif
 				INCLUDE	'BITBLT.a'
 				INCLUDE 'cCrsrCore.a'
+				INCLUDE	'QDExtensions2.a'
 				INCLUDE	'QDUtil.a'
 				INCLUDE	'Colorasm.a'
 				INCLUDE	'Patterns.a'

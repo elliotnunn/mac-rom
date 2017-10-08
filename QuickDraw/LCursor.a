@@ -40,11 +40,7 @@ AllocCursor PROC  	EXPORT
 ;  PROCEDURE AllocCursor;
 ;
 
-		LEA		AllocCrsr,A0				;get default cursor routine
-		MOVE.L	JAllocCrsr,D0				;has vector been initialized?
-		BEQ.S	@0							;=>no, use default routine
-		MOVE.L	D0,A0						;else use routine in vector
-@0		JMP		(A0)						;and call it
+		JMP		AllocCrsr
 
 
 InitCursor PROC  EXPORT 	
@@ -55,8 +51,8 @@ InitCursor PROC  EXPORT
 		MOVE.L	GRAFGLOBALS(A5),A0			;POINT TO QUICKDRAW GLOBALS
 		PEA 	ARROW(A0)					;PUSH ADDR OF ARROW
 		_SetCursor							;INSTALL ARROW CURSOR
-		MOVE.L	JInitCrsr,A0				;get lo mem pointer
-		JMP 	(A0)						;and call it
+		IMPORT	_InitCursor
+		JMP 	_InitCursor
 
 
 
@@ -70,8 +66,8 @@ SetCursor PROC	EXPORT
 		MOVE	#16,-(SP)					;HEIGHT:=16
 		PEA 	DATA(A0)					;PUSH ADDR OF DATA
 		PEA 	MASK(A0)					;PUSH ADDR OF MASK
-		MOVE.L	JSetCrsr,A0 				;get lo mem vector
-		JSR 	(A0)						;call vector
+		IMPORT 	_SetCursor
+		JSR 	_SetCursor
 		MOVE.L	(SP)+,(SP)					;strip param
 		RTS 								;and return
 		
@@ -92,8 +88,8 @@ SetCCursor PROC	EXPORT
 ;		_SetCursor							; and set it the old way
 
 		MOVE.L	4(SP),-(SP)					; Push handle to color cursor
-		MOVE.L	JSetCCrsr,A0 				; get lo mem vector
-		JSR 	(A0)						; call vector (but don't call him hector)
+		IMPORT	_SetCCursor
+		JSR 	_SetCCursor
 ;		_ShowCursor							; balance is a virtue
 		MOVE.L	(SP)+,(SP)					; strip param
 		RTS 								; and return
@@ -107,8 +103,8 @@ HideCursor PROC  EXPORT
 ;
 ;  ALL REGS PRESERVED.
 ;
-		MOVE.L	JHideCursor,-(SP)			;get lo mem vector
-		RTS 								;and call it
+		IMPORT	_HideCursor
+		JMP		_HideCursor
 
 
 
@@ -119,36 +115,8 @@ ShowCursor PROC  EXPORT
 ;
 ;  ALL REGS PRESERVED.
 ;
-		MOVE.L	JShowCursor,-(SP)			;get lo mem vector
-		RTS 								;and call it
-
-
-
-ShieldCursor PROC  EXPORT		
-;---------------------------------------------------------
-;
-;  PROCEDURE ShieldCursor(shieldRect: Rect; offset: Point);
-;
-;  ALL REGS PRESERVED.
-;
-		MOVEM.L D0-D3/A0-A1,-(SP)			;SAVE REGS
-		MOVE.L	32(SP),A0					;POINT TO SHIELDRECT
-		MOVEM.W (A0)+,D0/D1/D2/D3			;GET TOP ... RIGHT
-		LEA 	28(SP),A1
-		SUB 	(A1),D0 					;TOP - OFFSET.V
-		SUB 	(A1)+,D2					;BOTTOM - OFFSET.V
-		SUB 	(A1),D1 					;LEFT - OFFSET.H
-		SUB 	(A1),D3 					;RIGHT - OFFSET.H
-		MOVE	D1,-(SP)					;PUSH GLOBAL LEFT
-		MOVE	D0,-(SP)					;PUSH GLOBAL TOP
-		MOVE	D3,-(SP)					;PUSH GLOBAL RIGHT
-		MOVE	D2,-(SP)					;PUSH GLOBAL BOTTOM
-		MOVE.L	JShieldCursor,A0			;get lo mem vector
-		JSR 	(A0)						;and call it
-		MOVEM.L (SP)+,D0-D3/A0-A1			;RESTORE REGS
-		MOVE.L	(SP)+,(SP)
-		MOVE.L	(SP)+,(SP)					;STRIP 8 BYTES
-		RTS 								;AND RETURN
+		IMPORT	_ShowCursor
+		JMP		_ShowCursor
 
 
 
@@ -159,10 +127,8 @@ ObscureCursor PROC	EXPORT
 ;
 ;  Hide the cursor image until the next time the mouse moves.
 ;
-		MOVE.L	JCrsrObscure,A0 			;get lo mem vector
-		JMP 	(A0)						;and call it
-
-
+		IMPORT	_ObscureCursor
+		JMP		_ObscureCursor
 
 
 		ENDPROC 

@@ -695,6 +695,9 @@ varSize			equ		localRect			; size of local variables
 
 		move	#noErr,result(a6)			; flag a successful operation,
 
+		move.l	offscreenGWorld(a6),a0
+		clr.l	(a0)
+
 ;-------------------------------------------------------------------------
 ; Initialize all offscreen local variables to zero.
 ; If an error happens during this function, we deallocate the memory for
@@ -764,6 +767,14 @@ varSize			equ		localRect			; size of local variables
 		beq.s	findMaxDevice				; if depth = 0, find max resolution
 		cmp		#32,d7						; illegal if > 32
 		bhi		badPixelDepth				; exit with error
+
+;-------------------------------------------------------------------------
+; Treat 24-bit color as 32-bit.
+
+		cmp		#24,d7
+		bne.s	@dontSetTo32
+		moveq	#32,d7
+@dontSetTo32
 
 ;-------------------------------------------------------------------------
 ; If pixelDepth is not 0, don't try to align offscreen pixmap to screen
@@ -1003,6 +1014,17 @@ createPixMap
 		moveq	#5,d0						; no, cmpSize = 5
 @0		move	d0,pmCmpSize(a1)			; store cmpSize in pixmap
 
+		btst.l	#$1,d3
+		beq.s	@skipthisnonsense
+		move.l	([museDevice,a6]),a0
+		move.l	([gdPMap,a0]),a0
+		move.l	gdMode(a0),a0
+		move.l	a0,offscreenCTable(a6)
+		move.l	([offscreenPixMap,a6]),a1
+		move.l	a0,gdMode(a1)
+		bra		createDevice
+@skipthisnonsense
+
 ; Create an empty color table.
 
 		move	#ctRec,d0					; size of an empty color table
@@ -1025,7 +1047,7 @@ createPixMap
 
 ; Create a dummy inverse table (doesn't have to be a seed)
 
-		moveq	#2,d0						; small handle for dummy inverse table
+		moveq	#4,d0						; small handle for dummy inverse table
 		_NewHandle	,CLEAR					; allocate it
 		bne		reportError					; if Memory Manager error, report it and quit
 
@@ -1149,7 +1171,7 @@ dontCloneCTab
 
 ; Allocate inverse table to its initial size
 
-		moveq	#2,d0						; initial size is 2
+		moveq	#4,d0						; initial size is 2
 		_NewHandle	,CLEAR					; allocate it
 		bne		reportError					; if Memory Manager error, report it and quit
 
@@ -1393,9 +1415,9 @@ disposOffscreenHandles
 		move	portVersion(a0),d0			; get portVersion
 		and		#cPortFlag,d0				; check if cPortFlag set
 		cmp		#cPortFlag,d0				; is it set?
-		bne		@0							; if not set, don't close port
+		bne.s	@0							; if not set, don't close port
 		move.l	(a0),-(sp)					; push pointer to port
-		_ClosePort							; close it down
+		_CloseCPort							; close it down
 @0
 		move.l	d7,a0						; get handle to offscreen port
 		_DisposHandle						; dispose it
@@ -1732,7 +1754,7 @@ dontDisposeBaseAddr
 
 dontDisposeGDevice
 		move.l	offscreenGWorld(sp),-(sp)	; push pointer to offscreen port
-		_ClosePort							; get rid of all substructures
+		_CloseCPort							; get rid of all substructures
 
 		move.l	offscreenGWorld(sp),a0		; get pointer to grafport
 		_RecoverHandle						; find handle to grafport
