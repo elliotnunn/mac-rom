@@ -2308,12 +2308,12 @@ VARSIZE		EQU		DstRgnPtr
 			move.w	dstPix+pixelSize(A6),d0			; preload dst depth in case not screen
 			sub.l	a0,a0							; clear maskrgn in case not screen
 			move.w	d2,d3							; remember screen flag in d3
-			beq.s	NotScreen1
+			beq		NotScreen1
 
 			MOVE.L	DEVICELIST,A2					; GET FIRST ELEMENT IN DEVICE LIST
 			MOVE.L	(A2),A1							; POINT TO DEVICE
 			TST.L	GDNEXTGD(A1)					; CHECK NEXT DEVICE
-			beq.s	NotScreen1						; only 1 device so skip devloop
+			beq		NotScreen1						; only 1 device so skip devloop
 
 		; Copy dst rect and convert to global coordinates
 
@@ -2321,38 +2321,41 @@ VARSIZE		EQU		DstRgnPtr
 			lea		globalRect(a6),a1				; point at our copy
 			move.l	(a0)+,(a1)+						; copy topleft
 			move.l	(a0),(a1)+						; copy botRight
-			move.l	dstPix+bounds+top(a6),d0		; get topleft
-			move.w	d0,d1							; get left
-			swap 	d0								; get top
-			sub.w	d1,-(a1)						; convert right to global
-			sub.w	d0,-(a1)						; convert bottom to global
-			sub.w	d1,-(a1)						; convert left to global
-			sub.w	d0,-(a1)						; convert top to global
 
-			lea		DstRectRgn(a6),A0
-			move.l	a0,DstRgnPtr(a6)				; build master pointer
-			move.w	#10,(a0)						; set region size
+			lea		globalRect(a6),a1
+			move.l	a1,d0
+			move.l	a1,-(sp)
+			jsr		([$FC0])						; _LocalToGlobal?
 
-NEXTGD		MOVE.L	(A2),A0							; POINT TO DEVICE
-			TST		GDFLAGS(A0)						; IS IT ACTIVE?
-			BPL.S	SKIPGD							; =>NO, SKIP IT
+			add		#4,d0
+			move.l	d0,-(sp)
+			jsr		([$FC0])						; _LocalToGlobal?
+
+			lea.l	DstRectRgn(a6),a0
+			move.l	a0,DstRgnPtr(a6)
+			move	#10,(a0)
+
+NEXTGD		move.l	(a2),a0
+			tst		$14(a0)
+			bpl.s	SKIPGD
 
 			CLR.B	-(SP)							; MAKE ROOM FOR BOOLEAN RESULT
 			PEA		globalRect(A6)					; PUSH SPECIFIED RECTANGLE
 			PEA		gdRect(A0)						; PUSH DEVICE'S RECTANGLE
 			PEA		dstRectRgn+rgnBBox(A6)			; PUSH DESTINATION RECT
-			_SECTRECT								; IS THE RECT IN THE DEVICE
+			JSR		([$10A8])						; SECTRECT -- IS THE RECT IN THE DEVICE
 			TST.B	(SP)+							; TEST RESULT
 			BEQ.S	SKIPGD							; => NO INTERSECTION
 
-			move.l	dstPix+bounds+top(a6),d0		; get topleft
-			move.w	d0,d1							; get left
-			swap 	d0								; get top
-			lea		dstRectRgn+rgnBBox(a6),a0 		; point to rect
-			add.w	d0,(a0)+						; convert top to local coords
-			add.w	d1,(a0)+						; convert left to local coords
-			add.w	d0,(a0)+						; convert bottom to local coords
-			add.w	d1,(a0)							; convert right to local coords
+			lea		dstRectRgn+rgnBBox(A6),a0
+			move.l	a0,d0
+			move.l	a0,-(sp)
+			jsr		([$FC0])						; _GlobalToLocal?
+
+			add		#4,d0
+			move.l	d0,-(sp)
+			jsr		([$FC0])						; _GlobalToLocal?
+
 			MOVE.L	(A2),A0							; POINT TO DEVICE
 			MOVE.L	GDPMAP(A0),A0					; GET PIXMAP
 			MOVE.L	(A0),A0							; POINT TO PIXMAP

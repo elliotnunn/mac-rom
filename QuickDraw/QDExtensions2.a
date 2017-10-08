@@ -1,0 +1,44 @@
+QDEXTENSIONS2	PROC	EXPORT
+
+
+				cmp		#10,D0
+				bhi		@bad_selector
+				jmp		@jmptbl(D0.W * 4)
+
+
+@jmptbl
+				import	QDEXTENSIONS2_SELECTOR_0
+				jmp		QDEXTENSIONS2_SELECTOR_0
+				import	QDEXTENSIONS2_SELECTOR_1
+				jmp		QDEXTENSIONS2_SELECTOR_1
+				import	QDEXTENSIONS2_SELECTOR_2
+				jmp		QDEXTENSIONS2_SELECTOR_2
+				import	QDEXTENSIONS2_SELECTOR_3
+				jmp		QDEXTENSIONS2_SELECTOR_3
+				import	QDEXTENSIONS2_SELECTOR_4
+				jmp		QDEXTENSIONS2_SELECTOR_4
+				import	QDEXTENSIONS2_SELECTOR_5
+				jmp		QDEXTENSIONS2_SELECTOR_5
+				import	QDEXTENSIONS2_SELECTOR_6
+				jmp		QDEXTENSIONS2_SELECTOR_6
+				import	QDEXTENSIONS2_SELECTOR_7
+				jmp		QDEXTENSIONS2_SELECTOR_7
+				import	QDEXTENSIONS2_SELECTOR_8
+				jmp		QDEXTENSIONS2_SELECTOR_8
+				import	QDEXTENSIONS2_SELECTOR_9
+				jmp		QDEXTENSIONS2_SELECTOR_9
+				import	QDEXTENSIONS2_SELECTOR_10
+				jmp		QDEXTENSIONS2_SELECTOR_10
+
+
+@bad_selector
+				; The upper half of D0 contains the number of bytes of parameters
+				; on the stack
+
+				move.l	(SP)+,A0
+				swap	D0
+				ext.l	D0
+				add.l	D0,SP
+				move	#paramErr,D0
+				move	D0,QDErr
+				jmp		(A0)

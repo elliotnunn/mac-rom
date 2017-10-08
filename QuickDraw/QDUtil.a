@@ -1420,8 +1420,15 @@ OLDRB	MOVE	VLOC(A6),D4					;GET VERTICAL
 		MOVE	D4,-(SP)					;PUSH GLOBAL TOP
 		MOVE	D5,-(SP)					;PUSH GLOBAL RIGHT
 		MOVE	D4,-(SP)					;PUSH GLOBAL BOTTOM
-		MOVE.L	JShieldCursor,A1			;get lo mem vector
-		JSR 	(A1)						;and call it
+
+		MOVE.L	SP,A0
+		CLR.L	-(SP)
+		MOVE.L	A0,-(SP)
+		CLR.L	-(SP)
+		MOVE.L	#$80000,D0
+		DC.W	$ABE0						;_QDExtensions2
+		MOVE.L	(SP)+,D6
+		ADDQ	#8,SP
 
 		MOVE.L	DEVICELIST,A3				;GET FIRST IN DEVICE LIST
 
@@ -1518,9 +1525,11 @@ NOCOLOR	cmp.w	#16,pixelType(a3)			;direct device?
 
 DONE	tst.b	(sp)+						;pop and check crsrFlag
 		beq.s	@noShow						;need to show cursor?
-		_SHOWCURSOR							;show it
+		move.l	D6,-(SP)
+		move.l	#$40001,D0
+		dc.w	$ABE0						;_QDExtensions2
 @noShow	MOVE.L	(SP)+,THEGDEVICE			;RESTORE CURRENT GRAFDEVICE
-		MOVEM.L	(SP)+,D4-D5/A2-A3			;RESTORE WORK REGISTERS
+		MOVEM.L	(SP)+,D4-D6/A2-A3			;RESTORE WORK REGISTERS
 		UNLINK	PARAMSIZE,'GETCPIXEL'
 
 

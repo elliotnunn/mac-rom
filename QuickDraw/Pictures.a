@@ -860,77 +860,6 @@ KillPicture PROC  EXPORT
 		_DisposHandle							;discard it
 		JMP 	(A1)							;and return
 
-;-----------------------Calc GCD <KON 07JAN90>---------------------
-CalcGCD		PROC EXPORT
-; Routine returns GCD( d0, d1 ) using Euclidean method
-; On Entry: D0 and D1 contain word size values to reduce
-; On Exit: D0 and D1 both contain GCD
-;
-		cmp.l	d0,d1							;while d0 != d1 (unsigned word compare)
-		beq.s	@FoundGCD
-		bgt.s	@D1isBigger						;  if( d1 < d0 )
-		exg		d0,d1							;    swap( d1, d0 )
-@D1isBigger
-		sub		d0,d1							;  d1 = d1 - d0
-		bra.s	CalcGCD							;end while
-@FoundGCD
-		rts										;d0 and d1 contain GCD
-		ENDPROC
-
-ReduceD3D4		PROC EXPORT
-			IMPORT	CalcGCD
-; Routine returns ReduceD3D4( d3, d4 ) reduces d3.w and d4.w by GCD for
-;	both the low and high words
-;
-; On Entry: D3 and D4 contain two word size values to reduce
-; On Exit: 	D3 and D4 contain reduced values
-;
-;
-; Divide Numer and Denom for width and height by GCD to prevent overflow.  
-;
-		moveq	#0,d0							;make sure high word is zero for next 2 divides
-		move.l	d0,d1							;CalcGCD exchanges regs, so both need to be cleared
-		move.w	d3,d0							;D0 has denom.v, d1 has numer.v
-		beq.s	@Done							;abort if zero.
-		move.w	d4,d1							;D0 has denom.v, d1 has numer.v
-		beq.s	@Done							;abort if zero.
-		jsr		CalcGCD							;returns GCD in d0
-		move.w	d3,d1							;D0 has denom.v, d1 has numer.v
-		divu.w	d0,d1							;dividing by GCD should never leave remainder
-		move.w	d1,d3							;save reduced numer.v
-		move.w	d4,d1							;D0 has denom.v, d1 has numer.v
-		divu.w	d0,d1
-		move.w	d1,d4							;save reduced denom.v
-;
-; Now do width:  Could have different scale factor than height did
-;
-		swap	d3								;operate on high word
-		swap	d4
-		move.w	d3,d0							;D0 has denom.h, d1 has numer.h
-		beq.s	@DoneSwap						;abort if zero.
-		move.w	d4,d1							;D0 has denom.h, d1 has numer.h
-		beq.s	@DoneSwap						;abort if zero.
-		jsr		CalcGCD							;returns GCD in d0
-		move.w	d3,d1							;D0 has denom.h, d1 has numer.h
-		divu.w	d0,d1							;dividing by GCD should never leave remainder
-		move.w	d1,d3							;save reduced numer.h
-		move.w	d4,d1							;D0 has denom.h, d1 has numer.h
-		divu.w	d0,d1
-		move.w	d1,d4							;save reduced denom.h
-@DoneSwap
-		swap	d3								;put things back
-		swap	d4
-@Done
-		rts										;all done
-;
-; End <KON 7/1/91>
-;
-		ENDPROC
-
-;-----------------------END GCD <KON 07JAN90>---------------------
-
-; as seen in QDciPatchROM.a													<sm 6/9/92>stb
-
 DrawPicture PROC  EXPORT
 		IMPORT PicItem1,NewRgn,InitColorStuff,ReduceD3D4
 ;------------------------------------------------------------------
@@ -4339,47 +4268,6 @@ DONE	MOVE.L	SAVEDSP(A6),SP				;RESTORE STACK POINTER
 ;
 
 
-PutBigPicData PROC  EXPORT						;17Jun88 BAL
-;------------------------------------------------------
-;
-;  PROCEDURE PutBigPicData(dataPtr: QDPtr; byteCount:LONG);
-;  ADD many BYTES TO THEPIC.
-;
-;	This is the same as PutPicData except the byteCount is a long
-;
-partSize	EQU		$4000
-partShift	EQU		$E
-
-		MOVEM.L	D7/A3-A4,-(SP)					;save a couple of registers
-
-		MOVE.L	20(SP),A3						;get the pointer to data
-		MOVE.L	16(SP),A4						;get data length
-		MOVE.L	A4,D7							;copy pointer
-		MOVEQ	#partShift,D0					;get a constant for the upcoming shift
-		LSR.L	D0,D7							;find the number of 16K "pages"
-		BEQ.S	LeftOvers						;no, so do the remaining part of the picture
-
-@1
-		MOVE.L	A3,-(SP)						;PUSH DATA POINTER
-		MOVE	#partSize,-(SP)					;move 16K of data
-		JSR 	PutPicData						;AND CALL GET PROC
-		ADD.W	#partSize,A3					;move data start pointer up
-		SUB.W	#partSize,A4					;subtract for remainder later
-		SUBQ.L	#1,D7							;decrease the number of pages
-		BNE.S	@1								;loop for each page
-
-LeftOvers
-		MOVE.L	A3,-(SP)						;PUSH DATA POINTER
-		MOVE.W	A4,-(SP)						;move remainder
-		JSR 	PutPicData						;AND CALL GET PROC
-
-		MOVEM.L	(SP)+,D7/A2-A4					;restore registers
-		RTD		#8								;and return
-
-;
-;GetPMData now included in GetPMData.a
-;
-
 PutPMData 	PROC	EXPORT
 			IMPORT 	PutPicByte,PutPicWord,PutPicData
 ;------------------------------------------------------
@@ -4954,53 +4842,6 @@ MapRect PROC  EXPORT
 		BSR 	MAPPT							;MAP TOPLEFT POINT
 		ADD.L	#4,12(SP)						;OFFSET RECT TO BOTRIGHT
 		BRA 	MAPPT							;MAP BOTRIGHT AND RETURN
-
-
-MapRatio PROC  EXPORT
-;-------------------------------------------------------------
-;
-;  PROCEDURE MapRatio(VAR numer, denom: Point;  fromRect: Rect);
-;
-;  Map ratio so that denom.h/.v = height/width of fromRect.
-;  This is so that later scaling of the numerator will have some
-;  range to work within.
-;
-;  NOTE:  Only necessary because fractional numer, denom not used
-;
-;  numer.h :=  numer.h * fromWidth / denom.h
-;  denom.h :=  fromWidth
-;  numer.v :=  numer.v * fromHeight / denom.v
-;  denom.v :=  fromHeight
-
-PARAMSIZE		EQU 	12						; TOTAL BYTES OF PARAMS
-NUMER			EQU 	PARAMSIZE+8-4			; LONG, ADDR OF POINT
-DENOM			EQU 	NUMER-4					; LONG, ADDR OF POINT
-FROMRECT		EQU 	DENOM-4					; LONG, ADDR OF RECT
-
-		LINK	A6,#0							; NO LOCALS
-		MOVEM.L D0-D1/A0-A2,-(SP)				; SAVE REGS
-		MOVE.L	NUMER(A6),A0					; point to numer
-		MOVE.L	DENOM(A6),A1 					; point to denom
-		MOVE.L	FROMRECT(A6),A2					; point to fromRect
-
-		MOVE.W	right(A2),D0					; get fromRect right
-		SUB.W	left(A2),D0						; get fromWidth
-		MOVE.W	h(A0),D1						; get numer.h
-		MULU	D0,D1							; multiply by fromWidth
-		DIVU	h(A1),D1						; divide by denom.h
-		MOVE.W	D1,h(A0)						; update numer.h
-		MOVE.W	D0,h(A1)						; update denom.h
-
-		MOVE.W	bottom(A2),D0					; get fromRect bottom
-		SUB.W	top(A2),D0						; get fromHeight
-		MOVE.W	v(A0),D1						; get numer.v
-		MULU	D0,D1							; multiply by fromHeight
-		DIVU	v(A1),D1						; divide by denom.v
-		MOVE.W	D1,v(A0)						; update numer.v
-		MOVE.W	D0,v(A1)						; update denom.v
-
-DONE	MOVEM.L (SP)+,D0-D1/A0-A2				; RESTORE REGS
-		UNLINK	PARAMSIZE,'MAPRATIO'
 
 
 		ENDPROC 

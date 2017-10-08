@@ -1071,12 +1071,42 @@ NXTDST	MOVE.L	(A4)+,D1					;GET NEXT DST DEVICE
 		MOVE.L	srcDevice,A1				;handle to source gDevice
 		move.l	(a1),a1						;pointer to source gDevice
 		move.l	gdRect(a1),d0				;get rect top.left
-		move.l	theGDevice,a1				;handle to destination gDevice
-		move.l	(a1),a1						;pointer to destination gDevice
-		cmp.l	gdRect(a1),d0				;dest and src gDevice have same top-left?
-		beq.s	nxtdst						;devices overlap, skip drawing
-		
-		
+		move.l	theGDevice,a0				;handle to destination gDevice
+		move.l	(a0),a0						;pointer to destination gDevice
+
+		CMP		$24(A0), D0
+		BGT.S	@L5
+		BLT.S	@L2
+		SWAP	D0
+		CMP		gdRect+0(A0), D0
+		BGT.S	@L6
+		BLT.S	@L3
+		MOVE.L	gdRect+4(A1), D0
+		CMP		gdRect+6(A0), D0
+		BLT.S	@L7
+		BGT.S	@L4
+		BRA.S	nxtdst
+@L2		SWAP	D0
+		CMP		gdRect+0(A0), D0
+		BGT.S	@cont
+@L3		MOVE.L	gdRect+4(A1), D0
+		CMP		gdRect+6(A0), D0
+		BLT.S	@cont
+@L4		SWAP	D0
+		CMP		gdRect+4(A0), D0
+		BLT.S	@cont
+		BRA.S	nxtdst
+@L5		SWAP	D0
+		CMP		gdRect+0(A0), D0
+		BLT.S	@cont
+@L6		MOVE.L	gdRect+4(A1), D0
+		CMP		gdRect+6(A0), D0
+		BGT.S	@cont
+@L7		SWAP	D0
+		CMP		gdRect+4(A0), D0
+		BGT.S	@cont
+		BRA.S	nxtdst
+
 @cont
 ;
 ; End of <KON 2/19/90>
@@ -1715,7 +1745,29 @@ VARSIZE		EQU		0
 
 share	LINK	A6,#VARSIZE					;ALLOCATE STACK FRAME
 		MOVEM.L	D3-D7/A2-A4,-(SP)			;SAVE WORK REGISTERS FOR DEVLOOP
-		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ; SET UP REGISTERS FOR CALLING CMDEVLOOP
 		
 		MOVE.L	DSTBITS(A6),A1				;GET DST BIT/PIXMAP

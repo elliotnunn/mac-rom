@@ -163,6 +163,9 @@ ObscureCursor PROC	EXPORT
 		JMP 	(A0)						;and call it
 
 
+		ds.b	32
+
+
 
 
 		ENDPROC 

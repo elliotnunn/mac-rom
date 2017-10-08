@@ -2861,6 +2861,7 @@ renderIt
 @singleByteFont
 	endif
 
+		; 72624
 		MOVE.L	WidthTabHandle, -(SP)		;2) Push the Width Table Handle onto the stack
 		PEA		fontID(A6)					;1) Push the Glyph Rec Ptr
 		TST.B	FASTFLAG(A6)				;if slow no need for 32-bit stuff
@@ -2868,7 +2869,6 @@ renderIt
 		TST.B	needs32bit(A6)				;running 32 bit clean
 		BEQ.S	@skip32						;NOPE, so skip it
 		move.b	MMUsave(a6),d0				;get previous MMU state in d0
-		_rSwapMMUMode						;get previous mode in d0.b (can trash a0/a1/a2, d0/d1/d2)
 		_sbRetrieveGlyph					;Call the routine via SplineDispatch
 		moveq	#true32b,d0					;switch to 32 bit addressing
 		_rSwapMMUMode						;get previous mode in d0.b (can trash a0/a1/a2, d0/d1/d2)
