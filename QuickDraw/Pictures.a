@@ -4245,7 +4245,7 @@ MORE1
 		MOVE.L	A3,A0						;PTR TO FIRST byte of src
 		move.l	d5,d0						;get rowbytes in d0
 
-		_BlockMove							;copy from there to here
+		_BlockMoveData						;copy from there to here
 											;assumes here is a 24 bit address
 
 		moveq	#false32b,d0	;switch back before calling PutPicProc	<BAL 02Feb90>

@@ -1389,7 +1389,7 @@ GETPIXEL
 		MOVEQ	#0,D2						;ROUTINE = GETPIXEL
 
 SHARE	LINK	A6,#VARSIZE					;ALLOCATE STACKFRAME
-		MOVEM.L	D4-D5/A2-A3,-(SP)			;SAVE WORK REGISTERS
+		MOVEM.L	D4-D6/A2-A3,-(SP)			;SAVE WORK REGISTERS
 		MOVE.L	THEGDEVICE,-(SP)			;SAVE CURRENT GRAFDEVICE
 		MOVE.L	GRAFGLOBALS(A5),A0			;POINT TO QUICKDRAW GLOBALS
 		MOVE.L	THEPORT(A0),A0				;GET THEPORT
@@ -4731,7 +4731,7 @@ DSTH		EQU		SRCH-4
 			MOVE.L	(A0),A0						; get SRC pointer
 			MOVE.L	(A1),A1						; get DST pointer
 			MOVE.L	D1,D0						; D0 = size
-			_BlockMove							; copy the data
+			_BlockMoveData						; copy the data
 
 DONE		MOVE.L	(SP)+,A0					; get return address
 			ADDQ	#8,SP						; strip parameters

@@ -2350,11 +2350,11 @@ NEXTGD		move.l	(a2),a0
 			lea		dstRectRgn+rgnBBox(A6),a0
 			move.l	a0,d0
 			move.l	a0,-(sp)
-			jsr		([$FC0])						; _GlobalToLocal?
+			jsr		([$FC4])						; _GlobalToLocal?
 
 			add		#4,d0
 			move.l	d0,-(sp)
-			jsr		([$FC0])						; _GlobalToLocal?
+			jsr		([$FC4])						; _GlobalToLocal?
 
 			MOVE.L	(A2),A0							; POINT TO DEVICE
 			MOVE.L	GDPMAP(A0),A0					; GET PIXMAP

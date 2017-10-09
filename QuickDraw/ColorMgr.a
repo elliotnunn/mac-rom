@@ -637,7 +637,7 @@ Seed
 
 		MOVE.L		D5,D4				; copy total # of color (and cleared hi word)
 		SUBQ		#2,D4				; this is the number of colors remaining
-		BLE.S		QVille				; if zero or negative, all done
+		BLT.S		QVille				; if zero or negative, all done
 		MOVEQ		#1,D5				; start at color #1 (zero based)
 @TheRestOfUs							; a temporary label for the rest of us
 		BSR.S		QUtil				; queue it

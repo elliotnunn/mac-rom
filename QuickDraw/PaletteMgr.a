@@ -694,7 +694,7 @@ linkSize	DS.B		0						; linky number
 			PEA		inFront(A6)
 			_SameProcess					; are we the front process?
 			ADDQ	#2,SP					; OSErr leaves inFront true from above
-			TST		inFront(A6)
+			TST.B	inFront(A6)
 			BEQ.S	@doNothing
 @front
 
@@ -1841,7 +1841,7 @@ linkSize	DS.B		0						;linky number
 			BNE.S	GoHome					; No=> go home w/false
 			MOVE	$14(A3),D0
 			AND		#$8010,D0
-			BPL.S	GoHome					; No=> ditto
+			BEQ.S	GoHome					; No=> ditto
 			SUBQ	#4,SP					; space for result							<dvb5>
 			MOVE.L	A2,-(SP)				; push gDevice handle						<dvb5>
 			JSR		GetClut					; get the appropriate default clut			<dvb5>
@@ -3188,9 +3188,9 @@ SetDev
 			Move.L	(A0),A0					; dereference it
 			TST		gdType(A0)				; is it CLUT type (zero)?				dvb1
 			BNE		GoHome					; No => do nothing
-			MOVE	$14(A3),D0
+			MOVE	$14(A0),D0
 			AND		#$8010,D0
-			BPL		GoHome					; No=>go home
+			BEQ		GoHome					; No=>go home
 			Move.L	gdPMap(A0),A0			; get handle to pixmap
 			Move.L	(A0),A0					; dereference pixmap
 			Move.L	pmTable(A0),A0			; get handle to CTab

@@ -362,6 +362,8 @@ oldBaseAddr	DS.B	4						; old base address, for later comparison
 oldPort		DS.B	4						; thePort, before we got here
 oldColor	DS.B	8						; a colorSpec used to reinstantiate fg/bk
 
+			DS.B	356
+
 VARSIZE		DS.B	0						; size of locals
 			ENDR
 

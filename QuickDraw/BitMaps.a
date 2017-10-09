@@ -1741,7 +1741,7 @@ DSTRECT		EQU		MASKRECT-4		 	;long, addr of Rect
 MODE		EQU 	DSTRECT-2			;WORD
 MASKRGN 	EQU 	MODE-4				;LONG, RGNHANDLE
 
-VARSIZE		EQU		0
+VARSIZE		EQU		-4
 
 share	LINK	A6,#VARSIZE					;ALLOCATE STACK FRAME
 		MOVEM.L	D3-D7/A2-A4,-(SP)			;SAVE WORK REGISTERS FOR DEVLOOP
@@ -1774,7 +1774,7 @@ share	LINK	A6,#VARSIZE					;ALLOCATE STACK FRAME
 		PEA.L	MASKRECT(A6)
 		MOVE.L	D3, -(SP)
 		CLR.L	-(SP)
-		MOVE	#4,-(SP)
+		PEA		4
 		MOVE.L	#$160000,D0					;_QDExtensions -> _NewGWorld
 		DC.W	$AB1D
 		MOVE	(SP)+, D4
@@ -1822,7 +1822,7 @@ share	LINK	A6,#VARSIZE					;ALLOCATE STACK FRAME
 		MOVEA.L	$2(A3), A0
 		_HLock
 		MOVE.L	(A0), MASKBITS(A6)
-		MOVE.L	#$160000,D0					;_QDExtensions -> _NewGWorld
+		MOVE.L	#$80005,D0					;_QDExtensions -> _GetGWorld
 		DC.W	$AB1D
 @skip
 
@@ -2416,7 +2416,7 @@ cutOutDevices
 		cmp.l	ctSeed(a0),d1				;do the color tables seeds match ?
 		beq		@next
 
-		movem.l	d1/a1,-(sp)					;save our scratch registers
+		movem.l	d1/a1-a3,-(sp)					;save our scratch registers
 
 		clr.b	-(sp)						;make space for boolean result
 		pea		tempRect1(a6)				;pointer to the SrcRect in global coordinates
@@ -2433,26 +2433,26 @@ cutOutDevices
 		move.l	pmTable(a0),a0
 		move.l	(a0),a0
 		move.l	(DeviceList),a2
-		move.l	(a2),a2
+@again	move.l	(a2),a2
 		move.l	GDPMap(a2),a3
 		move.l	(a3),a3
 		move.l	pmTable(a3),a3
 		move.l	(a3),a3
 		move.l	(a3),d0
-@again	Cmp.L	(a0),d0
+		cmp.l	(a0),d0
 		bne		@done
-		sub		#$8,sp
+		sub.l	#8,sp
 		clr.b	-(sp)
 		pea.l	tempRect1(a6)
 		pea.l	$22(a2)
 		pea.l	$a(sp)
 		_SectRect
 		tst.b	(sp)+
-		add		#8,sp
+		add.l	#8,sp
 		bne		@skip
-@done	Move.L	GDNextGD(a2),d0
+@done	move.l	GDNextGD(a2),d0
 		move.l	d0,a2
-		bne.b	@again
+		bne.s	@again
 
 		lea		tempRect2(a6),a0			;point to our temp rect
 		pea		topleft(a0)					;convert the temp rect back to local coordinates
@@ -2468,7 +2468,7 @@ cutOutDevices
 		move.l	d6,-(sp)
 		_DiffRgn
 
-@skip	movem.l	(sp)+,d1/a1					;restore our scratch registers
+@skip	movem.l	(sp)+,d1/a1-a3				;restore our scratch registers
 
 @next	move.l	(a1),a0						;deref the current device list handle
 		move.l	GDNextGD(a0),d0				;get the next device handle into D0

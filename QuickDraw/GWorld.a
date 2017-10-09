@@ -1047,7 +1047,7 @@ createPixMap
 
 ; Create a dummy inverse table (doesn't have to be a seed)
 
-		moveq	#2,d0						; small handle for dummy inverse table
+		moveq	#4,d0						; small handle for dummy inverse table
 		_NewHandle	,CLEAR					; allocate it
 		bne		reportError					; if Memory Manager error, report it and quit
 
@@ -1171,7 +1171,7 @@ dontCloneCTab
 
 ; Allocate inverse table to its initial size
 
-		moveq	#2,d0						; initial size is 2
+		moveq	#4,d0						; initial size is 2
 		_NewHandle	,CLEAR					; allocate it
 		bne		reportError					; if Memory Manager error, report it and quit
 
@@ -1417,7 +1417,7 @@ disposOffscreenHandles
 		cmp		#cPortFlag,d0				; is it set?
 		bne.s	@0							; if not set, don't close port
 		move.l	(a0),-(sp)					; push pointer to port
-		_ClosePort							; close it down
+		_CloseCPort							; close it down
 @0
 		move.l	d7,a0						; get handle to offscreen port
 		_DisposHandle						; dispose it
@@ -1754,7 +1754,7 @@ dontDisposeBaseAddr
 
 dontDisposeGDevice
 		move.l	offscreenGWorld(sp),-(sp)	; push pointer to offscreen port
-		_ClosePort							; get rid of all substructures
+		_CloseCPort							; get rid of all substructures
 
 		move.l	offscreenGWorld(sp),a0		; get pointer to grafport
 		_RecoverHandle						; find handle to grafport

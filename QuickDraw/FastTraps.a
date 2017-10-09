@@ -2921,6 +2921,7 @@ _EmptyHandle	OPWORD	$A000+43
 _InitApplZone	OPWORD	$A000+44
 _SetApplLimit	OPWORD	$A000+45
 _BlockMove		OPWORD	$A000+46
+_BlockMoveData	OPWORD	$A000+46+$200
 
 ; Here are the event manager routines
 
