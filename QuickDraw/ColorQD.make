@@ -21,6 +21,7 @@ QDPatchesDir	=	{ColorQDDir}Patches:
 
 CQDObjs							=	"{ObjDir}CheckDevicesINIT.a.o"			¶
 									"{ObjDir}CQD.a.o"						¶
+									"{LibDir}MoreCQD.lib"					¶
 									"{ObjDir}DeviceLoop.a.o"
 
 

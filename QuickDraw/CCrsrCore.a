@@ -116,7 +116,7 @@ CRSRCORE	PROC	EXPORT
 			IMPORT	_InitCursor
 			IMPORT	_SetCursor
 			IMPORT	_ObscureCursor
-			IMPORT	_AllocCrsr
+			IMPORT	AllocCrsr
 			IMPORT	_SetCCursor
 
 ;
@@ -131,7 +131,7 @@ InitCrTable
 				DC.W	_InitCursor-InitCrTable
 				DC.W	_SetCursor-InitCrTable
 				DC.W	_ObscureCursor-InitCrTable
-				DC.W	_AllocCrsr-InitCrTable
+				DC.W	AllocCrsr-InitCrTable
 				DC.W	_SetCCursor-InitCrTable
 
 
@@ -275,7 +275,7 @@ _ObscureCursor	PROC	EXPORT
 ;  Allocates all global cursor data structures.  A maximum depth of 8 is assumed.
 ;
 
-_AllocCrsr	PROC	EXPORT
+AllocCrsr	PROC	EXPORT
 		IMPORT	QDNEW_ALLOCCRSR
 		JMP		QDNEW_ALLOCCRSR
 

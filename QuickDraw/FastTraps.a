@@ -1005,7 +1005,7 @@ selectGetGray			equ		25
 
 				MACRO
 				_ZapLinks
-				DoPaletteDispatch selectZapLinks,0
+				DoPaletteDispatch selectZapLinks,4
 				ENDM
 
 				MACRO

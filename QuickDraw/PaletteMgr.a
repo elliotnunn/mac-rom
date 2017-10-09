@@ -172,7 +172,7 @@ plttUpdates	Equ		$0002			; value passed to SetPalette [short]			AWC.PB457
 ;ctReserveBit	EQU	6
 ;ctReserveVal	EQU	$4000
 
-PMgrVersNum		EQU	$0202			; Version number (VVss: version subversion)				
+PMgrVersNum		EQU	$0203			; Version number (VVss: version subversion)				
 ;-----------------------------------------------------------
 ; Let's talk about PMgrVersNum --
 ;
@@ -227,6 +227,46 @@ PMgrVersNum		EQU	$0202			; Version number (VVss: version subversion)
 ;	Another routine which must be included for proper Palette Manager operation is
 ;	GetNewCWindow which is patched in PatchIIROM.a
 
+
+FlushPalettes	PROC	EXPORT				; THIEVED FROM THE MEMORY MGR
+;-----------------------------------------------------------------------
+; Call DisposePalette for all palettes in the app heap.
+;
+; Registers: D0-D2/A0-A1
+; Called by vIAZInit.
+;----------------------------------------------------------------------
+			IMPORT	AppZoneAddr
+
+			MOVEM.L	A2-A3/D3,-(SP)			; save work registers
+			MOVE.L	PMgrHandle,A2			; get paletteMgr handle
+			CMP.L	MinusOne,A2				; is it there?
+			BEQ.S	@DONE					; => no, just return
+			MOVE.L	(A2),A1					; point to data structure
+			MOVE.L	PListHandle(A1),A0		; get handle to palette list
+			_HLock							; and lock it down
+			MOVE.L	(A0),A3					; point to palette list
+
+			Move	APalettes(A1),D3		; get number of active handles
+			Beq.s	@NoPals					; no friends => go home
+			Add		FreeSpaces(A1),D3		; calculate total number of entries
+			BRA.S	@FindEnd				; => check for no entries
+
+@FindLoop	Move.L	PaletteRef(A3),D1		; get first entry
+			BEQ.S	@FindNext				; => no palette in entry
+			MOVE.L	D1,D0					; and get for routine
+			JSR		AppZoneAddr				; in application area (or zero)?	<SM30 BT>
+			BNE.S	@FindNext				; => not in app heap
+			MOVE.L	D1,-(SP)				; push palette handle
+			DC.W	$AA93					; _DisposePalette ; and dispose it in place
+@FindNext	AddQ	#PLstEntrySz,A3			; bump to the next entry
+@FindEnd	DBra	D3,@FindLoop			; repeat for all spaces
+
+@NoPals		MOVE.L	(A2),A1					; point to palette stuff
+			MOVE.L	PListHandle(A1),A0		; get handle to palette list
+			_HUnlock						; and unlock it
+
+@DONE		MOVEM.L	(SP)+,A2-A3/D3			; restore work registers
+			RTS
 
 ;---------------------------------------------------
 ;
@@ -584,14 +624,8 @@ gLoopEnd	DBRA	D3,gLoop				; loop for all devices						<dvb5>
 ; return Z-flag Clear if the process mgr is here (BNE ProcMgrTrue)
 
 CheckForProcessMgr	PROC EXPORT
-			MOVE.L	#'os  ',D0				; type of question
-			_Gestalt
-			TST		D0						; OSErr from Gestalt?
-			BEQ.S	@a						; No=>test result
-			SUBA	A0,A0					; Yes=>assume there's no procMgr
-@a
-			MOVE.L	A0,D0
-			BTST	#gestaltLaunchControl,D0	; clear the Z-flag if procmgr here
+			MOVE.L	ExpandMem,A0
+			TST		$128(A0)
 			RTS
 
 ;---------------------------------------------------
@@ -624,7 +658,7 @@ linkSize	DS.B		0						; linky number
 
 			movem.l	a0-a2/d0-d2,-(sp)		; Those pesky c routines					<mc8>
 			sub.l	a0,a0					; Pass the current process (0)
-			move.w	#12,d0					; _TrashProcess
+			moveq	#12,d0					; _TrashProcess
 			;_FigmentDispatch				; let everyone know this stuff is gone
 			dc.w	$A0A4
 			movem.l	(sp)+,a0-a2/d0-d2		; Restore em
@@ -1805,7 +1839,8 @@ linkSize	DS.B		0						;linky number
 			MOVE.L	(A2),A3					; A3->gDevice
 			TST		gdType(A3)				; a clut device?							<dvb5>
 			BNE.S	GoHome					; No=> go home w/false
-			TST		gdFlags(A3)				; Device active?
+			MOVE	$14(A3),D0
+			AND		#$8010,D0
 			BPL.S	GoHome					; No=> ditto
 			SUBQ	#4,SP					; space for result							<dvb5>
 			MOVE.L	A2,-(SP)				; push gDevice handle						<dvb5>
@@ -2505,8 +2540,9 @@ FoundAPltt	Move.L	A2,srcPalette(A6)		; save it so we can unlock it				AWC.PB520
 			BEQ.s	@a						; is it a clut device?						<dvb12>
 			SUBQ	#1,D1					; fixed type?								<dvb12>
 			BNE.S	UnlockPltt				; no => we're almost done					<dvb3>
-@a			TST		gdFlags(A0)				; is it active?
-			BPL.S	UnlockPltt				; no => ditto
+@a			MOVE	$14(A3),D0
+			AND		#$8010,D0
+			BEQ.S	UnlockPltt
 			Move	ciUsage(A3),D1			; get flags
 			MoveQ	#0,D0					; clear high word
 			Move	srcEntry(A6),D0			; set D0 in case it is an explicit index
@@ -3152,7 +3188,8 @@ SetDev
 			Move.L	(A0),A0					; dereference it
 			TST		gdType(A0)				; is it CLUT type (zero)?				dvb1
 			BNE		GoHome					; No => do nothing
-			TST		gdFlags(A0)				; is it active
+			MOVE	$14(A3),D0
+			AND		#$8010,D0
 			BPL		GoHome					; No=>go home
 			Move.L	gdPMap(A0),A0			; get handle to pixmap
 			Move.L	(A0),A0					; dereference pixmap
@@ -4542,66 +4579,7 @@ ReleaseList	PROC	EXPORT
 ;
 FindModeID	FUNC		Export
 
-			WITH		SpBlock,VPBlock
-
-FMVars		RECORD		{A6Link},Decrement
-result		DS.B		2					; integer result
-gd			DS.B		4					; input: GDevice
-depth		DS.B		2					; input: depth
-return		DS.B		4					; return address
-A6Link		DS.B		4					; link
-spBlk		DS.B		spBlockSize			; slot parameter block
-vpPtr		DS.B		4					; pointer to vidParams block
-linkSize	DS.B		0					; size of record
-			ENDR
-	
-			WITH		FMVars
-
-			LINK		A6,#linkSize
-			MOVEM.L		A2/D3,-(SP)				; save 'em
-
-			CLR			result(A6)				; default to failure!
-
-			MOVE.L		gd(A6),A0				; A0 = gDevice handle
-			MOVE.L		(A0),A1					; A1->gDevice
-
-			MOVE.L		UTableBase,A0			; A0->unit table
-			MOVE		gdRefNum(A1),D0			; D0 = refnum
-			NEG			D0
-			SUBQ		#1,D0
-			MOVE.L		(A0,D0.W*4),A1			; A1 = AuxDCEHandle for gDevice
-			MOVE.L		(A1),A1					; A1 = AuxDCEPtr for gDevice
-			LEA			spBlk(A6),A0			; A0 -> spBlock
-			MOVE.B		dCtlSlot(A1),spSlot(A0)		; stash gDevice slot
-			CLR.B		spID(A0)					; clear the ID
-			MOVE		#catDisplay,spCategory(A0)	; category: display
-			MOVE		#typVideo,spCType(A0)
-			MOVE		#drSwApple,spDrvrSW(A0)		; Apple™ style driver
-			MOVE.B		#1,spTBMask(A0)
-			_sNextTypeSRsrc
-			BNE.S		@goHome					; failure
-
-			MOVE.L		spsPointer(A0),A2		; keep saving it here
-			MOVE		#127,D3					; the 0th mode we'll look for
-
-@depthScan
-			ADDQ		#1,D3					; bump to next mode
-			MOVE.B		D3,spID(A0)				; look for the next mode
-			MOVE.L		A2,spsPointer(A0)		; sFindStruct wipes out each time
-			_sFindStruct						; look for it
-			BNE.S		@goHome					; failure
-			MOVE.B		#mVidParams,spID(A0)	; now we look for video params
-			_sGetBlock
-			BNE.S		@goHome					; failure
-			MOVE.L		spResult(A0),A1			; A1->vidParam block, finally
-			MOVE		vpPixelSize(A1),D0		; D0 = depth for this description
-			CMP			depth(A6),D0			; the one we want?
-			BNE.S		@depthScan				; scan 'til found, or slot error
-
-			MOVE		D3,result(A6)
-@goHome		MOVEM.L		(SP)+,A2/D3
-			UNLK		A6
-			RTD			#result-return-4
+			RTS
 
 
 
@@ -4625,6 +4603,7 @@ A6Link		DS.B		4							; link
 r			DS.B		4							; regionhandle
 oldPort		DS.B		4							; previous port
 myRect		DS.B		8							; rectangle for little black corners
+moreStuff	DS.B		10							; not sure what for?
 linkSize	DS.B		0							; size of record
 			ENDR
 
@@ -4634,10 +4613,31 @@ linkSize	DS.B		0							; size of record
 			MOVEM.L		A2-A3/D3-D5,-(SP)			;												<6>
 
 			MOVE		#paramErr,result(A6) ; default to failure!
+			MOVE.B		#1,myRect+6(A6)
+			MOVEQ		#0,D0
+			MOVE		depth(A6),D0
+			MOVE.L		D0,r(A6)
 
-			MOVE.L		gd(A6),A0					; A0 = gDevice handle
-			MOVE.L		(A0),A1						; A1->gDevice
+			CLR			-(SP)
+			MOVE.L		gd(A6),-(SP)
+			CLR.L		-(SP)
+			MOVE.L		r(A6),-(SP)
+			PEA			oldPort(A6)
+			CLR.L		-(SP)
+			PEA			myRect+7(A6)
 
+			MOVE		#$C12,D0					; _DMRemoveDisplay
+			DC.W		$ABEB
+
+			TST			(SP)+
+			BNE.S		@goHome
+
+			MOVE.L		oldPort(A6),D0
+			BTST.L		#1,D0
+			BNE.S		@goHome
+
+			MOVE.L		gd(A6),A1
+			MOVE.L		(A1),A1
 			MOVE		whichFlags(A6),D0			; D0 = mask of flags to change
 			ANDI		#whichMask,D0				; D0 = only the ones we let them change
 			MOVE		D0,D1						; D1 = mask of flags to change
@@ -4646,137 +4646,21 @@ linkSize	DS.B		0							; size of record
 			AND			gdFlags(A1),D0				; D0 = all the unchanged gdFlags
 			OR			D1,D0						; D0 = new gdFlags word
 			MOVE		D0,gdFlags(A1)				; Put back into gDevice
-			MOVE		gdRefNum(A1),D3				; D3 = refnum, for later use
-			
-			MOVE		depth(A6),D4				; get the depth or mode
-			TST.B		D4							; see which it is
-			BMI.S		@gotMode
 
-			SUBQ		#2,SP
+			CLR			-(SP)
 			MOVE.L		gd(A6),-(SP)
-			MOVE		D4,-(SP)
-			Import		FindModeID
-			BSR			FindModeID					; find the mode number, if it exists
-			MOVE		(SP)+,D4					; did we find one?
-			BEQ			@goHome
-
-@gotMode	Movea.l		gd(A6),A2					; Get GDHandle into A2.
-			Movea.l		(A2),A2						; Get a GDPtr into A2.
-			Btst		#mainScreen,gdFlags(A2)		; If we’re not on the menubar screen,
-			Beq.s		@NotMain1					;	then just keep going.
-			Move.w		theMenu,D5					; Get the currently hilited menuID.
-			Clr.w		-(Sp)						; And unhilite it.
-			_HiliteMenu
-@NotMain1
-
-;			Originally, DVB wasn’t getting the current port until corner-rounding code
-;			was about to be executed (below).  That seemed to cause port problems, so
-;			I move the port getting/setting code to here (which is the way Monitors
-;			does it).
-;
-;			-- jmp --
-
-			PEA			oldPort(A6)					; Save the current port
-			_GetPort
-			MOVE.L		WMgrPort,-(SP)				; We want to use the WMgrPort
-			_SetPort
-
-			MOVE		D3,-(SP)					; push refnum
-			EXT.L		D4
-			MOVE.L		D4,-(SP)					; push new gdev mode
-			MOVE.L		gd(A6),-(SP)				; push the handle
-			_InitGDevice
-
-			Btst		#mainScreen,gdFlags(A2)		; If we’re not on the menubar screen,
-			Beq.s		@NotMain2					;	then just keep going.
-			Move.w		D5,-(Sp)					; Get the hilite state.
-			_HiliteMenu								; Restore it.
-			_DrawMenuBar							; Draw the MenuBar.
-@NotMain2
-
-			CLR.L		-(SP)						; Activate the front palette
-			_FrontWindow							; before drawing anything.
-			_ActivatePalette
-
-;			In Monitors (the cdev) this is the point in the code where
-;			the PortList is walked to update all the CGrafPorts to the
-;			new depth.  We don’t need to do that here because InitGDevice
-;			does that for us with Save/ResoreFore and Save/RestoreBack
-;			calls.
-;
-;			-- jmp --
-
-;			If the LayerManger is around, we need to start at the root, otherwise
-;			we just use FrontWindow.  Originally, DVB had PaintOne instead of
-;			PaintBehind here but VL said that was wrong.  Also, Monitors uses the
-;			PaintOne/PaintBehind method instead of PaintOne/PaintOne method.
-;			
-;			-- jmp --
-
-		If HasLayers Then
-			_RedrawAll								; CheckUpdate on all layers		<42>
-		Else
-			SUBQ		#4,SP
-			_NewRgn
-			MOVE.L		(SP),r(A6)					; get a fresh region, LEAVE ON STACK
-
-			MOVE.L		gd(A6),A0					; A0 = gd handle
-			MOVE.L		(A0),A0						; A0->gdevice
-			PEA			gdRect(A0)					; push rectangle to RectRgn
-			_RectRgn								; r is now our region
-
 			CLR.L		-(SP)
-			MOVE.L		r(A6),-(SP)
-			_PaintOne
+			PEA			r(A6)
+			CLR.L		-(SP)
+			CLR.L		-(SP)
 
-			SUBQ		#4,SP
-			_FrontWindow
-			MOVE.L		r(A6),-(SP)
-			_PaintBehind
+			MOVE		#$A11,D0					; _DMEnableDisplay
+			DC.W		$ABEB
 
-			MOVE.L		r(A6),-(SP)					; Done with region
-			_DisposRgn
-		Endif
-		
-			CLR.L		myRect+topLeft(A6)			; Set the empty rect
-			CLR.L		myRect+botRight(A6)
-			MOVE.L		deviceList,A2				; A2 = 1st GDHandle
-@dloop		MOVE.L		(A2),A2						; A2 -> GDevice
-			BTST		#screenActive,gdFlags(A2)	; bit 15 in upper byte of word
-			BEQ.S		@dloopEnd					; Inactive screen?
-			PEA			gdRect(A2)
-			PEA			myRect(A6)
-			MOVE.L		(SP),-(SP)
-			_UnionRect
-@dloopEnd	MOVE.L		gdNextGD(A2),A2
-			MOVE.L		A2,D0
-			BNE.S		@dloop
+			MOVE		(SP)+,result(A6)
 
-			PEA			myRect(A6)					; Set a nice big clip
-			_ClipRect
-			PEA			myRect(A6)
-			MOVE.L		#$FFFDFFFD,-(SP)			; outset by three
-			_InsetRect
-			MOVE.L		#$00030003,-(SP)			; pensize is three
-			_PenSize
-			PEA			myRect(A6)
-			MOVE.L	#$00160016,-(SP)				; and a radius for nice rounding
-			_FrameRoundRect 						; and black out the corners
-
-			_PenNormal
-
-			MOVE.L		oldPort(A6),-(SP)			; restore the previous port
-			_SetPort
-
-			MOVE.L		gd(A6),A0
-			MOVE.L		(A0),A0
-			BTST		#mainScreen,gdFlags(A0)		; (mainScreen=11, in upper byte)
-			BEQ.S		@notMain
-			_DrawMenuBar
-@notMain
-			CLR			result(A6)					; success
 @goHome
-			MOVEM.L		(SP)+,A2/D3-D5
+			MOVEM.L		(SP)+,A2-A3/D3-D5
 			UNLK		A6
 			RTD			#result-return-4
 
@@ -4790,13 +4674,15 @@ HasDepth	FUNC		EXPORT
 whichMask	EQU			$FFFE				; the lowest bit is settable, else fail
 
 SDVars		RECORD		{A6Link},DECREMENT
-result		DS.B		2					; boolean result
-gd			DS.B		4					; input: GDevice to set
-depth		DS.B		2					; input: depth to set to
-whichFlags	DS.B		2					; which GDFlags to affect
-flags		DS.B		2					; input: various flags
-return		DS.B		4					; return address on stack
+result		DS.B		2					; 18 $12 boolean result
+gd			DS.B		4					; 14 $E input: GDevice to set
+depth		DS.B		2					; 12 $C input: depth to set to
+whichFlags	DS.B		2					; 10 $A which GDFlags to affect
+flags		DS.B		2					; 8  $8 input: various flags
+return		DS.B		4					; 4  $4 return address on stack
 A6Link		DS.B		4					; link
+myDepth		DS.B		4
+moreStuff	DS.B		24
 linkSize	DS.B		0					; size of record
 			ENDR
 
@@ -4809,13 +4695,43 @@ linkSize	DS.B		0					; size of record
 			MOVE		whichFlags(A6),D0	; D0 = mask of flags to change
 			AND			flags(A6),D0		; D0 = new flags to set
 			AND			#whichMask,D0		; D0 = all the bits we can't change
-			BNE.S		@goHome				; User tried to set bits we don't yet do!
+			BNE			@goHome				; User tried to set bits we don't yet do!
 
-			SUBQ		#2,SP
-			MOVE.L		gd(A6),-(SP)
-			MOVE		depth(A6),-(SP)
-			BSR			FindModeID			; find the mode number, if it exists
-			MOVE		(SP)+,result(A6)	; did we find one?
+			MOVEQ		#0,D0
+			MOVE		depth(A6),D0
+			MOVE.L		D0,myDepth(A6)
+
+			CLR			moreStuff+0(A6)
+			CLR.L		moreStuff+2(A6)
+			CLR			moreStuff+6(A6)
+			CLR.L		moreStuff+8(A6)
+			CLR.L		moreStuff+12(A6)
+
+			CLR			-(SP)
+			MOVE.L		gd(A6), -(SP)
+			PEA			moreStuff(A6)
+			MOVE.L		myDepth(A6), -(SP)
+			PEA			-$C(A6)
+			CLR.L		-(SP)
+
+			MOVE		#$AF3,D0					; unknown _DisplayDispatch selector
+			DC.W		$ABEB
+
+			TST			(SP)+
+			BNE.B		@goHome
+
+			MOVEQ.L		#$7F, D0
+			MOVEQ.L		#0, D1
+			MOVE		depth(A6), D1
+			CMP.L		D1, D0
+			BLT.B		@whaaa
+
+			MOVE		$C(A6), D0
+			CMP			-$C(A6), D0
+			BNE.B		@goHome
+
+@whaaa		MOVE		-$1C(A6), $12(A6)
+
 @goHome
 			UNLK		A6
 			RTD			#result-return-4
@@ -5087,6 +5003,7 @@ linkSize	DS.B		0					; size of record
 			_HLock
 			MOVE.L		(A0),A2				; A2->color table to check
 			MOVE		ctSize(A2),D3		; D3 = last color in table
+			BEQ.S		@goHome
 			MOVEQ		#0, D5				; initialized number of colors checked
 ;			MOVE		D3,D0
 ;			ADDQ		#1,D0
@@ -5107,6 +5024,9 @@ linkSize	DS.B		0					; size of record
 ;			MOVE.L		D5,D6				; get last index here
 @next		ADDQ		#8,A2				; Bump to next color
 			DBRA		D3,@loop			; loop through all colors
+
+			TST			D5
+			BEQ.S		@goHome
 
 			DIVU		D5,D7				; compute average tolerance
 ;			DIVU		colorCount(A6),D7	; compute average tolerance

@@ -1746,27 +1746,85 @@ VARSIZE		EQU		0
 share	LINK	A6,#VARSIZE					;ALLOCATE STACK FRAME
 		MOVEM.L	D3-D7/A2-A4,-(SP)			;SAVE WORK REGISTERS FOR DEVLOOP
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		CLR.L	-4(A6)
+		MOVE.L	MASKBITS(A6), D0
+		BEQ		@skip
+		MOVEA.L	D0, A0
+		CMPI	#$1, $20(A0)
+		BNE		@skip
+		MOVEA.L	$16(A6), A0
+		MOVEA.L	$E(A6), A1
+		MOVE	$4(A0), D0
+		SUB		(A0), D0
+		SUB		$4(A1), D0
+		ADD		(A1), D0
+		BGT.B	@L0
+		MOVE	$6(A0), D0
+		SUB		$2(A0), D0
+		SUB		$6(A1), D0
+		ADD		$2(A0), D0
+		BLE		@skip
+@L0		SUBQ	#$4, SP
+		DC.W	$AA18						;_GetCTable
+		MOVE.L	(SP)+, D3
+		BEQ		@skip
+		SUBQ	#$2, SP
+		PEA.L	-4(A6)
+		MOVE	#$2, -(SP)
+		PEA.L	MASKRECT(A6)
+		MOVE.L	D3, -(SP)
+		CLR.L	-(SP)
+		MOVE	#4,-(SP)
+		MOVE.L	#$160000,D0					;_QDExtensions -> _NewGWorld
+		DC.W	$AB1D
+		MOVE	(SP)+, D4
+		BNE.B	@L1
+		TST.L	-4(A6)
+		BNE.B	@L2
+@L1		SUBQ	#$2, SP
+		PEA.L	-4(A6)
+		MOVE	#$2, -(SP)
+		PEA.L	MASKRECT(A6)
+		MOVE.L	D3, -(SP)
+		CLR.L	-(SP)
+		CLR.L	-(SP)
+		MOVE.L	#$160000,D0					;_QDExtensions -> _NewGWorld
+		DC.W	$AB1D
+		MOVE	(SP)+, D4
+@L2		MOVE.L	D3, -(SP)
+		DC.W	$AA24						;_DisposCTable
+		TST		D4
+		BNE.B	@skip
+		MOVE.L	-4(A6), D0
+		BEQ.B	@skip
+		MOVEA.L	D0, A3
+		SUBQ	#$8, SP
+		PEA.L	$4(SP)
+		PEA.L	$4(SP)
+		MOVE.L	#$80005,D0					;_QDExtensions -> _GetGWorld
+		DC.W	$AB1D
+		MOVE.L	-4(A6), -(SP)
+		CLR.L	-(SP)
+		MOVE.L	#$80006,D0					;_QDExtensions -> _SetGWorld
+		DC.W	$AB1D
+		MOVE.L	MASKBITS(A6), -(SP)
+		PEA.L	$2(A3)
+		MOVE.L	MASKRECT(A6), -(SP)
+		PEA.L	$10(A3)
+		CLR		-(SP)
+		CLR.L	-(SP)
+		DC.W	$A8EC						;_CopyBits
+		SUBQ	#$2, SP
+		MOVE.L	$2(A3), -(SP)
+		MOVE.L	#$40001,D0					;_QDExtensions -> _LockPixels
+		DC.W	$AB1D
+		ADDQ	#$2, SP
+		MOVEA.L	$2(A3), A0
+		_HLock
+		MOVE.L	(A0), MASKBITS(A6)
+		MOVE.L	#$160000,D0					;_QDExtensions -> _NewGWorld
+		DC.W	$AB1D
+@skip
 
 ; SET UP REGISTERS FOR CALLING CMDEVLOOP
 		
@@ -1815,7 +1873,15 @@ SRCOK	MOVE.L	DSTBITS(A6),A0				;POINT TO DSTBITS
 		
 NOTPORT	MOVE.L	DSTBITS(A6),A1				;Pass DSTBITS (not derefed)		<BAL 28May89>
 		JSR		CMDevLoop					;AND DRAW THE IMAGE
-		
+
+		MOVE.L	-4(A6),D0
+		BEQ.S	@skipQDCall
+
+		MOVE.L	D0,-(SP)
+		MOVE.L	#$40004,D0					;_QDExtensions -> _DisposeGWorld
+		DC.W	$AB1D
+@skipQDCall
+
 		MOVEM.L	(SP)+,D3-D7/A2-A4			;RESTORE WORK REGISTERS
 		UNLINK	PARAMSIZE,'KopyMask'
 
@@ -2348,7 +2414,7 @@ cutOutDevices
 		move.l	pmTable(a0),a0				;get handle to source color table
 		move.l	(a0),a0						;deref it
 		cmp.l	ctSeed(a0),d1				;do the color tables seeds match ?
-		beq.s	@next
+		beq		@next
 
 		movem.l	d1/a1,-(sp)					;save our scratch registers
 
@@ -2359,7 +2425,34 @@ cutOutDevices
 		pea		tempRect2(a6)				;pointer to the result
 		_SectRect							;get the intersection
 		tst.b	(sp)+						;if they didn't intersect at all, then skip to
-		beq.s	@skip						;..the next device
+		beq		@skip						;..the next device
+
+		move.l	(a1),a0
+		move.l	GDPMap(a0),a0
+		move.l	(a0),a0
+		move.l	pmTable(a0),a0
+		move.l	(a0),a0
+		move.l	(DeviceList),a2
+		move.l	(a2),a2
+		move.l	GDPMap(a2),a3
+		move.l	(a3),a3
+		move.l	pmTable(a3),a3
+		move.l	(a3),a3
+		move.l	(a3),d0
+@again	Cmp.L	(a0),d0
+		bne		@done
+		sub		#$8,sp
+		clr.b	-(sp)
+		pea.l	tempRect1(a6)
+		pea.l	$22(a2)
+		pea.l	$a(sp)
+		_SectRect
+		tst.b	(sp)+
+		add		#8,sp
+		bne		@skip
+@done	Move.L	GDNextGD(a2),d0
+		move.l	d0,a2
+		bne.b	@again
 
 		lea		tempRect2(a6),a0			;point to our temp rect
 		pea		topleft(a0)					;convert the temp rect back to local coordinates

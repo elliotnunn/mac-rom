@@ -105,8 +105,38 @@ LocalSize		EQU		*
 		link	A6, #LocalSize
 		movem.l	D3-D7/A2-A4, callerRegs(A6)	; save the callers registers
 
-		btst	#6, ROM85					; Color QuickDraw available?
-		bnz		@classicQD					; if not, handle old case
+		machine	MC68030
+		move.l	([$2b6],$1fc),a0
+		machine	MC68020
+
+		tst.b	$b5(a0)
+		beq.s	@noShield
+
+		move.l	drawingRgn(a6),d0
+		beq.s	@noConversion
+
+		move.l	d0,a0
+		move.l	(a0),a0
+		move.l	$2(a0),localRect+0(a6)
+		move.l	$6(a0),localRect+4(a6)
+
+		pea		localRect+0(a6)
+		_LocalToGlobal
+
+		pea		localRect+4(a6)
+		_LocalToGlobal
+
+		bra.s	@proceedWithShield
+@noConversion
+
+		move.l	#$80008000,localRect+0(a6)
+		move.l	#$7fff7fff,localRect+4(a6)
+
+@proceedWithShield
+		pea		localRect+0(a6)
+		clr.l	-(sp)
+		_ShieldCursor
+@noShield
 
 		move.l	TheGDevice, D0				; Get the handle to the current GDevice
 		move.l	MainDevice, D1				; Get the handle to the main device
@@ -149,11 +179,11 @@ LocalSize		EQU		*
 		beq		@noMore						; if so, no more devices
 		move.l	(A4), A3					; point at the GDevice record
 		bsr		TestAndIntersect			; is device good for drawing?
-		bz.s	@nextDevice					; if not, keep searching
+		bz		@nextDevice					; if not, keep searching
 
 		move.l	flags(A6), D0				; get the caller’s options
 		btst	#allDevicesBit, D0			; are we ignoring regions?
-		bnz.s	@visRgnSetup				; if so, don’t change the visRgn
+		bnz		@visRgnSetup				; if so, don’t change the visRgn
 
 		move.l	D4, -(SP)					; rectangle region handle
 		pea		localRect(A6)				; this device (local coords)
@@ -175,10 +205,12 @@ LocalSize		EQU		*
 		move.l	ctSeed(A0), D7				; stash device’s ctab seed
 		move.l	flags(A6), D0				; get caller’s flags
 		btst	#singleDevicesBit, D0		; should we group devices?
-		bnz.s	@groupingDone				; if not, don’t call AddSimilar
+		bnz		@groupingDone				; if not, don’t call AddSimilar
 		bsr		AddSimilarDevices			; find all the like devices
 @groupingDone
  		movem.l	D3-D7/A2-A4/A6, -(SP)		; save OUR registers
+		bsr		NewFunc1
+		move	D2,-(SP)
 		swap	D6
 		move.l	D6, -(SP)					; pass depth and flags
 		move.l	A4, -(SP)					; and the GDHandle
@@ -187,19 +219,14 @@ LocalSize		EQU		*
 		movem.l	callerRegs(A6), D3-D7/A2-A4	; restore caller’s registers
 		move.l	A6Link(A6), A6				; and restore caller’s A6
 		jsr		(A0)						; call the drawing procedure
+		move	(SP)+,D2
+		bsr		NewFunc2
 		movem.l	(SP)+, D3-D7/A2-A4/A6		; get OUR register set back
 		move.l	(A4), A3					; fix GDevicePtr
 @nextDevice
 		move.l	gdNextGD(A3), A4			; get next device in chain
 		addq	#1, D3						; increment device number
 		bra.s	@deviceIntersect			; try this one
-
-@classicQD
-		move.l	A6, -(SP)					; save our stack frame ptr
-		move.w	#1, -(SP)					; pass depth (always 1)
-		move.w	#fakeDeviceFlags, -(SP)		; and gdflags (something reasonable)
-		clr.l	-(SP)						; NIL for GDHandle
-		bra.s	@simpleDeviceCommon
 
 @oneDevice
 		move.l	A6, -(SP)					; save our stack frame ptr
@@ -230,6 +257,17 @@ LocalSize		EQU		*
 		_DisposRgn
 		move.l	savedVis(A6), visRgn(A2)	; put original visRgn back
 @exit
+
+		machine	MC68030
+		move.l	([$2b6],$1fc),a0
+		machine	MC68020
+
+		tst.b	$b5(a0)
+		beq.s	@noShow
+
+		_ShowCursor
+@noShow
+
 		movem.l	callerRegs(A6), D3-D7/A2-A4	; restore regs
 		unlk	A6
 		move.l	(SP)+, A0					; clean stack and return
@@ -252,27 +290,30 @@ AddSimilarDevices
 
 		movem.l	A3-A4/D3/D6, -(SP)			; save original state
 		andi.w	#importantFlagsMask, D6		; keep only pertinent flags
+		move.l	A3, A1
 		move.l	gdNextGD(A3), A4			; start with next device
 		addq	#1, D3						; which is next in number, too
 @addLoop
 		move.l	A4, D0						; is there a GDHandle?
-		bz.s	@noMore						; if NIL, then we’re done
+		bz		@noMore						; if NIL, then we’re done
 
 		move.l	(A4), A3					; handle->ptr
-		bsr.s	TestAndIntersect			; see if device is okay by itself
-		bz.s	@nextDevice					; if not, try next one
+		move.l	A1, -(SP)
+		bsr		TestAndIntersect			; see if device is okay by itself
+		move.l	(SP)+, A1
+		bz		@nextDevice					; if not, try next one
 
 		move.w	gdFlags(A3), D0				; get device attributes
 		andi.w	#importantFlagsMask, D0		; strip unimportant ones
 		cmp.w	D0, D6						; is this device similar to test device?
-		bne.s	@nextDevice					; if not, don’t use it
+		bne		@nextDevice					; if not, don’t use it
 
 		move.l	gdPMap(A3), A0				; get device’s PixMapHandle
 		move.l	(A0), A0					; get device’s PixMapPtr
 		move.l	D6, D0						; get depth and flags
 		swap	D0							; get depth into low word
 		cmp.w	pmPixelSize(A0), D0			; save depth as test device?
-		bne.s	@nextDevice					; if not, don’t use it
+		bne		@nextDevice					; if not, don’t use it
 
 		move.l	flags(A6), D0				; get the option flags
 		btst	#dontMatchSeedsBit, D0		; should we check ctSeeds?
@@ -280,12 +321,49 @@ AddSimilarDevices
 		move.l	pmTable(A0), A0				; handle to color table
 		move.l	(A0), A0
 		cmp.l	ctSeed(A0), D7				; are the seeds the same?
-		bne.s	@nextDevice					; if not, don’t use this one
+		bne		@nextDevice					; if not, don’t use this one
 @seedsChecked
+
+		move.l	A3, A0
+		move.l	$22(A1), D0
+		cmp		$24(A0), D0
+		bgt.s	@L4
+		blt.s	@L1
+		swap	D0
+		cmp		$22(A0), D0
+		bgt.s	@L5
+		blt.s	@L2
+		move.l	$26(A1), D0
+		cmp		$28(A0), D0
+		blt.s	@L6
+		bgt.s	@L3
+		bra.s	@nextDevice
+@L1		swap	D0
+		cmp		$22(A0), D0
+		bgt.s	@doneWhateverThatWas
+@L2		move.l	$26(A1), D0
+		cmp		$28(A0), D0
+		blt.s	@doneWhateverThatWas
+@L3		swap	D0
+		cmp		$26(A0), D0
+		blt.s	@doneWhateverThatWas
+		bra.s	@nextDevice
+@L4		swap	D0
+		cmp		$22(A0), D0
+		blt.s	@doneWhateverThatWas
+@L5		move.l	$26(A1), D0
+		cmp		$28(A0), D0
+		bgt.s	@doneWhateverThatWas
+@L6		swap	D0
+		cmp		$26(A0), D0
+		bgt.s	@doneWhateverThatWas
+		bra.s	@nextDevice
+@doneWhateverThatWas
 
 		move.l	flags(A6), D0				; what are the current options?
 		btst	#allDevicesBit, D0			; are we ignoring drawingRgn?
 		bnz.s	@visRgnSetup				; if so, no regions to setup
+		move.l	A1, -(SP)
 
 		move.l	D4, -(SP)					; rectangle region handle
 		pea		localRect(A6)				; this device (local coords)
@@ -299,6 +377,7 @@ AddSimilarDevices
 		move.l	(SP), -(SP)					; get ORed together
 		_XorRgn								; XOr is a fast way to Union when guaranteed no overlap
 		move.l	(A4), A3					; fix GDevicePtr
+		move.l	(SP)+, A1
 
 @visRgnSetup
 		bset.l	D3, D5						; mark this device done
@@ -346,5 +425,74 @@ TestAndIntersect
 		moveq	#0, D0
 @exit
 		rts
+
+
+NewFunc1
+		moveq	#0, D2
+		move.l	(DeviceList), D0
+		beq.s	@return
+		moveq	#0, D1
+@L0		movea.l	D0, A0
+		movea.l	(A0), A0
+		cmp		D3, D1
+		beq.s	@L8
+		tst		$14(A0)
+		bpl.s	@L8
+		movea.l	(A4), A1
+		move.l	$22(A1), D0
+		cmp		$24(A0), D0
+		bgt.s	@L4
+		blt.s	@L1
+		swap	D0
+		cmp		$22(A0), D0
+		bgt.s	@L5
+		blt.s	@L2
+		move.l	$26(A1), D0
+		cmp		$28(A0), D0
+		blt.s	@L6
+		bgt.s	@L3
+		bra.s	@L7
+@L1		swap	D0
+		cmp		$22(A0), D0
+		bgt.s	@L8
+@L2		move.l	$26(A1), D0
+		cmp		$28(A0), D0
+		blt.s	@L8
+@L3		swap	D0
+		cmp		$26(A0), D0
+		blt.s	@L8
+		bra.s	@L7
+@L4		swap	D0
+		cmp		$22(A0), D0
+		blt.s	@L8
+@L5		move.l	$26(A1), D0
+		cmp		$28(A0), D0
+		bgt.s	@L8
+@L6		swap	D0
+		cmp		$26(A0), D0
+		bgt.s	@L8
+@L7		bclr.s	#7, $14(A0)
+		bset.l	D1, D2
+@L8		addq	#1, D1
+		move.l	$1E(A0), D0
+		bne.s	@L0
+@return	Rts
+
+
+NewFunc2
+		tst		D2
+		beq.s	@return
+		move.l	(DeviceList), D0
+		beq.s	@return
+@L10	move.l	D0, A0
+		move.l	(A0), A0
+		lsr		#1, D2
+		bcc.s	@L11
+		bset.s	#7, $14(A0)
+		tst		D2
+		beq.s	@return
+@L11	move.l	$1E(A0), D0
+		bne.s	@L10
+@return	Rts
 
 		END
