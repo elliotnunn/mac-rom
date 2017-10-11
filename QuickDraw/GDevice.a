@@ -500,25 +500,242 @@ NoTbl
 
 
 ModeOK
-
-
-
-
-
-		ds.b $70664 - $702F8
-
-
-;702F8: problematic!
-
-
-
-
-
-
-
-;this part is all good: (70664)
-
-
+		MOVE.L	([$2B6],$1FC),A0
+		TST.B	$B5(A0)
+		BEQ		@L13
+		MOVE	$14(A2),D0
+		BTST.L	#$D,D0
+		BEQ		@L13
+		BTST.L	#$A,D0
+		BEQ		@L13
+		TST		(A2)
+		BEQ		@L13
+		TST.B	-$6E(A6)
+		BEQ		@L13
+		MOVE.L	$22(A2),-$6C(A6)
+		MOVE.L	$26(A2),-$68(A6)
+		TST.B	(QDExist)
+		BNE		@L9
+		MOVE.L	A5,-$7A(A6)
+		LEA.L	-$7E(A6),A5
+		MOVE.L	$6(A3),$22(A2)
+		MOVE.L	$A(A3),$26(A2)
+		MOVE.L	(ScrnBase),-$1BC(A6)
+		MOVE.L	-$58(A6),D1
+		CMP.L	(ScrnBase),D1
+		BNE.S	@L0
+		MOVE	$14(A2),D0
+		BTST.L	#$B,D0
+		BEQ		@L0
+		MOVE.L	(A3),(ScrnBase)
+@L0		PEA.L	-$82(A6)
+		_InitGraf
+		PEA.L	-$1B8(A6)
+		_OpenPort
+		MOVE.L	D2,-(SP)
+		MOVEQ.L	#$0,D1
+		MOVEQ.L	#$1,D2
+		MOVE.L	(DeviceList),D0
+@L1		BEQ.S	@L5
+		MOVE.L	D0,A0
+		CMPA.L	$8(A6),A0
+		MOVE.L	(A0),A0
+		BNE.S	@L2
+		BSET.B	#$7,$14(A0)
+		BNE.S	@L4
+		BRA.S	@L3
+@L2		BTST.B	#$7,$14(A0)
+		BEQ.S	@L4
+		BCLR.B	#$7,$14(A0)
+@L3		OR		D2,D1
+@L4		LSL		#$1,D2
+		MOVE.L	$1E(A0),D0
+		BRA.S	@L1
+@L5		MOVE.L	(SP)+,D2
+		MOVE	D1,-(SP)
+		SUBQ.L	#$4,SP
+		_NewRgn
+		MOVE.L	(SP),-(SP)
+		MOVE.L	(SP),-(SP)
+		PEA.L	$6(A3)
+		_RectRgn
+		LEA.L	-$1B8(A6),A0
+		MOVE.L	$18(A0),-(SP)
+		MOVE.L	(SP),-(SP)
+		_UnionRgn
+		_DisposRgn
+		MOVE	$C(A3),D0
+		SUB		$8(A3),D0
+		MOVE	-$66(A6),D1
+		SUB		-$6A(A6),D1
+		SUB		D1,D0
+		ASR		#$1,D0
+		MOVE	D0,-$1C6(A6)
+		MOVE	$A(A3),D0
+		SUB		$6(A3),D0
+		MOVE	-$68(A6),D1
+		SUB		-$6C(A6),D1
+		SUB		D1,D0
+		ASR		#$1,D0
+		MOVE	D0,-$1C8(A6)
+		MOVE	$8(A3),D0
+		ADD		-$1C6(A6),D0
+		MOVE.L	$6(A3),-$76(A6)
+		MOVE	$A(A3),-$72(A6)
+		MOVE	D0,-$70(A6)
+		PEA.L	-$76(A6)
+		MOVE.L	(A5),A1
+		PEA.L	-$10(A1)
+		_FillRect
+		MOVE	$6(A3),D0
+		ADD		-$1C8(A6),D0
+		MOVE	$C(A3),-$70(A6)
+		MOVE	D0,-$72(A6)
+		PEA.L	-$76(A6)
+		MOVE.L	(A5),A1
+		PEA.L	-$10(A1)
+		_FillRect
+		MOVE	$A(A3),D0
+		SUB		-$1C8(A6),D0
+		MOVE.L	$A(A3),-$72(A6)
+		MOVE	$8(A3),-$74(A6)
+		MOVE	D0,-$76(A6)
+		PEA.L	-$76(A6)
+		MOVE.L	(A5),A1
+		PEA.L	-$10(A1)
+		_FillRect
+		MOVE	$C(A3),D0
+		SUB		-$1C6(A6),D0
+		MOVE	$6(A3),-$76(A6)
+		MOVE	D0,-$74(A6)
+		PEA.L	-$76(A6)
+		MOVE.L	(A5),A1
+		PEA.L	-$10(A1)
+		_FillRect
+		MOVE	(SP)+,D1
+		BEQ.S	@L8
+		MOVE.L	(DeviceList),D0
+@L6		BEQ.S	@L8
+		MOVE.L	D0,A0
+		MOVE.L	(A0),A0
+		LSR		#$1,D1
+		BCC.S	@L7
+		BSET.B	#$7,$14(A0)
+		TST		D1
+		BEQ.S	@L8
+@L7		MOVE.L	$1E(A0),D0
+		BRA.S	@L6
+@L8		PEA.L	-$1B8(A6)
+		_ClosePort
+		MOVE.L	-$1BC(A6),(ScrnBase)
+		MOVE.L	-$6C(A6),$22(A2)
+		MOVE.L	-$68(A6),$26(A2)
+		MOVE.L	-$7A(A6),A5
+@L9		MOVE	D2,-(SP)
+		MOVE.L	$16(A2),A0
+		MOVE.L	(A0),A0
+		MOVE	$4(A0),D0
+		ANDI	#$7FFF,D0
+		MOVE	$A(A0),D1
+		SUB		$6(A0),D1
+		ADD		-$6C(A6),D1
+		SUB		-$68(A6),D1
+		ASR		#$1,D1
+		MULU	D1,D0
+		MOVE	$C(A0),D1
+		SUB		$8(A0),D1
+		ADD		-$6A(A6),D1
+		SUB		-$66(A6),D1
+		ASR		#$1,D1
+		MOVE	$20(A0),D2
+		CMPI	#$8,D2
+		BGT.S	@L11
+		BEQ.S	@L12
+@L10	ASR		#$1,D1
+		ASL		#$1,D2
+		CMPI	#$8,D2
+		BLT.S	@L10
+		BRA.S	@L12
+@L11	ASR		#$3,D2
+		MULU	D2,D1
+@L12	EXT.L	D1
+		ADD.L	D1,D0
+		ADD.L	D0,(A0)
+		MOVE	(SP)+,D2
+@L13	LEA.L	$6(A3),A0
+		LEA.L	$22(A2),A1
+		MOVE	$14(A2),D0
+		BTST.L	#$A,D0
+		BEQ.S	@L14
+		EXG.L	A0,A1
+@L14	MOVE.L	(A0)+,(A1)+
+		MOVE.L	(A0)+,(A1)+
+		TST.B	(QDExist)
+		BNE		@L20
+		MOVE.L	(PortList),D1
+		BEQ		@L20
+		ADDQ.L	#$1,D1
+		BEQ		@L20
+		BTST.L	#$B,D0
+		BEQ		@L19
+		PEA.L	-$5C(A6)
+		_GetPort
+		MOVE.L	(MainDevice),(TheGDevice)
+		MOVE.L	(PortList),A4
+		MOVE.L	(A4),A4
+		MOVE	(A4),D3
+		BRA.S	@L17
+@L15	MOVE.L	(PortList),A4
+		MOVE.L	(A4),A4
+		MOVE.L	$2(A4,D3.W*4),A4
+		MOVE.L	A4,-(SP)
+		_SetPort
+		MOVE.L	-$58(A6),D1
+		BTST.B	#$7,$6(A4)
+		BEQ.S	@L16
+		MOVE.L	$2(A4),A4
+		MOVE.L	(A4),A4
+		CMP.L	(A4),D1
+		BNE.S	@L17
+		MOVE.L	(A3),(A4)
+		MOVE	$4(A3),$4(A4)
+		MOVE.L	$1E(A3),$1E(A4)
+		MOVE.L	$22(A3),$22(A4)
+		MOVE.L	$26(A3),$26(A4)
+		PEA.L	-$64(A6)
+		MOVE.L	(SP),-(SP)
+		MOVE.L	(SP),-(SP)
+		MOVE.L	(SP),-(SP)
+		_SaveFore
+		_RestoreFore
+		_SaveBack
+		_RestoreBack
+		BRA.S	@L17
+@L16	CMP.L	$2(A4),D1
+		BNE.S	@L17
+		MOVE.L	(A3),$2(A4)
+		MOVE	$4(A3),D1
+		ANDI	#$7FFF,D1
+		MOVE	D1,$6(A4)
+@L17	DBF		D3,@L15
+		MOVE.L	-$5C(A6),-(SP)
+		_SetPort
+		MOVE.L	-$58(A6),D1
+		CMP.L	(ScrnBase),D1
+		BNE.S	@L18
+		MOVE.L	(A3),(ScrnBase)
+@L18	MOVE.L	-$58(A6),D1
+		MOVE.L	(A5),A0
+		CMP.L	-$7A(A0),D1
+		BNE.S	@L19
+		MOVE.L	(A3),-$7A(A0)
+@L19	BTST.B	#$D,$14(A2)
+		BEQ.S	@L20
+		_AllocCursor
+		_ShowCursor
+@L20	BSR.S	NewFunc
+		MOVE.L	(ExpandMem),A0
+		MOVE	D0,$276(A0)
 
 ;
 ; notify the Palette Manager that the mode has changed
@@ -542,20 +759,60 @@ ModeOK
 		UNLINK	result-return-4,'INITGDEV'
 
 
-
-
-
-
-
-; new func 7069A:7072C in here
-
-
-
-
-		ds.b $70730 - $7069A
-
-
-
+NewFunc
+			MOVE.L	(TheGDevice),D0
+			BEQ		@L32
+			MOVE.L	(MainDevice),D1
+			CMP.L	D0,D0
+			BNE.S	@L22
+			MOVE.L	(DeviceList),D0
+			BEQ.S	@L32
+@L22		MOVE.L	D0,A0
+			MOVE.L	(A0),A0
+			MOVE.L	$1E(A0),D1
+			BEQ.S	@L32
+@L23		MOVE.L	D1,A1
+			MOVE.L	(A1),A1
+			MOVE.L	$22(A1),D0
+			CMP		$24(A0),D0
+			BGT.S	@L27
+			BLT.S	@L24
+			SWAP	D0
+			CMP		$22(A0),D0
+			BGT.S	@L28
+			BLT.S	@L25
+			MOVE.L	$26(A1),D0
+			CMP		$28(A0),D0
+			BLT.S	@L29
+			BGT.S	@L26
+			BRA.S	@L30
+@L24		SWAP	D0
+			CMP		$22(A0),D0
+			BGT.S	@L31
+@L25		MOVE.L	$26(A1),D0
+			CMP		$28(A0),D0
+			BLT.S	@L31
+@L26		SWAP	D0
+			CMP		$26(A0),D0
+			BLT.S	@L31
+			BRA.S	@L30
+@L27		SWAP	D0
+			CMP		$22(A0),D0
+			BLT.S	@L31
+@L28		MOVE.L	$26(A1),D0
+			CMP		$28(A0),D0
+			BGT.S	@L31
+@L29		SWAP	D0
+			CMP		$26(A0),D0
+			BGT.S	@L31
+@L30		MOVEQ.L	#$1,D0
+			RTS
+@L31		MOVE.L	$1E(A1),D1
+			BNE.S	@L23
+			MOVE.L	$1E(A0),D0
+			BNE.S	@L22
+@L32		MOVEQ.L	#$0,D0
+			RTS
 
 
 GetDevPixMap	PROC	EXPORT
@@ -580,7 +837,7 @@ DEVTYPE		EQU		PMH-4					; LONG, VAR DevType
 
 MYBLOCK		EQU		-spBlock.SPBLOCKSIZE	; allocate room for parameter block	<Cxxx>
 PMHState	EQU		MyBlock-2				; save pixMap lockState
-VARSIZE		EQU		PMHState				; size of locals
+VARSIZE		EQU		PMHState-$9A			; size of locals
 
 	WITH	spBlock,vpBlock					;<C742>
 
@@ -605,10 +862,45 @@ VARSIZE		EQU		PMHState				; size of locals
 			MOVE.L	(A1,D0),A3					; A3 = handle to the DCE
 			MOVE.L	(A3),A1						; get pointer to the DCE
 
-
- ds.b $707F6-$7075C
-
-
+			LEA.L	-$D2(A6),A4
+			LEA.L	-$82(A6),A0
+			MOVE.L	A4,$1C(A0)
+			MOVE	$18(A1),$18(A0)
+			MOVE	#$A,$1A(A0)
+			CLR.L	$C(A0)
+			CLR.L	$12(A0)
+			CLR		$16(A0)
+			DC.W	$A205						; _PBStatusImmed
+			BNE.S	@nope
+			MOVE.L	$2(A4),-$3E(A6)
+			MOVE.L	$8(A4),-$42(A6)
+			MOVE.L	$2A(A1),D3
+			LEA.L	-$AC(A6),A0
+			LEA.L	-$C2(A6),A4
+			MOVE.L	A0,$6(A4)
+			MOVE.L	$10(A6),D0
+			MOVE	D0,$4(A4)
+			MOVE.L	-$3E(A6),(A4)
+			LEA.L	-$82(A6),A0
+			MOVE.L	A4,$1C(A0)
+			MOVE	$14(A6),$18(A0)
+			MOVE	#$12,$1A(A0)
+			CLR.L	$C(A0)
+			CLR.L	$12(A0)
+			CLR		$16(A0)
+			DC.W	$A205						; _PBStatusImmed
+			BNE.S	@nope
+			LEA.L	-$C2(A6),A4
+			MOVE.B	#$1,-$D3(A6)
+			MOVE.L	-$42(A6),D3
+			MOVE.L	D3,$2A(A1)
+			MOVE.L	$8(A6),A1
+			MOVE.L	$E(A4),D4
+			MOVE	D4,(A1)
+			LEA.L	-$38(A6),A0
+			LEA.L	-$AC(A6),A1
+			BRA.S	@saveVals
+@nope
 
 ; get the resource list for the specified device
 
@@ -646,6 +938,7 @@ VARSIZE		EQU		PMHState				; size of locals
 			BNE		BadSlot						; => something wrong
 			MOVE.L	spResult(A0),A1				; save the pointer to the block			<C742>
 
+@saveVals
 			ADD.L	vpBaseOffset(A1),D3			; calculate baseAddr
 			MOVE.L	D3,(A2)+					; save baseAddr
 
