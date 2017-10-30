@@ -9,6 +9,10 @@
 #ifndef __GNUC__
 #include <Finder.h>
 #include <Files.h>
+#include <Memory.h>
+#define malloc(x) NewPtr(x)
+#define calloc(x,y) NewPtrClear((x)*(y))
+#define free(x) DisposePtr(x)
 #endif
 
 #define ERRSTR "# Vectorize Error: "
@@ -74,22 +78,41 @@ char *fname(char *x)
 char *slurp(char *path)
 {
 	FILE *f;
-	long pos;
+	long pos, readsuccess;
 	char *bytes;
 
 	f = fopen(path, "rb");
-	if(f == NULL) return NULL;
+	if(f == NULL)
+	{
+		fprintf(stderr, ERRSTR "slurp: fopen returned NULL\n");
+		return NULL;
+	}
 
 	fseek(f, 0, SEEK_END);
 	pos = ftell(f);
 	fseek(f, 0, SEEK_SET);
 
 	bytes = (char *)malloc(pos);
-	if(bytes == NULL) return NULL;
+	if(bytes == NULL)
+	{
+		fprintf(stderr, ERRSTR "slurp: malloc(%li) returned NULL\n", pos);
+		return NULL;
+	}
 
-	fread(bytes, pos, 1, f);
+	readsuccess = fread(bytes, 1, pos, f);
+	if(readsuccess != pos)
+	{
+		free(bytes);
+		fprintf(stderr, ERRSTR "slurp: fread returned %li not %li\n", readsuccess, pos);
+		return NULL;
+	}
 
-	fclose(f);
+	if(fclose(f) != 0)
+	{
+		free(bytes);
+		fprintf(stderr, ERRSTR "slurp: fclose returned EOF\n");
+		return NULL;
+	}
 
 	return bytes;
 }
@@ -97,13 +120,15 @@ char *slurp(char *path)
 int blat(char *path, char *buf, ulong len)
 {
 	FILE *f;
+	long writesuccess;
 
 	f = fopen(path, "wb");
 	if(f == NULL) return 1;
 
-	fwrite(buf, len, 1, f);
+	writesuccess = fwrite(buf, 1, len, f);
+	if(writesuccess != len) return 1;
 
-	fclose(f);
+	if(fclose(f) != 0) return 1;
 
 	return 0;
 }
@@ -402,10 +427,10 @@ int main(int argc, char **argv)
 		fprintf(l, "\n");
 	}
 
-	dest.buf = dest.at = calloc(0x400000, 1);
+	dest.buf = dest.at = calloc(0x300000, 1);
 	if(!dest.buf)
 	{
-		fprintf(stderr, ERRSTR "Failed to calloc 4MB dest buffer\n");
+		fprintf(stderr, ERRSTR "Failed to alloc dest buffer\n");
 		return 1;
 	}
 
@@ -419,6 +444,7 @@ int main(int argc, char **argv)
 	{
 		char *patch_bin;
 		struct obj patch_obj, patch_dict;
+		long alloc_num;
 
 		patch_bin = slurp(patchObjPath);
 		if(!patch_bin)
@@ -427,10 +453,16 @@ int main(int argc, char **argv)
 			return 2;
 		}
 
-		tbl = (struct tblent *)calloc(5000, sizeof (struct tblent));
+		alloc_num = 0;
+		for(obj_init(&patch_obj, patch_bin); obj_type(&patch_obj) != C_LAST; obj_next(&patch_obj))
+		{
+			if(obj_type(&patch_obj) == C_MODULE) alloc_num++;
+		}
+
+		tbl = (struct tblent *)calloc(alloc_num + 100, sizeof (struct tblent));
 		if(!tbl)
 		{
-			fprintf(stderr, ERRSTR "Failed to malloc tbl\n");
+			fprintf(stderr, ERRSTR "Failed to alloc patch table\n");
 			return 3;
 		}
 
@@ -750,6 +782,8 @@ int main(int argc, char **argv)
 		fprintf(stderr, ERRSTR "Failed to write output file\n");
 		return 5;
 	}
+
+	free(dest.buf);
 	
 	if(l) fclose(l);
 	
