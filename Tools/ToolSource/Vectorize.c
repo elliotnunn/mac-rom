@@ -403,11 +403,13 @@ int main(int argc, char **argv)
 	}
 
 	dest.buf = dest.at = calloc(0x400000, 1);
+	dest.buf = dest.at = NewPtr(0x100000);
 	if(!dest.buf)
 	{
 		fprintf(stderr, ERRSTR "Failed to calloc 4MB dest buffer\n");
 		return 1;
 	}
+	memset(dest.buf, 0, 0x100000);
 
 	/* Create a First record (remember that MPW objects are fully ascending) */
 	dest.at[0] = 1;
