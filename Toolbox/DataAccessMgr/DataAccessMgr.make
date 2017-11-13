@@ -25,8 +25,8 @@ DataAccessRTTObjs				=	"{ObjDir}DataAccessResultsHandlers.a.o"			¶
 
 DataAccessCompObjs				=	"{ObjDir}DataAccessCompletion.a.o"
 
-# "{LibDir}DataAccessMgr.lib"		Ä	"{ObjDir}DataAccessPackEntry.a.o"
-# 	Lib	{StdLibOpts} -o "{Targ}" "{ObjDir}DataAccessPackEntry.a.o"
+"{LibDir}DataAccessMgr.lib"		Ä	"{ObjDir}DataAccessPackEntry.a.o"
+	Lib	{StdLibOpts} -o "{Targ}" "{ObjDir}DataAccessPackEntry.a.o"
 
 
 "{RsrcDir}DataAccessMgr.rsrc"	ÄÄ	{DataAccessMgrPackObjs}
