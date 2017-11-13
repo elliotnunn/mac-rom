@@ -83,6 +83,8 @@ MainCodeLibs = 												¶
 				"{LibDir}ScriptMgr.lib"						¶
 				"{LibDir}CQD.lib"							¶
 				"{LibDir}FontMgr.lib"						¶
+				"{LibDir}RomInterface.Lib"					¶
+				"{LibDir}RomStandardLib.lib"				¶
 				"{LibDir}Lastly.lib"						¶
 #															¶
 #	Keep DispTable at end									¶
@@ -134,14 +136,14 @@ MainCodeLibs = 												¶
 	Asm {StdAOpts} -o "{Targ}" "{PatchDir}MiscPatches.a"
 
 
-"{LibDir}RomStandardLib.lib"	Ä	"{LibraryDir}StandardLib.o"						¶
-									"{IfSrcDir}DuplicateModules.rom"
-	Lib {StdLibOpts} -o "{Targ}" "{LibraryDir}StandardLib.o" -df "{IfSrcDir}DuplicateModules.rom"
+# "{LibDir}RomStandardLib.lib"	Ä	"{LibraryDir}StandardLib.o"						¶
+# 									"{IfSrcDir}DuplicateModules.rom"
+# 	Lib {StdLibOpts} -o "{Targ}" "{LibraryDir}StandardLib.o" -df "{IfSrcDir}DuplicateModules.rom"
 
 
-"{LibDir}RomInterface.Lib"		Ä	"{IfObjDir}Interface.o"							¶
-									"{IfSrcDir}DuplicateModules.rom"
-	Lib {StdLibOpts} -o "{Targ}" "{IfObjDir}Interface.o" -df "{IfSrcDir}DuplicateModules.rom"
+# "{LibDir}RomInterface.Lib"		Ä	"{IfObjDir}Interface.o"							¶
+# 									"{IfSrcDir}DuplicateModules.rom"
+# 	Lib {StdLibOpts} -o "{Targ}" "{IfObjDir}Interface.o" -df "{IfSrcDir}DuplicateModules.rom"
 
 #	Precompiled headers are not free.
 #
