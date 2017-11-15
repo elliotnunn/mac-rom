@@ -514,7 +514,7 @@ SlotF			ds.b	1			; info for Slot F
 ; 	If you change the ProductInfo record, bump the version up by 1.	
 ;
 ;--------------------------------------------------------------------------------------------
-ProductInfoVersion	equ		1		; Version of the ProductInfo record
+ProductInfoVersion	equ		0		; Version of the ProductInfo record
 
 ProductInfo		record	0,increment	; data structure describing product dependent features
 

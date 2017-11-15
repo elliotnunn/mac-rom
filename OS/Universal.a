@@ -1084,8 +1084,8 @@ GetHardwareInfo
 
 			cmpi.l	#'Hnfo',([$68FFEFD0],$70)	; NKHWInfo.Signature, fix this later
 			bne.s	@tryOldWay
-			import	InfoNanoKernel
-			biglea	InfoNanoKernel,a1
+			import	InfoNewWorld
+			biglea	InfoNewWorld,a1
 			bra		Matched
 @tryOldWay
 			biglea	CPUIDProductLookup-4,a2	; get address of CPUID product lookup table

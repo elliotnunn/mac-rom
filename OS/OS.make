@@ -254,14 +254,14 @@ OSObjs	= 							"{ObjDir}BCScreenRelated.o"						¶
 	Asm {StdAOpts} -o "{Targ}" "{OSDir}Universal.a" -i "{OSDir}StartMgr"
 
 
-# "{ObjDir}UniversalTables.a.o"		Ä	"{ObjDir}StandardEqu.d"						¶
-# 										"{IntAIncludes}HardwarePrivateEqu.a"		¶
-# 										"{IntAIncludes}UniversalEqu.a"				¶
-# 										"{AIncludes}Slots.a"						¶
-# 										"{IntAincludes}DepVideoEqu.a"				¶
-# 										"{AIncludes}ROMEqu.a"						¶
-# 										"{OSDir}UniversalTables.a"
-# 	Asm {StdAOpts} -o "{Targ}" "{OSDir}UniversalTables.a" -i "{OSDir}IoPrimitives:"
+"{ObjDir}UniversalTables.a.o"		Ä	"{ObjDir}StandardEqu.d"						¶
+										"{IntAIncludes}HardwarePrivateEqu.a"		¶
+										"{IntAIncludes}UniversalEqu.a"				¶
+										"{AIncludes}Slots.a"						¶
+										"{IntAincludes}DepVideoEqu.a"				¶
+										"{AIncludes}ROMEqu.a"						¶
+										"{OSDir}UniversalTables.a"
+	Asm {StdAOpts} -o "{Targ}" "{OSDir}UniversalTables.a" -i "{OSDir}IoPrimitives:"
 
 
 "{ObjDir}VerticalRetraceMgr.a.o" Ä	"{ObjDir}StandardEqu.d"							¶
