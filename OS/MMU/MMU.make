@@ -15,14 +15,13 @@ MMUObjs 		=					"{ObjDir}MMU.a.o"								¶
 									"{ObjDir}MMUTables.a.o"							¶
 									"{ObjDir}GetReal.a.o"
 
-# "{LibDir}MMU.lib"				Ä	{MMUObjs}
-# 	Lib {StdLibOpts} {MMUObjs} -o "{Targ}"
+"{LibDir}MMU.lib"				Ä	{MMUObjs}
+	Lib {StdLibOpts} {MMUObjs} -o "{Targ}"
 
 
 
 "{ObjDir}MMU.a.o"				Ä	"{ObjDir}StandardEqu.d"							¶
 									"{IntAIncludes}HardwarePrivateEqu.a"			¶
-									"{IntAIncludes}SoundPrivate.a"					¶
 									"{AIncludes}HardwareEqu.a"						¶
 									"{IntAIncludes}MMUEqu.a"						¶
 									"{IntAIncludes}BootEqu.a"						¶
