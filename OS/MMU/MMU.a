@@ -121,7 +121,7 @@
 			PRINT		OFF
 			LOAD		'StandardEqu.d'
 			INCLUDE		'HardwarePrivateEqu.a'
-			INCLUDE		'SoundPrivate.a'
+;			INCLUDE		'SoundPrivate.a'
 			INCLUDE		'MMUEqu.a'
 			INCLUDE		'BootEqu.a'
 			INCLUDE		'UniversalEqu.a'
