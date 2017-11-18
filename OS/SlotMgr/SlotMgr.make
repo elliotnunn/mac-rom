@@ -16,8 +16,8 @@ SlotMgrObjs						=	"{ObjDir}SlotInterrupts.a.o"					¶
 									"{ObjDir}SlotMgrInit.a.o"						¶
 									"{ObjDir}SlotMgr.a.o"
 
-# "{LibDir}SlotMgr.lib"			Ä	{SlotMgrObjs}
-# 	Lib {StdLibOpts} -o "{Targ}" {SlotMgrObjs}
+"{LibDir}SlotMgr.lib"			Ä	{SlotMgrObjs}
+	Lib {StdLibOpts} -o "{Targ}" {SlotMgrObjs}
 
 
 

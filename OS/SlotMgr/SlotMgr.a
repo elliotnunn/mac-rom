@@ -774,7 +774,7 @@ IdSave$d		EQU		D2			;Save the sResource Id.
 				MOVE.L	a2,a0
 				MOVE.L	a3,a1
 				MOVE.L	d1,d0
-				_BlockMove
+				_BlockMoveData
 				MOVEM.L	(SP)+,A0-A1										;Restore A0-A1, destroyed by _BlockMove.
 				BNE.S	Err1
 				
@@ -1483,12 +1483,6 @@ EndStatLoad		RTS
 ;	Patch out Drivers for any Apple Cards that need it.
 
 BeginGetSlotDrvr
-			IF NOT LC930 THEN
-				Import	GetDriverPatch
-				Bsr		GetDriverPatch						; If GetDriverPatch returns a 
-				Tst.b	D0									;	result >= 0, don’t execute
-				Bge.s	ExitGetSlotDrvr						; Patched, so just return.
-			ENDIF
 ;	This is the original entry-point. It is called by GetDevIndex
 				Export	OrigGetSlotDrvr
 OrigGetSlotDrvr
@@ -1518,240 +1512,6 @@ ExitGetSlotDrvr	RTS
 
 				EJECT
 				
-;____________________________________________________________________________
-;
-; GetDriverPatch and support (called from _SGetDriver).
-;
-;	Entry/Exit:	A0 points to spBlock.
-;
-;	Purpose:	The purpose of GetDriverPatch is to identify Apple
-;				Cards whose Driver code is faulty, and execute fixed
-;				versions from the CPU ROM. It’s job is to
-;				call GetDevIndex to determine whether the card/device
-;				pointed to by the incoming spBlock is one that needs
-;				patching.  If so, it attempts to allocate enough space
-;				for the driver in the system heap, copy it there, and
-;				then return a handle to the driver in spBlock.spResult.
-;				If the driver can’t be loaded (e.g., not enough memory),
-;				the appropriate Slot Manager error is returned.
-;____________________________________________________________________________
-
-GetDriverPatch		Proc	Export
-			With	spBlock,LoadTblRec
-
-@saveRegs	Reg		A0/A3-A5/D3-D4						; Define registers for work/saving, and
-			Movem.l	@saveRegs,-(Sp)						;	store them on the stack.
-			Link	A6,#-spBlockSize					; Get a stack frame.
-			
-			Move.l	A0,A3								; Save spBlockPtr.
-
-; First, look to see if we even need to be attempting to patch the driver on this
-; 	card/device.
-;
-			Bsr		GetDevIndex							; Get the card/device index into D0.
-			Move.l	D0,D3								; If the device index is negative, then
-			Bmi 	@done								; driver doesn’t need patching.<SM9> CSS	
-
-; Next, check to see that we’re pointing to the sResource that has the driver or
-;	driver loader in it (i.e., we don’t want to be opening the driver multiple
-;	times).
-;
-			Lea		LoadTbl,A1							; Point to base of LoadTbl.
-			Mulu	#LTEntrySize,D3						; Adjust index.
-			
-			Move.l	A1,A0								; Point to base of LoadTbl.
-			Move.b	ltSpID(A0,D3),D0					; Get spID.
-			Move.b	ltSpExtDev(A0,D3),D1				; Get spExtDev.
-
-			Moveq	#0,D4								; Clear value holder.
-			Move.b	D0,D4								; Save spID
-			Swap	D4									; 	and
-			Move.b	D1,D4								; Save spExtDev.
-			
-			Move.l	Sp,A0								; Point to local spBlock.
-
-			Move.b	spSlot(A3),spSlot(A0)				; Get pointer to right sResource list:
-			Move.b	spID(A3),spID(A0)					; 	Need spSlot, spID, and 
-			Move.b	D4,spExtDev(A0)						; 	spExtDev.
-			_SRsrcInfo
-			Bne.s	@errRtn
-			
-			Swap	D4									; Get spID.									
-			
-			Move.b	D4,spID(A0)							; Make sure this sResource is the one
-			_SFindStruct								; 	with the driver in it.
-			Bne.s	@errRtn
-
-; Finally, now that we know that we on the right card/device and are looking at the right
-;	sResource, allocate relocatable space in the System heap and tell the caller where that
-;	space is.
-;
-			Move.l	A1,A4								; Point to base of LoadTbl.
-			Add.l	ltAddrOff(A1,D3),A4					; Add offset to driver and save pointer.
-			
-			Move.l	A1,A0								; Point to base of LoadTbl.
-			Add.l	ltSizeOff(A1,D3),A0					; Add offset to driver size and get pointer.
-			Move.l	(A0),D3								; Save driver size.
-			
-			Move.l	D3,D0								; Compact/Reserve some space for ourselves
-			_ResrvMem	,SYS							;	in the System heap.
-			Bne.s	@errRtn								; Get out if we couldn’t reserve the space.
-			
-			Move.l	D3,D0								; Attempt to allocate some space in the
-			_NewHandle	,SYS							;	System heap.
-			Bne.s	@errRtn								; Get out if we couldn’t get the space.
-			
-			Move.l	A0,A5								; Remember allocated handle, and prevent it
-			_HNoPurge									;	from being removed.
-			
-			Move.l	A4,A0								; Get address of driver code.
-			Move.l	(A5),A1								; Get address of allocated space.
-			Move.l	D3,D0								; Get size.
-			_BlockMove									; Move driver into allocated space.
-			
-			Move.l	A3,A0								; Restore spBlockPtr.
-			Move.l	A5,spResult(A0)						; Return driver handle in spResult.
-			
-			Moveq	#0,D0								; Return noErr.
-			Bra.s	@done
-
-@errRtn		Move.l	#smsGetDrvrErr,D0					; Couldn’t load driver error.			
-@done		Unlk	A6									; Restore stack frame.
-			Movem.l	(Sp)+,@saveRegs						; Restore registers.
-			Rts
-			
-;____________________________________________________________________________
-;
-;	GetDevIndex
-;
-;	Entry:		A0	-- points to spBlock.
-;
-;	Exit:		D0	-- contains index (0..n-1) or error value (<0).
-;
-;	Purpose:  The purpose of GetDevIndex is to cycle through a table of 
-;			  card/device identifiers.  If the card/device passed in
-;			  is in the device table, it’s entry is returned.  Otherwise,
-;			  a negative number (-1) is returned.  This is a utility routine
-;			  called by SlotGetDriverPatch and SlotPrimaryInitPatch.
-;
-;	Note:	  This routine Jsr’s (Bsr.l’s) to GetSlotDrvr directly due to
-;			  the fact that we might be coming from our patched out version
-;			  of GetSlotDrvr!  We need to do this so that we can compare
-;			  the version of the driver on the card with the one we know
-;			  about.  This is so that we don’t patch out newer (and
-;			  presumably compatible) versions of the PrimaryInit and Driver.
-;
-;____________________________________________________________________________
-
-			Macro										; Macro for jumping directly int
-			_GetSlotDriver								;	GetSlotDrvr (acting like trap dispatcher).								
-			Movem.l	A1/D1-D2,-(Sp)						; Save registers (A0 i/o, D0 is result).
-			Bsr.l	OrigGetSlotDrvr						; Make call.					<T8>
-			Tst.w	D0									; Act like Slot Manager for result.
-			Movem.l	(Sp)+,A1/D1-D2						; Restore registers.
-			EndMacro									;
-			
-			With	DevTblRec,spBlock,seBlock
-			Export	GetDevIndex 
-GetDevIndex 
-
-@saveRegs	Reg		A3-A5/D3-D4							; Define registers for work/saving, and
-			Movem.l	@saveRegs,-(Sp)						; 	store them on the stack.
-			Link	A6,#-spBlockSize					; Get a stack frame.
-			
-			Move.l	A0,A3								; Save current spBlock to simulate sExec.
-			Move.l	Sp,A0								; Point to stack spBlock.
-
-			Lea		DevTbl,A4							; Point to table of device identifiers.
-			Moveq	#0,D3								; Set entry index to 0.
-			
-@repeat		Move.b	spSlot(A3),spSlot(A0)				; Reset spSlot to the one we want.
-			Clr.w	spID(A0)							; Start search from top, no external devices.		<11>
-			Clr.b	spTBMask(A0)						; No mask (i.e., specific search).
-			Move.w	category(A4),spCategory(A0)			; Look for:  Category,
-			Move.w	cType(A4),spCType(A0)				;			 CType,
-			Move.w	drvrSW(A4),spDrvrSW(A0)				;			 DrvrSW,
-			Move.w	drvrHW(A4),spDrvrHW(A0)				;			 DrvrHW.
-			Clr.l	spParamData(A0)						; Look only for enabled sRsrcs.						<11>
-			Bset	#foneslot,spParamData+3(A0)			; Limit search to this slot only by
-			_GetTypeSRsrc								; 	using the new & improved routine.
-			
-			Bne.s	@until								; If this isn’t the device were looking for,
-														;	then keep going.				
-			
-			_GetSlotDriver								; Otherwise, attempt to load driver (for version #).
-			Bne.s	@dontPatch							; If it couldn’t be loaded, punt.
-			
-			Move.l	spResult(A0),A5						; Save driver handle (to dispose).
-			Move.l	(A5),A0								; Get driver pointer.
-			Lea		drvrName(A0),A0						; Get driver name.
-			
-			Clr.w	D0									; Clear D0.w (for use as index).
-			Move.b	(A0),D0								; Get the length of the driver name.
-			Addq	#2,D0								; Adjust offset to version field.
-			Bclr	#0,D0								; Adjust offset for word alignment.
-			Move.w	(A0,D0.w),D4						; Save the version number.
-			Move.l	A5,A0								; Get driver handle, and
-			_DisposHandle								;	dispose of it.
-			
-			Cmp.w	drvrVers(A4),D4						; If the card’s version ≠ to ours,					<11>
-			Bne.s	@until								;	then keep going.								<11><H5>
-			
-			Move.l	D3,D0								; Otherwise, copy the index into D0,
-			Bra.s	@done								;	and return.
-			
-@until		Adda	#DTEntrySize,A4						; Point to next entry in table, and
-			Addq	#1,D3								;	increment entry index.
-			Tst.w	(A4)								; If this isn’t the final entry, then							
-			Bne.s	@repeat								;	keep checking.
-			
-@dontPatch	Moveq	#-1,D0								; Flag that we don’t want to patch.
-@done		Unlk	A6									; Put stack frame back.
-			Movem.l	(Sp)+,@saveRegs						; Restore registers.
-			Rts		
-			
-			EndWith
-
-			
-;____________________________________________________________________________
-;
-;	Tables for PrimaryInit & GetDriver patches.
-;
-;	Note:  Keep these here and don’t export these labels!
-;____________________________________________________________________________
-
-			Import	TFBDrvr,TFBDrvrSize
-			Import	JMFBDrvr,JMFBDrvrSize
-			
-			Import	TFBPrimaryInit
-			Import	JMFBPrimaryInit
-			
-			Export	JsrTbl
-
-DevTbl		Dc.w	CatDisplay,TypVideo,DrSwApple,DrHwTFB,0	 ; TFB  Entry									<11>
-			Dc.w	CatDisplay,TypVideo,DrSwApple,DrHwJMFB,0 ; JMFB Entry									<11>
-			Dc.w	0									
-					
-			Align	4
-			
-LoadTbl		Dc.l	TFBDrvr-LoadTbl						; Start of TFB driver code.	
-			Dc.l	TFBDrvrSize-LoadTbl					; Length.
-			Dc.b	sRsrcDrvrDir						; TFB’s have an sRsrcDrvrDir.
-			Dc.b	0									; TFB’s are singly deviced.
-			Dc.b	0,0									; Padding.											<11>
-			
-			Dc.l	JMFBDrvr-LoadTbl					; Start of 4•8/8•24 driver code.
-			Dc.l	JMFBDrvrSize-LoadTbl				; Length.
-			Dc.b	sRsrcDrvrDir						; 4•8/8•24’s have an sRsrcDrvrDir.
-			Dc.b	0									; 4•8/8•24’s are singly deviced.
-			Dc.b	0,0									; Padding.
-			
-			Align	4
-			
-JsrTbl		Dc.l	TFBPrimaryInit-JsrTbl				; TFBPrimaryInit
-			Dc.l	JMFBPrimaryInit-JsrTbl				; 4•8/8•24 PrimaryInit
-
-
 ;=========================================================================================
 ;	slotinfo
 ;=========================================================================================
@@ -1971,6 +1731,12 @@ PtrToSlot	Proc	Export
 			MOVE.L	spsPointer(A0),D1				; D1 = sPointer
 			BEQ.S	@Done							; nil pointer - error
 
+			ROL.L	#8,D1
+			MOVE.B	ROMBase,D2
+			CMP.B	D2,D1
+			BEQ.S	@skip_older
+			MOVE.L	spsPointer(A0),D1
+
 ;  Determine the slot
 
 			clr.b	d1								; clear low byte of pointer				<2.1>
@@ -1984,10 +1750,11 @@ PtrToSlot	Proc	Export
 			MOVE.B	ROMBase,D2						; D2 = high byte of ROMBase
 			lsr.b	#4,d2							; shift high nib to low nibble			<2.1>
 			CMP.B	D2,D1							; same?
-			BHI.S	@FoundSlot						; must be other super slot space
+			BNE.S	@FoundSlot						; must be other super slot space
 			
 ;	Pointer is to ram or rom.  Translate it to slot 0.
 			
+@skip_older
 			MOVEQ	#0,D1							; access to host ROM - translate to slot 0
 			BRA.S	@FoundSlot
 
@@ -2553,13 +2320,9 @@ DeleteSRTRec
 
 ;	Last SRT block is empty - free the block.  Traverse SRT to end to nil the link ptr.
 
-@Free		MOVE.B	mmu32Bit,-(SP)				; save current mmu state <SM2> rb
-			MOVE.B	#false32b,D0				; <SM2> rb
-			_SwapMMUMode						; switch to 24 bit mode <SM2> rb
+@Free
 			MOVEA.L	A2,A0						; A0 = ptr to last SRT blk
 			_DisposPtr							; free the block
-			MOVE.B	(SP)+,D0					; recover status <SM2> rb
-			_SwapMMUMode						; restore mmu state <SM2> rb
 			MOVEA.L	sRsrcTblPtr,A1				; get ptr to beginning of SRT
 @Loop1		ADDA.W	#srtBlkSize,A1				; inc to end of blk
 			CMPA.L	srtNext(A1),A2				; found end of link ?
@@ -2697,6 +2460,7 @@ pNewSRTEntry
 
 			MOVE.L	spParamData(A0),D1			; save enable/disable flags
 			_sFindsInfoRecPtr					; get ptr to sinfo record
+			BNE.S	@Done
 			MOVEA.L	spResult(A0),A1				; A1 = ptr to sInfo record
 			MOVE.L	siDirPtr(A1),spsPointer(A0)	; set ptr to ROM directory
 			_sFindStruct						; search the ROM directory
@@ -3438,13 +3202,6 @@ shortvers	ds.w	1								; version and vector offset
 			lsr.b	#4,d0							; look at high nibble
 			cmp.b	#$0B,d0							; long bus exception frame ?
 			bne.s	@RealBusEx						; transfer to real bus exception handler
-			move.b	DFAddr(sp),d0					; get high byte of data fault cycle address
-			cmp.b	#majorSpace,d0					; in super slot space ($60-$E0) ?
-			blo.s	@RealBusEx						; not in slot address space
-			cmp.b	#$FF,d0							; in minor slot space range ?
-			beq.s	@RealBusEx						; not in minor slot space
-			cmp.b	#$F0,d0							; in minor slot space range ?
-			beq.s	@RealBusEx						; not in minor space $F1 - $FE
 
 ;	Have verified that a NuBus read data access caused the bus error.  Need to modify the
 ;	stack frame to return to the address in register a2.  Accomplish this by creating a new
@@ -3486,9 +3243,6 @@ shortvers	ds.w	1								; version and vector offset
 pInstallBus			
 			move.w	sr,-(sp)								; Save current interrupt level.
 			ori.w	#HiIntMask,sr							; disable interrupts
-			moveq	#True32B,d0
-			_SwapMMUMode									; change to 32 bit mode
-			move.b	d0,([sInfoPtr],entryMMUMode)			; save old mmu state
 			move.l	BusErrVct,([sInfoPtr],sysBusExcptn)		; save system bus vector in globals
 			move.l	([SDMJmpTblPtr],BusException*4),BusErrVct	; replace with slot mgr vector
 			move.w	(SP)+,SR								; restore interrupt state
@@ -3514,8 +3268,6 @@ pRestoreBus
 			move.l	d0,-(sp)						; save reg
 			move.w	sr,-(sp)						; Save current interrupt level.
 			ori.w	#HiIntMask,sr					; disable interrupts
-			move.b	([sInfoPtr],entryMMUMode),d0		; get saved mmu mode		
-			_SwapMMUMode								; restore mmu mode
 			move.l	([sInfoPtr],sysBusExcptn),BusErrVct	; restore system exception vector
 			move.w	(sp)+,sr							; restore interrupt state
 			move.l	(sp)+,d0							; restore reg
@@ -3804,9 +3556,10 @@ RemoveCard
 			with	spBlock,sInfoRecord
 
 CheckSlot
-@regs		reg		d1-d3/a1-a4
+@regs		reg		d1-d4/a1-a4
 			movem.l	@regs,-(sp)
 			moveq.l	#0,d3							; set d3 = change status flag
+			moveq.l	#0,d4
 
 ;	get ptr to slot's sInfoRecord so we can check its previous state
 
@@ -3822,6 +3575,12 @@ CheckSlot
 			cmp.w	#smReservedSlot,		\		; check for reserved slot
 					siInitStatusA(a4)
 			beq		@Return							; reserved slots not valid
+			cmp.w	#smEmptySlot,			\		; check for empty slot
+					siInitStatusA(a4)
+			bne.s	@notbad							; empty slots not valid
+
+			moveq.l	#-1,d4
+@notbad
 
 			moveq.l	#0,d1							; zero reg
 			move.b	spSlot(a0),d1					; d1 = slot number
@@ -3859,11 +3618,14 @@ CheckSlot
 ;	Verify the format header  -  a0 = ptr to spblock, a1 = ptr to sInfoRecord
 
 @Verify
-			bsr.l	VerifySlot						; verify the config rom format
+			bsr	VerifySlot							; verify the config rom format
 			tst.w	siInitStatusA(a1)				; is the slot status ok?
 			bne.s	@CheckError						; bad or empty slot - check previous status
 
 ;	Config ROM verifies ok - walk through all the sResources looking for the board sResource
+
+			tst.l	d4
+			bne.s	@Changed
 
 			bsr		GetBoardID						; find the board sRsrc and board id
 			beq.s	@Changed						; no board id - a bad card

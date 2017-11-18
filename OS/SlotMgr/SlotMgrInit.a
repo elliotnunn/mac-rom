@@ -414,10 +414,6 @@ StartSDeclMgr
 			bsr		InitsPram					; initial a slot's PRAM
 			dbra	d1,@Loop
 
-;	Initialize the Docking Manager so built-in video and docking cards can use its facilities
-
-			BSR.L	InitDocking					; initialize the Docking Manager			<H4>
-
 ;	Set up the warm/cold start flag for later.												<SM8>
 
 			Moveq.l	#0,D2						; D2 = flag for cold start.
@@ -1074,9 +1070,11 @@ InitsPRAM
 			tst.w	siInitStatusA(a2)				; is the slot status ok?
 			beq.s	@readPRAM						; slot ok - read board id from pram
 			cmp.w	#smDisabledSlot,siInitStatusA(a2)	; is slot disabled?
-			beq.s	@Done							; don't touch disabled slot's pram
+			beq		@Done							; don't touch disabled slot's pram
 			cmp.w	#smReservedSlot,siInitStatusA(a2)	; is slot reserved?
-			beq.s	@Done							; reserved is the same as disabled
+			beq		@Done							; reserved is the same as disabled
+			cmp.w	#smEmptySlot,siInitStatusA(a2)	; is slot empty?
+			beq		@Done							; empty is the same as disabled
 			bra.s	@writePRAM						; slot status is bad - zero pram
 
 ;	Read PRAM to get the current board id.
@@ -1215,16 +1213,6 @@ doPrimaryInit
 			_sFindStruct
 			bne.s	@Done							; no primary init record - done
 
-			IF NOT LC930 THEN
-
-;	Identify Apple Cards whose PrimaryInit code is faulty, and execute fixed
-;	versions from the CPU ROM.
-			Bsr.s	PatchPrimaryInit					; If PatchPrimaryInit returns a 
-			Tst.b	D0									;	result >= 0, don’t execute
-			Bpl.s	@cleanup							;	normal PrimaryInit.
-			
-			ENDIF
-			
 ;	Load the code and execute the primary init record.
 ;
 			Move.l	A3,spsPointer(A0)					; Restore ptr to board sRsrc.
@@ -1240,66 +1228,6 @@ doPrimaryInit
  			Move.w	#smInitStatVErr,siInitStatusA(A1)	; Some fatal vendor status returned
 
 @done		Rts
-
-;____________________________________________________________________________
-;
-; PatchPrimaryInit and support (called from doPrimaryInit).
-;
-;	Entry:		A0		-- points to spBlock.
-;				A1		-- points to sInfoRecord.
-;				A2		-- (after restore from BigJump) points to sExec param blk.
-;				A3		-- points to board sResource.
-;
-;				D1		-- contains spSlot (we use spBlock.spSlot here, though).
-;	
-;	Exit:		A0-A3	-- preserved.
-;				D1		-- preserved.
-;
-;	Purpose:	The purpose of SlotPrimaryInitPatch is to identify Apple
-;				Cards whose PrimaryInit code is faulty, and execute fixed
-;				versions from the CPU ROM.
-;
-;				SlotPrimaryInitPatch is executed from the (non-exported)
-;				routine doPrimayInit in SlotInfo.a.
-;____________________________________________________________________________
-			
-			IF NOT LC930 THEN
-
-			With	seBlock,spBlock
-			Import	GetDevIndex,JsrTbl
-
-PatchPrimaryInit
-
-@saveRegs	Reg		A0-A3/D1/D3							; Define some work and scratch registers,
-			Movem.l	@saveRegs,-(Sp)						; 	and save them on the stack.
-			
-			Move.l	A0,A3								; Save the spBlockPtr for later.
-			
-			Bsr		GetDevIndex							; Get the device/card index into D0.
-			Move.l	D0,D3								; If the device index is negative, then
-			Bmi.s	@done								;	PrimaryInit doesn’t need patching.
-			
-			Lea		JsrTbl,A1							; Point to base of JsrTbl.
-			Lsl.l	#2,D3								; Adjust index.
-			
-			Move.l	A1,A0								; Copy base address.
-			Add.l	D3,A0								; Point to proper entry.
-			Add.l	(A0),A1								; Load A1 with effective address of PrimaryInit.
-			
-			Move.l 	A3,A0								; Restore spBlockPtr.
-			Move.b	spSlot(A0),seSlot(A2)				; Set the right slot number.
-			Move.b	spFlags(A0),seFlags(A2)				; Set the flags.
-			Move.l	A2,A0								; Set A0 to sExecBlkPtr for fake sExec call.
-			Jsr		(A1)								; Execute the PrimaryInit.
-			
-			Move.l	D3,D0								; Return result code.
-			
-@done		Movem.l	(Sp)+,@saveRegs
-			Rts
-
- 			Endwith
-
-			ENDIF
 
 ;_______________________________________________________________________________________	<h5> djw
 ;	StubCheckSlot	-	check if a slot status has changed
@@ -1363,48 +1291,6 @@ StubRemoveCard
 ;	spBlock	:	-> spSlot			slot number
 ;				-> spFlags			fWarmStart - if set then a warm start (may be used by primary
 EnableBlockXfer
-			Testfor	BARTExists					; are we on a ColdFusion or PDM
-			bne.s	@goodMach
-			Testfor	MUNIExists					; do we have MUNI Nubus Controller?
-			Beq		@exit						; no, leave
-			
-@goodMach	MoveM.l	A0/D0-D2, -(SP)
-			Clr.b	spID(A0)					; Begin search with ID 0.
-			Clr.b	spExtDev(A0)				; No external device(s).
-			Clr.b	spHwDev(A0)					; No hardware device(s).
-			Clr.b	spTBMask(A0)				; No mask in search.
-			Move.w	#catBoard,spCategory(A0)	; Look for:  Board sRsrc
-			Clr.w	spCType(A0)
-			Clr.w	spDrvrSW(A0)
-			Clr.w	spDrvrHW(A0)
-			Move.l	#(1<<foneslot), spParamData(A0)	; look only in this slot
-			_GetTypeSRsrc						; get slots board sRsrc
-			Bne.s	@done
-			Move.b	#sBlockTransferInfo, spID(A0)
-			_sReadLong							; does slot support block xfers?
-			Bne.s	@done						; no, leave
-			Move.l	spResult(A0), D0			; get sBlockTransferInfo long
-			BTst	#fIsSlave, D0				; handles blk xfer as slave? 
-			Beq.s	@done						; no, leave
-
-			Testfor	BARTExists					; are we on a ColdFusion or PDM
-			beq.s	@muni						; no, must be MUNI
-			BTst	#fSlvXferSz2, D0			; handles blk xfer size of 2?
-			Bne.s	@enable						; yes, go
-			BTst	#fSlvXferSz8, D0			; handles blk xfer size of 8?
-			Bne.s	@enable						; yes, go
-			bra.s	@done						; no, exit
-			
-@muni		BTst	#fSlvXferSz4, D0			; handles blk xfer size of 4?
-			Beq.s	@done						; no, leave
-			
-@enable		MoveQ	#0, D0
-			Move.b	spSlot(A0), D0
-			BSet	#8, D0						; make high word indicate enable blk xfer
-			Move.l	D0, A0
-			_SlotBlockXferCtl			
-
-@done		MoveM.l	(SP)+, A0/D0-D2
 @exit		Rts
 																							;end 	<LW2>
 
