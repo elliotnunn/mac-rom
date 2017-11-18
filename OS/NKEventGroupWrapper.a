@@ -1,54 +1,89 @@
 ;	Straightforward 68k wrappers for three NanoKernel MPCalls related to EventGroups
 
-MPCall49	PROC		EXPORT			; create an EventGroup (will be for blue), return its ID
-
-			Link		A6, #$0
-			MoveQ.L		#49, D0
-			dc.w		$fe1f
-			Move.L		D0, $C(A6)
-			Move.L		$8(A6), D0
-			BEQ.B		(* + $6)
-			MoveA.L		D0, A1
-			Move.L		A0, (A1)
-			Unlk		A6
-			MoveA.L		(SP)+, A0
-			AddQ		#$4, SP
-			Jmp			(A0)
+;	How the FE1F trap makes MP calls:
+;
+;	68 reg | input              | output
+;	-----------------------------------------------
+;	D0     | r0/MPCall selector | r3/return value 1
+;	A0     | r3/argument 1      | r4/return value 2
+;	D1     | r4/argument 2      | r5/return value 3
+;	A1     | r5/argument 3      | r6/return value 4
 
 
 
-MPCall54	PROC		EXPORT
+;	pascal OSStatus NKCreateEvent(long return_space, MPEventID *event);
 
-			Link		A6, #$0
-			MoveA.L		$C(A6), A0
-			Move.L		$8(A6), D1
-			MoveQ.L		#54, D0
-			dc.w		$fe1f
-			Move.L		D0, $10(A6)
-			Unlk		A6
-			MoveA.L		(SP)+, A0
-			AddQ.L		#$8, SP
-			Jmp			(A0)
+NKCreateEvent		PROC		EXPORT
+
+					LINK		A6, #0
+
+					MOVEQ.L		#49, D0
+					DC.W		$FE1F				; CALL
+
+					MOVE.L		D0, $C(A6)			; return r3;
+
+					MOVE.L		$8(A6), D0			; if(event) *event = r4;
+					BEQ.S		@NOPTR
+					MOVE.L		D0, A1
+					MOVE.L		A0, (A1)
+@NOPTR
+
+					UNLK		A6
+					MOVE.L		(SP)+, A0
+					ADDQ		#4, SP
+					JMP			(A0)
 
 
 
-MPCall52	PROC		EXPORT
+;	pascal OSStatus NKSetSWIEvent(long return_space, MPEventID event, long swi);
 
-			Link		A6, #$0
-			MoveA.L		$8(A6), A1
-			MoveA.L		$10(A6), A0
-			MoveQ.L		#52, D0
-			dc.w		$fe1f
-			Move.L		D0, $14(A6)
-			Move.L		$C(A6), D0
-			BEQ.B		(* + $6)
-			MoveA.L		D0, A1
-			Move.L		A0, (A1)
-			Unlk		A6
-			MoveA.L		(SP)+, A0
-			DC.W		$defc, $000c
-;			AddA.W		#$C, SP
-			Jmp			(A0)
+NKSetSWIEvent		PROC		EXPORT
+
+					LINK		A6, #0
+
+					MOVE.L		$C(A6), A0			; r3 = event;
+					MOVE.L		$8(A6), D1			; r4 = swi;
+
+					MOVEQ.L		#54, D0
+					DC.W		$FE1F				; CALL
+
+					MOVE.L		D0, $10(A6)			; return r3;
+
+					UNLK		A6
+					MOVE.L		(SP)+, A0
+					ADDQ.L		#8, SP
+					JMP			(A0)
+
+
+
+;	pascal OSStatus NKWaitForEvent(MPEventID event, MPEventFlags *flags, Duration duration)
+
+NKWaitForEvent		PROC		EXPORT
+
+					LINK		A6, #$0
+
+					MOVE.L		$8(A6), A1			; r5 = duration;
+					MOVE.L		$10(A6), A0			; r3 = event;
+
+					MOVEQ.L		#52, D0
+					DC.W		$FE1F				; CALL
+
+					MOVE.L		D0, $14(A6)			; return r3;
+
+					MOVE.L		$C(A6), D0			; if(flags) *flags = r4;
+					BEQ.B		@NOPTR
+					MOVE.L		D0, A1
+					MOVE.L		A0, (A1)
+@NOPTR
+
+					UNLK		A6
+					MOVE.L		(SP)+, A0
+;					DC.W		$DEFC, $000C
+
+					OPT			NONE				; not sure how this instruction got here!
+
+					ADDA.W		#$C, SP
+					JMP			(A0)
 
 
 
