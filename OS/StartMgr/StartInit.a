@@ -1548,10 +1548,81 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			IMPORT	EXPANSIONBUSMGRFIRSTFUNC
 			BSR.L	EXPANSIONBUSMGRFIRSTFUNC
 
-			BSR.L	CompBootStackOld				; lifted from SetUpSysAppZone
+
+			STRING	C
+
+
+
+			PEA		#' *68k: BufPtr = '
+			MOVE	#-3,-(SP)
+			DC.W	$AA7F
+
+			MOVE.L	BufPtr,-(SP)			; C arg 3: (long)value
+			MOVE.L	#3,-(SP)				; C arg 2: (short)howWide /* want 8 hex digits */
+			MOVE	#-2,-(SP)				; C arg 1: (short)selector /* to print hex */
+			DC.W	$AA7F
+
+			PEA		#'^n'
+			MOVE	#-3,-(SP)
+			DC.W	$AA7F
+
+
+
+			PEA		#' *68k: sysZone = '
+			MOVE	#-3,-(SP)
+			DC.W	$AA7F
+
+			MOVE.L	sysZone,-(SP)			; C arg 3: (long)value
+			MOVE.L	#3,-(SP)				; C arg 2: (short)howWide /* want 8 hex digits */
+			MOVE	#-2,-(SP)				; C arg 1: (short)selector /* to print hex */
+			DC.W	$AA7F
+
+			PEA		#'^n'
+			MOVE	#-3,-(SP)
+			DC.W	$AA7F
+
+
+
+			PEA		#' *68k: About to call CompBootStack (not Old!)...^n'
+			MOVE	#-3,-(SP)
+			DC.W	$AA7F
+
+			BSR.L	CompBootStack				; lifted from SetUpSysAppZone
+
+
+
+			MOVE.L	A0,-(SP)				; save new stack location to stack!
+
+			PEA		#'       ...which returned '
+			MOVE	#-3,-(SP)
+			DC.W	$AA7F
+
+			MOVE.L	(SP),A0					; grab a copy of A0 but leave it on the stack
+
+			MOVE.L	A0,-(SP)				; C arg 3: (long)value
+			MOVE.L	#3,-(SP)				; C arg 2: (short)howWide /* want 8 hex digits */
+			MOVE	#-2,-(SP)				; C arg 1: (short)selector /* to print hex */
+			DC.W	$AA7F
+
+			PEA		#'^n *68k: Now moving stack to there (eek)...^n'
+			MOVE	#-3,-(SP)
+			DC.W	$AA7F
+
+			MOVE.L	(SP)+,A0				; restore from stack now
+
 			MOVE.L	A0,SP
+
+			PEA		#'       ...which didnt crash.^n *68k: Now calling SetApplLimit...^n'
+			MOVE	#-3,-(SP)
+			DC.W	$AA7F
+
+			MOVE.L	SP,A0					; bit ugly: the above clobbers A0
 			SUBA.W	#BootStackSize,A0
 			_SetApplLimit
+
+			PEA		#'       ...which returned successfully.^n *68k: Pushing on with InterC_2560 (no more log messages)^n'
+			MOVE	#-3,-(SP)
+			DC.W	$AA7F
 
 			IMPORT	InterC_2560
 			BSR		InterC_2560
