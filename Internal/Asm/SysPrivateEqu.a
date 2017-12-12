@@ -214,229 +214,296 @@ IntRegsSize	equ		8*4					; size of IntRegs in bytes - must change if IntRegs cha
 ; Extended Low Memory area available on all machines
 
 ExpandMemRec  		RECORD  	0
-emVersion 			DS.W		1 					; version of expanded memory
-emSize				DS.L		1 					; length of em
-emIntlGlobals 		DS.L		1 					; international globals pointer
-emKeyDeadState		DS.L		1 					; Key1Trans, Key2Trans dead state
-emKeyCache			DS.L		1 					; KCHR keyboard cache
-emIntlDef			DS.L		1					; Reserved for Intl
-emFirstKeyboard		ds.b		1					; flag byte
-emAlign				ds.b		1					; long-align until we need this storage
+emVersion 			DS.W		1 					; 000 ; version of expanded memory
+emSize				DS.L		1 					; 002 ; length of em
+emIntlGlobals 		DS.L		1 					; 006 ; international globals pointer
+emKeyDeadState		DS.L		1 					; 00a ; Key1Trans, Key2Trans dead state
+emKeyCache			DS.L		1 					; 00e ; KCHR keyboard cache
+emIntlDef			DS.L		1					; 012 ; Reserved for Intl
+emFirstKeyboard		ds.b		1					; 016 ; flag byte
+emAlign				ds.b		1					; 017 ; long-align until we need this storage
 emItlCacheSize		equ			16					; bytes in cache
-emItlCache			ds.b		emItlCacheSize		; reserve room for cache
-emItlNeedUnlock		ds.b		1					; for pack6
-emItlDontUnlockYet	ds.b		1					; for pack6										<56>
-emItlFiller			ds.b		2					; Reserved room
-emScriptsInstalled	ds.b		1					; number of installed scripts
-emTwoCursorsFlag	ds.w		1					; indicates split cursor and if emCursor2Rect is high cursor
-emCursor2Rect		ds.w		4					; top, left, bottom, right edges of split cursor: initialized to 0
-emFmtOrderHFlag		ds.b		1					; flag to indicate a handle was allocated
-emDirection			ds.l		1					; direction param for C2P for both offsets
-emMeasureLine		ds.b		1					; flag that says to measure the whole line
-emCleanWordBrk		ds.l		1					; storage for 32-bit clean defWordBrk address
-emNewFont			ds.b		1					; textStyle.tsFont: the only field I fill in
-emNewStyle			ds.w		4					; SetRsrved params: flag.b, textStylePtr.l, mode.w
-emBufferHandle		ds.l		1					; handle for text buffering
-emUnsynchedFlag		ds.b		1					; indicates unsynched keyboard and font
-emTExtra			ds.b		3					; extra TE bytes
-emBufferLen			ds.w		1					; length of text in buffer
-emSERDVars			ds.l		1					; Serial Driver Globals
-emGestalt			ds.l		1					; Gestalt Globals
-emLayoutGlobals		ds.l		1					; Layout Mgr Globals
-emTSMGlobals		ds.l		1					; Text-Service Mgr Globals
-emSplineKey			ds.l		1					; Bass Fonts Globals
-emSnarfGlobals		ds.l		1					; Snarf Man
-emLAPGlobals		ds.l		1					; AppleTalk globals
-emLMgrGlobals		ds.l		1					; LAP Mgr globals
-emHelpGlobals		ds.l		1					; Help Mgr Globals
-emPPCGlobals		ds.l		1					; PPC Mgr globals
-emDataPub			ds.l		1					; Data Publications globals
-emReliability		ds.l		1					; Reliability manager globals
-emjRunSlotHandlrs	ds.l		1					; for slot mgrs
-emFolderCache		ds.l		1					; used by Folder Manager
+emItlCache			ds.b		emItlCacheSize		; 018 ; reserve room for cache
+emItlNeedUnlock		ds.b		1					; 028 ; for pack6
+emItlDontUnlockYet	ds.b		1					; 029 ; for pack6										<56>
+emItlFiller			ds.b		2					; 02a ; Reserved room
+emScriptsInstalled	ds.b		1					; 02c ; number of installed scripts
+emTwoCursorsFlag	ds.w		1					; 02e ; indicates split cursor and if emCursor2Rect is high cursor
+emCursor2Rect		ds.w		4					; 030 ; top, left, bottom, right edges of split cursor: initialized to 0
+emFmtOrderHFlag		ds.b		1					; 038 ; flag to indicate a handle was allocated
+emDirection			ds.l		1					; 03a ; direction param for C2P for both offsets
+emMeasureLine		ds.b		1					; 03e ; flag that says to measure the whole line
+emCleanWordBrk		ds.l		1					; 040 ; storage for 32-bit clean defWordBrk address
+emNewFont			ds.b		1					; 044 ; textStyle.tsFont: the only field I fill in
+emNewStyle			ds.w		4					; 046 ; SetRsrved params: flag.b, textStylePtr.l, mode.w
+emBufferHandle		ds.l		1					; 04e ; handle for text buffering
+emUnsynchedFlag		ds.b		1					; 052 ; indicates unsynched keyboard and font
+emTExtra			ds.b		3					; 053 ; extra TE bytes
+emBufferLen			ds.w		1					; 056 ; length of text in buffer
+emSERDVars			ds.l		1					; 058 ; Serial Driver Globals
+emGestalt			ds.l		1					; 05c ; Gestalt Globals
+emLayoutGlobals		ds.l		1					; 060 ; Layout Mgr Globals
+emTSMGlobals		ds.l		1					; 064 ; Text-Service Mgr Globals
+emSplineKey			ds.l		1					; 068 ; Bass Fonts Globals
+emSnarfGlobals		ds.l		1					; 06c ; Snarf Man
+emLAPGlobals		ds.l		1					; 070 ; AppleTalk globals
+emLMgrGlobals		ds.l		1					; 074 ; LAP Mgr globals
+emHelpGlobals		ds.l		1					; 078 ; Help Mgr Globals
+emPPCGlobals		ds.l		1					; 07c ; PPC Mgr globals
+emDataPub			ds.l		1					; 080 ; Data Publications globals
+emReliability		ds.l		1					; 084 ; Reliability manager globals
+emjRunSlotHandlrs	ds.l		1					; 088 ; for slot mgrs
+emFolderCache		ds.l		1					; 08c ; used by Folder Manager
 
-vDoErase			ds.l		1
-vCaretDisplay		ds.l		1					; Used by TextEdit for vectors
-vGetLRPosition		ds.l		1					;   to patch Rom
-vGetRLPosition		ds.l		1
-vOnLineEnd			ds.l		1
-vCaretInsideRun		ds.l		1
-vSetDirection		ds.l		1
-vGetDirection		ds.l		1
-vGetStylesInOrder	ds.l		1
-vteGetFormatOrder	ds.l		1
-vGetWidth			ds.l		1
-vGetCurScript		ds.l		1
-vOnSameLine			ds.l		1
-vMeasureWidth		ds.l		1
-vMeasureWholeRun	ds.l		1
-vHiliteLineEnds		ds.l		1
-vInvrtRectangle		ds.l		1
-vPixelWidths		ds.l		1
-vTEBufferText		ds.l		1
-vDumpBuffer			ds.l		1
-vCursorMovement		ds.l		1
-vTestRunDirection	ds.l		1
-vBufferChar			ds.l		1
-vSetFont2Keyboard	ds.l		1
-vSetKeyboard2Font	ds.l		1
-vStyleGuts			ds.l		1
-vConcatRuns			ds.l		1
+vDoErase			ds.l		1					; 090
+vCaretDisplay		ds.l		1					; 094 ; Used by TextEdit for vectors
+vGetLRPosition		ds.l		1					; 098 ;   to patch Rom
+vGetRLPosition		ds.l		1					; 09c
+vOnLineEnd			ds.l		1					; 0a0
+vCaretInsideRun		ds.l		1					; 0a4
+vSetDirection		ds.l		1					; 0a8
+vGetDirection		ds.l		1					; 0ac
+vGetStylesInOrder	ds.l		1					; 0b0
+vteGetFormatOrder	ds.l		1					; 0b4
+vGetWidth			ds.l		1					; 0b8
+vGetCurScript		ds.l		1					; 0bc
+vOnSameLine			ds.l		1					; 0c0
+vMeasureWidth		ds.l		1					; 0c4
+vMeasureWholeRun	ds.l		1					; 0c8
+vHiliteLineEnds		ds.l		1					; 0cc
+vInvrtRectangle		ds.l		1					; 0d0
+vPixelWidths		ds.l		1					; 0d4
+vTEBufferText		ds.l		1					; 0d8
+vDumpBuffer			ds.l		1					; 0dc
+vCursorMovement		ds.l		1					; 0e0
+vTestRunDirection	ds.l		1					; 0e4
+vBufferChar			ds.l		1					; 0e8
+vSetFont2Keyboard	ds.l		1					; 0ec
+vSetKeyboard2Font	ds.l		1					; 0f0
+vStyleGuts			ds.l		1					; 0f4
+vConcatRuns			ds.l		1					; 0f8
 
-resourceMgrDirID	ds.l		1					; dirID one-shot for Resource Mgr
-emLAPAGlobals		ds.l		1					; LAP Mgr (router) globals
-emMailGlobals		ds.l		1					; AppleMail globals
-emADASGlobals		ds.l		1					; ADAS globals
+resourceMgrDirID	ds.l		1					; 0fc ; dirID one-shot for Resource Mgr
+emLAPAGlobals		ds.l		1					; 100 ; LAP Mgr (router) globals
+emMailGlobals		ds.l		1					; 104 ; AppleMail globals
+emADASGlobals		ds.l		1					; 108 ; ADAS globals
 
-emELAPGlobals		ds.l		1					; EtherTalk LAP globals
+emELAPGlobals		ds.l		1					; 10c ; EtherTalk LAP globals
 
-soundMgrGlobals		ds.l		1					; one global for ALL machines
+soundMgrGlobals		ds.l		1					; 110 ; one global for ALL machines
 
-emWindowListGlobals	ds.l		1					; <52> globals for layerless windowing
+emWindowListGlobals	ds.l		1					; 114 ; <52> globals for layerless windowing
 
-emDragGlobals		ds.l		1					; <64> globals for dragging stuff (in Finder, etc)
+emDragGlobals		ds.l		1					; 118 ; <64> globals for dragging stuff (in Finder, etc)
 
-emFSCommon			ds.l		1					; <68> globals for FSCommon Library Modules
-emButtonMgrGlobals	ds.l		1					; <52> <70> globals for Button Manager (Not enUnused1 anymore)
+emFSCommon			ds.l		1					; 11c ; <68> globals for FSCommon Library Modules
+emButtonMgrGlobals	ds.l		1					; 120 ; <52> <70> globals for Button Manager (Not enUnused1 anymore)
 
-emPack8Globals		ds.w		1					; <52> globals for Apple Event Manager package
-emPack9Globals		ds.w		1					; <52> globals for PPC Browser package
+emPack8Globals		ds.w		1					; 124 ; <52> globals for Apple Event Manager package
+emPack9Globals		ds.w		1					; 126 ; <52> globals for PPC Browser package
 
-emProcessMgrExists	ds.w		1					; <58> true when Process Mgr is running
+emProcessMgrExists	ds.w		1					; 128 ; <58> true when Process Mgr is running
 
-emPack11Globals		ds.w		1					; <52> globals for Edition Manager package
+emPack11Globals		ds.w		1					; 12a ; <52> globals for Edition Manager package
 
-emWindowMgrFlags	ds.w		1					; <77> flags to speed CheckUpdateIn (previously emUnused2)
+emWindowMgrFlags	ds.w		1					; 12c ; <77> flags to speed CheckUpdateIn (previously emUnused2)
 
-emPack13Globals		ds.w		1					; <52> globals for Data Access Manager package
-emPack14Globals		ds.w		1					; <52> globals for Balloon Help package
+emPack13Globals		ds.w		1					; 12e ; <52> globals for Data Access Manager package
+emPack14Globals		ds.w		1					; 130 ; <52> globals for Balloon Help package
 
-emResrvMemSemaphore	ds.l		1					; Semaphore for ResrvMem moved to here. Used to be emUnused4. <57>
+emResrvMemSemaphore	ds.l		1					; 132 ; Semaphore for ResrvMem moved to here. Used to be emUnused4. <57>
 
-emPack15Globals		ds.w		1					; <52> globals for Picture Utilities package
+emPack15Globals		ds.w		1					; 136 ; <52> globals for Picture Utilities package
 
-emSerialMgrGlobals	ds.l		1					; <70> globals for Serial Manager (one long out of emUnused3)
-emLanguagePackGlobals	ds.l	1					; <71> globals for LanguagePackExtension (one long out of emUnused3)
+emSerialMgrGlobals	ds.l		1					; 138 ; <70> globals for Serial Manager (one long out of emUnused3)
+emLanguagePackGlobals	ds.l	1					; 13c ; <71> globals for LanguagePackExtension (one long out of emUnused3)
 
-emStartTicks		ds.l		1					; PN global used by ListMgrPack
+emStartTicks		ds.l		1					; 140 ; PN global used by ListMgrPack
 
-emRectRgn			ds.l		1					; <SM10> global used by WindowMgr routine <PN>
+emRectRgn			ds.l		1					; 144 ; <SM10> global used by WindowMgr routine <PN>
 
-emPPCPromptForUserGlobals ds.l	1					; <59> global used by PPCÕs PromptForUser routine
+emPPCPromptForUserGlobals ds.l	1					; 148 ; <59> global used by PPCÕs PromptForUser routine
 
-emScrollSpeedGlobals ds.l		1					; <58> global used by scroll speed throttling
+emScrollSpeedGlobals ds.l		1					; 14c ; <58> global used by scroll speed throttling
 
-emDialogGlobals		ds.l		1					; <53> FM Dialog Manager Globals
+emDialogGlobals		ds.l		1					; 150 ; <53> FM Dialog Manager Globals
 
-emAppleEvents		ds.l		1					; Apple Events (switched for each application)
+emAppleEvents		ds.l		1					; 154 ; Apple Events (switched for each application)
 
-sysErrorUpdateRect	ds.w		4					; rectangle for updating after SysError box goes away
+sysErrorUpdateRect	ds.w		4					; 158 ; rectangle for updating after SysError box goes away
 
-emItlSysCachePtr	ds.l		1					; pointer to system itl cache				<7><20>
-emScriptMapPtr		ds.l		1					; pointer to script mapping/sorting data	<8>
-emLangMapPtr		ds.l		1					; pointer to language mapping/sorting data	<8>
+emItlSysCachePtr	ds.l		1					; 160 ; pointer to system itl cache				<7><20>
+emScriptMapPtr		ds.l		1					; 164 ; pointer to script mapping/sorting data	<8>
+emLangMapPtr		ds.l		1					; 168 ; pointer to language mapping/sorting data	<8>
 
-					ds.l		1					; was emNumer (obsolete), now unused		<11><84>
-					ds.l		1					; was emDenom (obsolete), now unused		<11><84>
-emIconCluts			ds.l		1					; Ptr to global icon info				<13>
-emScriptAppGlobals	ds.l		1					; Handle to application-specific script globals	<16><20><21>
-emAppleEventsGlobal	ds.l		1					; Apple Events/Apple Scripts global pointer (not switched) <22>
-emEditionMgrPerApp	ds.l		1					; EditionMgr global (switched) <22>
+					ds.l		1					; 16c ; was emNumer (obsolete), now unused		<11><84>
+					ds.l		1					; 170 ; was emDenom (obsolete), now unused		<11><84>
+emIconCluts			ds.l		1					; 174 ; Ptr to global icon info				<13>
+emScriptAppGlobals	ds.l		1					; 178 ; Handle to application-specific script globals	<16><20><21>
+emAppleEventsGlobal	ds.l		1					; 17c ; Apple Events/Apple Scripts global pointer (not switched) <22>
+emEditionMgrPerApp	ds.l		1					; 180 ; EditionMgr global (switched) <22>
 
 ; Note: These vectors are not used by the local file system.  They exist to provide a cleaner interface
 ; to AppleShare and FileShare.  Thus, you can't change these vectors and assume that you're patching
 ; the file system. (This may change, however, so don't patch them expecting to only affect AppleShare and 
 ; FileShare, either).
-jSyncWait			ds.l		1					; points to the top of the HFS sync call spin loop					<23>
-jAfterFSQHook		ds.l		1					; points into FSQueue just after return from calling fsQueueHook	<23>
-jCmdDone			ds.l		1					; points to the top of File System Command Done processing			<23>
-jDispatchNext		ds.l		1					; point into code where the FS checks for another call to process 	<23>
-jSCSIFreeHook		ds.l		1					; vector called by SCSI Mgr every time it frees the bus
+jSyncWait			ds.l		1					; 184 ; points to the top of the HFS sync call spin loop					<23>
+jAfterFSQHook		ds.l		1					; 188 ; points into FSQueue just after return from calling fsQueueHook	<23>
+jCmdDone			ds.l		1					; 18c ; points to the top of File System Command Done processing			<23>
+jDispatchNext		ds.l		1					; 190 ; point into code where the FS checks for another call to process 	<23>
+jSCSIFreeHook		ds.l		1					; 194 ; vector called by SCSI Mgr every time it frees the bus
 													; this vector is used by the File System to complete SCSI Busy deferrals 
 
 ; routines to manage the sound interrupt source
-jSetupSoundInterrupt		ds.l	1
-jSuspendSoundInterrupt		ds.l	1
-jResumeSoundInterrupt		ds.l	1
-jAcknowledgeSoundInterrupt	ds.l	1
+jSetupSoundInterrupt		ds.l	1				; 198
+jSuspendSoundInterrupt		ds.l	1				; 19c
+jResumeSoundInterrupt		ds.l	1				; 1a0
+jAcknowledgeSoundInterrupt	ds.l	1				; 1a4
 
 ; lomem for PaintOne and PaintBehind flag
 
-ancestorRgnsCalced			ds.w	1
+ancestorRgnsCalced			ds.w	1				; 1a8
 
-emSndPrimitives				ds.l	1				; points to a vector table of sound primitive routines				<30>
+emSndPrimitives				ds.l	1				; 1aa ; points to a vector table of sound primitive routines				<30>
 
-emMinSysHeapFreeSpace		ds.l	1				; contains a minimum memory value for sysheap free after allocations <31>
+emMinSysHeapFreeSpace		ds.l	1				; 1ae ; contains a minimum memory value for sysheap free after allocations <31>
 
-emHwPrivTable				ds.l	1				; Ptr to a jump table for HwPriv's selectors						<36>
-emKeyTMTaskPtr				ds.l	1				; Ptr to a TimeMgr task that Eclipse Keyswitch uses to shut down	<36>
+emHwPrivTable				ds.l	1				; 1b2 ; Ptr to a jump table for HwPriv's selectors						<36>
+emKeyTMTaskPtr				ds.l	1				; 1b6 ; Ptr to a TimeMgr task that Eclipse Keyswitch uses to shut down	<36>
 
-emMessageManagerGlobals		ds.l	3				; Globals for the new message manager	<32>
+emMessageManagerGlobals		ds.l	3				; 1ba ; Globals for the new message manager	<32>
 
-emDictionaryMgrPackHandle	ds.l	1				; handle to the package code		<37>
-emDictionaryMgrUseCount		ds.w	1				; pack use count for ProcHelper
+emDictionaryMgrPackHandle	ds.l	1				; 1c6 ; handle to the package code		<37>
+emDictionaryMgrUseCount		ds.w	1				; 1ca ; pack use count for ProcHelper
 
-emWorldScriptIIPrintingGlobals	ds.l	1			; <66> it is now used by WS II printing stuff, so don't use it
-emHasMultiScript			ds.w	1				; true when non-Roman script system is installed.  (but false until the Process Mgr is initialized)
+emWorldScriptIIPrintingGlobals	ds.l	1			; 1cc ; <66> it is now used by WS II printing stuff, so don't use it
+emHasMultiScript			ds.w	1				; 1d0 ; true when non-Roman script system is installed.  (but false until the Process Mgr is initialized)
 
-emResourceCache				ds.l	1				; Information for calls to _CountResources and _GetIndResource
-emLastMapOverridden			ds.w	1				; Reference number of last resource map that was overriden
-emOverrideMapRefNum			ds.w	1				; Reference number of override map
-emScanOverrideMaps			ds.w	1				; Boolean determining whether or not override maps are scanned for resources
+emResourceCache				ds.l	1				; 1d2 ; Information for calls to _CountResources and _GetIndResource
+emLastMapOverridden			ds.w	1				; 1d6 ; Reference number of last resource map that was overriden
+emOverrideMapRefNum			ds.w	1				; 1d8 ; Reference number of override map
+emScanOverrideMaps			ds.w	1				; 1da ; Boolean determining whether or not override maps are scanned for resources
 
-emPrintingGlobals			ds.l	1				; Tsunami Printing Manager non-swapped printing globals	<41>
+emPrintingGlobals			ds.l	1				; 1dc ; Tsunami Printing Manager non-swapped printing globals	<41>
 
-emCursorGlobals				ds.l	1				; Ptr to CursorDev globals								<46>
+emCursorGlobals				ds.l	1				; 1e0 ; Ptr to CursorDev globals								<46>
 
-emButtonIntGlobals			ds.l	1				; Ptr to Button Interrupt globals. previously Ptr to "real" SwapMMUMode routine	<SM22> CSS				
+emButtonIntGlobals			ds.l	1				; 1e4 ; Ptr to Button Interrupt globals. previously Ptr to "real" SwapMMUMode routine	<SM22> CSS				
 
-emAppleTalkInactiveOnBoot	ds.w	1				; True if AppleTalk was inactive on boot				<48>
+emAppleTalkInactiveOnBoot	ds.w	1				; 1e8 ; True if AppleTalk was inactive on boot				<48>
 
-emOpenFontFiles				ds.w	1				; Count of open font files in the Fonts folder. 		<49>
+emOpenFontFiles				ds.w	1				; 1ea ; Count of open font files in the Fonts folder. 		<49>
 
-emLowMemoryPrintingGlobals	ds.l	1				; Handle to globals used by LowMemoryPrintingPatches	<50>
+emLowMemoryPrintingGlobals	ds.l	1				; 1ec ; Handle to globals used by LowMemoryPrintingPatches	<50>
 
-emNetBootGlobals			ds.l	1				; Handle to globals used by emNetBootGlobals for Network Booting and Appletalk stuff.	<65>
+emNetBootGlobals			ds.l	1				; 1f0 ; Handle to globals used by emNetBootGlobals for Network Booting and Appletalk stuff.	<65>
 
-emFndrDeskRgn				ds.l	1				; Handle to region maintained by Bungee Finder if fndrDeskRgnTracking is true <67> <69>
+emFndrDeskRgn				ds.l	1				; 1f4 ; Handle to region maintained by Bungee Finder if fndrDeskRgnTracking is true <67> <69>
 
-emFndrDeskRgnTracking		ds.w	1				; If true, the Bungee Finder will keep an up-to-date region handle in fndrDeskRgn of the icons on the desktop <67> <69>
+emFndrDeskRgnTracking		ds.w	1				; 1f8 ; If true, the Bungee Finder will keep an up-to-date region handle in fndrDeskRgn of the icons on the desktop <67> <69>
 
-emFndrDeskRgnChange			ds.w	1				; Always incremented by the Bungee Finder for every change made to the desktop <67> <69>
+emFndrDeskRgnChange			ds.w	1				; 1fa ; Always incremented by the Bungee Finder for every change made to the desktop <67> <69>
 
-emDisplayManagerGlobals		ds.l	1				; Pointer to globals used by Display Manager
+emDisplayManagerGlobals		ds.l	1				; 1fc ; Pointer to globals used by Display Manager
 
-emTranslationMgrGlobals		ds.l	1				; Pointer to globals used by Translation Manager (Macintosh Easy Open)	<73>
+emTranslationMgrGlobals		ds.l	1				; 200 ; Pointer to globals used by Translation Manager (Macintosh Easy Open)	<73>
 
-emTingeInfo					ds.l	1				; Handle to color information kept by the Tinge Manager
+emTingeInfo					ds.l	1				; 204 ; Handle to color information kept by the Tinge Manager
 
-emIsDragging				ds.b	1				; Set within DragTheRgn and cleared before exiting; if true, HelpMgr
-emIsDraggingSlop			ds.b	3				; patch in OSEventAvail is bypassed.		<SM1>
+emIsDragging				ds.b	1				; 208 ; Set within DragTheRgn and cleared before exiting; if true, HelpMgr
+emIsDraggingSlop			ds.b	3				; 209 ; patch in OSEventAvail is bypassed.		<SM1>
 
-emRenoGlobals				ds.l	1				; Ptr to Reno Globals						<LW2>
+emRenoGlobals				ds.l	1				; 20c ; Ptr to Reno Globals						<LW2>
 
-emDMADispatchGlobals		ds.l	1				; DMA dispatch globals ptr					<SM20>
+emDMADispatchGlobals		ds.l	1				; 210 ; DMA dispatch globals ptr					<SM20>
 
-emInternalModemMgrGlobals	ds.l	1				; Internal modem manager globals 			<78>
+emInternalModemMgrGlobals	ds.l	1				; 214 ; Internal modem manager globals 			<78>
 
-emGadgetPixMap				ds.l	1				; PixMapHandle used by defprocs to draw gadgets
+emGadgetPixMap				ds.l	1				; 218 ; PixMapHandle used by defprocs to draw gadgets
 
-emAuxiliaryWindowHashTable	ds.l	1				; Pointer to auxiliary window record hash table
-emAuxiliaryControlHashTable	ds.l	1				; Pointer to auxiliary control record hash table
+emAuxiliaryWindowHashTable	ds.l	1				; 21c ; Pointer to auxiliary window record hash table
+emAuxiliaryControlHashTable	ds.l	1				; 220 ; Pointer to auxiliary control record hash table
 
-emIDEGlobals				ds.l	1				; IDE driver globals						<SM24>
+emIDEGlobals				ds.l	1				; 224 ; IDE driver globals						<SM24>
 
-emSpeechRecognitionGlobals	ds.l	1				; Speech Recognition Globals				<85><KWR>
+emSpeechRecognitionGlobals	ds.l	1				; 228 ; Speech Recognition Globals				<85><KWR>
 
-emControlHandle				ds.l	1				; control handle used in _DragTheRgn when the thumb is being dragged so we can send a draw thumb outline message. <SM25> CSS
+emControlHandle				ds.l	1				; 22c ; control handle used in _DragTheRgn when the thumb is being dragged so we can send a draw thumb outline message. <SM25> CSS
 
-emHeapUtilsGlobals			ds.l	1				; Heap Utilities globals
+emHeapUtilsGlobals			ds.l	1				; 230 ; Heap Utilities globals
 
-emExpansionBusGlobals		ds.l	1				; Pointer to Expansion Bus Manager Globals
+emExpansionBusGlobals		ds.l	1				; 234 ; Pointer to Expansion Bus Manager Globals
 
-jSWModemSoundVector			ds.l	1				; Vector to control routine for software modem sound
+jSWModemSoundVector			ds.l	1				; 238 ; Vector to control routine for software modem sound
 
-							ds.b	270
+							ds.l	1				; 23c
+							ds.l	1				; 240
+							ds.l	1				; 244
+							ds.l	1				; 248
+							ds.l	1				; 24c
+							ds.l	1				; 250
+							ds.l	1				; 254
+							ds.l	1				; 258
+							ds.l	1				; 25c
+							ds.l	1				; 260
+							ds.l	1				; 264
+							ds.l	1				; 268
+							ds.l	1				; 26c
+							ds.l	1				; 270
+							ds.l	1				; 274
+							ds.l	1				; 278
+							ds.l	1				; 27c
+							ds.l	1				; 280
+							ds.l	1				; 284
+							ds.l	1				; 288
+							ds.l	1				; 28c
+							ds.l	1				; 290
+							ds.l	1				; 294
+							ds.l	1				; 298
+							ds.l	1				; 29c
+							ds.l	1				; 2a0
+							ds.l	1				; 2a4
+							ds.l	1				; 2a8
+							ds.l	1				; 2ac
+							ds.l	1				; 2b0
+							ds.l	1				; 2b4
+							ds.l	1				; 2b8
+							ds.l	1				; 2bc
+							ds.l	1				; 2c0
+							ds.l	1				; 2c4
+							ds.l	1				; 2c8
+							ds.l	1				; 2cc
+							ds.l	1				; 2d0
+							ds.l	1				; 2d4
+							ds.l	1				; 2d8
+							ds.l	1				; 2dc
+							ds.l	1				; 2e0
+							ds.l	1				; 2e4
+							ds.l	1				; 2e8
+							ds.l	1				; 2ec
+							ds.l	1				; 2f0
+							ds.l	1				; 2f4
+							ds.l	1				; 2f8
+							ds.l	1				; 2fc
+							ds.l	1				; 300
+							ds.l	1				; 304
+							ds.l	1				; 308
+							ds.l	1				; 30c
+							ds.l	1				; 310
+							ds.l	1				; 314
+							ds.l	1				; 318
+							ds.l	1				; 31c
+							ds.l	1				; 320
+							ds.l	1				; 324
+							ds.l	1				; 328
+							ds.l	1				; 32c
+							ds.l	1				; 330
+							ds.l	1				; 334
+							ds.l	1				; 338
+							ds.l	1				; 33c
+							ds.l	1				; 340
+							ds.l	1				; 344
+							ds.w	1				; 348
 
 ; NOTE: When adding new fields here, be sure to update the high-level language header files as well
 ; (currently {CInternal}ExpandMemPriv.h is the one)
