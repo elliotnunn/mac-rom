@@ -1,0 +1,1485 @@
+				INCLUDE		'CodeFragments.a'
+				INCLUDE		'NameRegistry.a'
+				INCLUDE		'Memory.a'
+
+				MACHINE		MC68030
+
+
+
+
+INTERC_11E0_C2PSTRCPY	PROC	EXPORT
+
+Regs			REG			A2-A4
+
+				LINK.W		A6, #-$0004
+				MOVEM.L		Regs, -(SP)
+				MOVEA.L		$000C(A6), A3
+				MOVEA.L		$0008(A6), A4
+				MOVEQ		#$00, D1
+				MOVEA.L		A3, A2
+				BRA.S		@00000018
+@00000016
+				ADDQ.L		#1, D1
+@00000018
+				TST.B		(A3)+
+				BNE.S		@00000016
+				CMPI.L		#$000000FF, D1
+				BLS.S		@0000002A
+				MOVE.L		#$000000FF, D1
+@0000002A
+				MOVE.L		D1, D0
+				ADDQ.L		#1, D1
+				MOVE.B		D0, (A4)+
+				BRA.S		@00000034
+@00000032
+				MOVE.B		(A2)+, (A4)+
+@00000034
+				SUBQ.L		#1, D1
+				BNE.S		@00000032
+				MOVEM.L		-$0010(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1230		PROC		EXPORT
+
+				IMPORT		c2pstr
+				IMPORT		strcpy
+
+Regs			REG			D7/A3/A4
+
+				LINK.W		A6, #-$0218
+				MOVEM.L		Regs, -(SP)
+				LEA			-$0100(A6), A3
+				LEA			-$0200(A6), A4
+				MOVE.L		$0010(A6), -(SP)
+				MOVE.L		A4, -(SP)
+				JSR			strcpy
+				MOVE.L		A4, -(SP)
+				JSR			c2pstr
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -$0218(A6)
+				MOVE.L		$0008(A6), -$0214(A6)
+				MOVE.L		$000C(A6), -$0210(A6)
+				CLR.W		-$020C(A6)
+				CLR.W		-$020A(A6)
+				SUBQ.L		#2, SP
+				PEA			-$0218(A6)
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -(SP)
+				MOVE.L		A4, -(SP)
+				MOVEQ		#$00, D1
+				MOVE.B		D1, -(SP)
+				MOVE.W		#$FFFC, -(SP)
+				_CodeFragmentDispatch
+				MOVE.W		(SP)+, D7
+				LEA			$000C(SP), SP
+				BNE.S		@00000080
+				TST.B		$0017(A6)
+				BEQ.S		@00000080
+				CLR.B		(A3)
+				SUBQ.L		#2, SP
+				MOVE.L		A4, -(SP)
+				MOVE.L		#'pwpc', -(SP)
+				MOVEQ		#$01, D0
+				MOVE.L		D0, -(SP)
+				PEA			-$0208(A6)
+				PEA			-$0204(A6)
+				MOVE.L		A3, -(SP)
+				_GetSharedLibrary
+				MOVE.W		(SP)+, D7
+@00000080
+				MOVE.W		D7, D0
+				MOVEM.L		-$0224(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_12E0_CODEPREPARE	PROC	EXPORT
+
+				IMPORT		INTERC_1230
+				IMPORT		strcmp
+				IMPORT		strlen
+
+Regs			REG			D3/D5-D7/A3/A4
+
+				STRING		C
+
+				LINK.W		A6, #-$0046
+				MOVEM.L		Regs, -(SP)
+				MOVE.B		$000F(A6), D5
+				LEA			-$0032(A6), A3
+				PEA			-$0042(A6)
+				_RegistryEntryIDInit
+				PEA			-$0042(A6)
+				MOVE.L		$0008(A6), -(SP)
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -(SP)
+				_RegistryCStrEntryLookup
+				MOVE.W		D0, D6
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -$0006(A6)
+				MOVE.L		D0, -$000E(A6)
+				TST.W		D6
+				LEA			$0010(SP), SP
+				BNE.S		@000000B4
+				TST.B		D5
+				BEQ.S		@000000B4
+				PEA			-$000E(A6)
+				PEA			-$0006(A6)
+				PEA			#'AAPL,prepare_order'
+				PEA			-$0042(A6)
+				MOVEQ		#$FA, D0
+				DC.W		$ABE9
+				MOVE.W		D0, D6
+				LEA			$0010(SP), SP
+				BEQ.S		@00000060
+				CLR.W		D6
+				BRA.S		@000000B4
+@00000060
+				MOVEA.L		-$0006(A6), A4
+				BRA.S		@000000A6
+@00000066
+				PEA			-$0012(A6)
+				PEA			-$000A(A6)
+				MOVE.L		A4, -(SP)
+				PEA			-$0042(A6)
+				MOVEQ		#$FA, D0
+				DC.W		$ABE9
+				MOVE.W		D0, D6
+				LEA			$0010(SP), SP
+				BNE.S		@0000009A
+				MOVEQ		#$00, D0
+				MOVE.B		D5, D0
+				MOVE.L		D0, -(SP)
+				MOVE.L		A4, -(SP)
+				MOVE.L		-$0012(A6), -(SP)
+				MOVE.L		-$000A(A6), -(SP)
+				JSR			INTERC_1230
+				MOVE.W		D0, D6
+				LEA			$0010(SP), SP
+@0000009A
+				MOVE.L		A4, -(SP)
+				JSR			strlen
+				ADDQ.L		#1, D0
+				ADDA.L		D0, A4
+				ADDQ.W		#4, SP
+@000000A6
+				MOVE.L		-$000E(A6), D0
+				ADD.L		-$0006(A6), D0
+				CMP.L		A4, D0
+				BHI.S		@00000066
+				CLR.W		D6
+@000000B4
+				TST.W		D6
+				BNE			@000001A2
+				CLR.B		-$0001(A6)
+				PEA			-$0046(A6)
+				PEA			-$0042(A6)
+				_RegistryPropertyIterateCreate
+				MOVE.W		D0, D6
+				ADDQ.W		#8, SP
+				BNE			@000001A2
+				BRA			@0000018C
+@000000D6
+				PEA			-$0001(A6)
+				MOVE.L		A3, -(SP)
+				PEA			-$0046(A6)
+				_RegistryPropertyIterate
+				MOVE.W		D0, D6
+				TST.B		-$0001(A6)
+				LEA			$000C(SP), SP
+				BNE			@0000018C
+				TST.W		D6
+				BNE			@0000018C
+				PEA			#'name'
+				MOVE.L		A3, -(SP)
+				JSR			strcmp
+				TST.L		D0
+				ADDQ.W		#8, SP
+				BEQ			@0000018C
+				PEA			#'AAPL,prepare_order'
+				MOVE.L		A3, -(SP)
+				JSR			strcmp
+				TST.L		D0
+				ADDQ.W		#8, SP
+				BEQ.S		@0000018C
+				CLR.B		D7
+				MOVEA.L		-$0006(A6), A4
+				MOVE.L		A4, D0
+				BEQ.S		@00000154
+				BRA.S		@00000144
+@00000126
+				MOVE.L		A4, -(SP)
+				MOVE.L		A3, -(SP)
+				JSR			strcmp
+				TST.L		D0
+				SEQ			D3
+				NEG.B		D3
+				MOVE.B		D3, D7
+				MOVE.L		A4, -(SP)
+				JSR			strlen
+				ADDQ.L		#1, D0
+				ADDA.L		D0, A4
+				LEA			$000C(SP), SP
+@00000144
+				TST.B		D7
+				BNE.S		@00000154
+				MOVE.L		-$000E(A6), D0
+				ADD.L		-$0006(A6), D0
+				CMP.L		A4, D0
+				BHI.S		@00000126
+@00000154
+				TST.B		D7
+				BNE.S		@0000018C
+				PEA			-$0012(A6)
+				PEA			-$000A(A6)
+				MOVE.L		A3, -(SP)
+				PEA			-$0042(A6)
+				MOVEQ		#$FA, D0
+				DC.W		$ABE9
+				MOVE.W		D0, D6
+				LEA			$0010(SP), SP
+				BNE.S		@0000018C
+				MOVEQ		#$00, D0
+				MOVE.B		D5, D0
+				MOVE.L		D0, -(SP)
+				MOVE.L		A3, -(SP)
+				MOVE.L		-$0012(A6), -(SP)
+				MOVE.L		-$000A(A6), -(SP)
+				JSR			INTERC_1230
+				MOVE.W		D0, D6
+				LEA			$0010(SP), SP
+@0000018C
+				TST.B		-$0001(A6)
+				BNE.S		@00000198
+				TST.W		D6
+				BEQ			@000000D6
+@00000198
+				PEA			-$0046(A6)
+				_RegistryPropertyIterateDispose
+				ADDQ.W		#4, SP
+@000001A2
+				PEA			-$0042(A6)
+				_RegistryEntryIDDispose
+				MOVE.W		D6, D0
+				ADDQ.W		#4, SP
+				MOVEM.L		-$005E(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_14E0		PROC		EXPORT
+
+				IMPORT		INTERC_1230
+
+Regs			REG			D5-D7/A3/A4
+
+				LINK.W		A6, #-$0026
+				MOVEM.L		Regs, -(SP)
+				MOVE.B		$0013(A6), D5
+				MOVEA.L		$000C(A6), A3
+				MOVEA.L		$0008(A6), A4
+				PEA			-$0022(A6)
+				_RegistryEntryIDInit
+				PEA			-$0026(A6)
+				_RegistryEntryIterateCreate
+				CLR.W		D6
+				CLR.B		-$0005(A6)
+				ADDQ.W		#8, SP
+				BRA			@000000B2
+@00000030
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -(SP)
+				MOVE.L		D0, -(SP)
+				MOVE.L		A4, -(SP)
+				PEA			-$0005(A6)
+				PEA			-$0022(A6)
+				MOVEQ		#$01, D1
+				MOVE.L		D1, -(SP)
+				PEA			-$0026(A6)
+				_RegistryEntrySearch
+				MOVE.W		D0, D6
+				LEA			$001C(SP), SP
+				BNE.S		@000000B2
+				TST.B		-$0005(A6)
+				BNE.S		@000000B2
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -$000A(A6)
+				MOVE.L		D0, -$000E(A6)
+				PEA			-$000E(A6)
+				PEA			-$0004(A6)
+				MOVE.L		A4, -(SP)
+				PEA			-$0022(A6)
+				MOVEQ		#$FA, D0
+				DC.W		$ABE9
+				MOVE.W		D0, D7
+				LEA			$0010(SP), SP
+				BNE.S		@000000B2
+				PEA			-$000A(A6)
+				PEA			-$0012(A6)
+				MOVE.L		A3, -(SP)
+				PEA			-$0022(A6)
+				MOVEQ		#$FA, D0
+				DC.W		$ABE9
+				MOVE.W		D0, D7
+				LEA			$0010(SP), SP
+				BNE.S		@000000B2
+				MOVEQ		#$00, D0
+				MOVE.B		D5, D0
+				MOVE.L		D0, -(SP)
+				MOVE.L		-$0012(A6), -(SP)
+				MOVE.L		-$000E(A6), -(SP)
+				MOVE.L		-$0004(A6), -(SP)
+				JSR			INTERC_1230
+				LEA			$0010(SP), SP
+@000000B2
+				TST.W		D6
+				BNE.S		@000000BE
+				TST.B		-$0005(A6)
+				BEQ			@00000030
+@000000BE
+				PEA			-$0026(A6)
+				_RegistryEntryIterateDispose
+				PEA			-$0022(A6)
+				_RegistryEntryIDDispose
+				MOVE.W		D6, D0
+				ADDQ.W		#8, SP
+				MOVEM.L		-$003A(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_15C0_CODEPREPARE2	PROC	EXPORT
+
+				IMPORT		INTERC_12E0_CODEPREPARE
+				IMPORT		INTERC_14E0
+				IMPORT		strcat
+				IMPORT		strcpy
+
+Regs			REG			D7/A4
+
+				STRING		C
+
+				LINK.W		A6, #-$0080
+				MOVEM.L		Regs, -(SP)
+				LEA			-$0080(A6), A4
+				MOVEQ		#$01, D0
+				MOVE.L		D0, -(SP)
+				PEA			#'code,AAPL,MacOS,name'
+				PEA			#'pef,AAPL,MacOS,PowerPC,prepare'
+				JSR			INTERC_14E0
+				MOVE.W		D0, D7
+				LEA			$000C(SP), SP
+				BNE.S		@00000048
+				PEA			#'Devices:device-tree:'
+				MOVE.L		A4, -(SP)
+				JSR			strcpy
+				PEA			#'AAPL,CodePrepare'
+				MOVE.L		A4, -(SP)
+				JSR			strcat
+				MOVEQ		#$01, D0
+				MOVE.L		D0, -(SP)
+				MOVE.L		A4, -(SP)
+				JSR			INTERC_12E0_CODEPREPARE
+				MOVE.W		D0, D7
+				LEA			$0018(SP), SP
+@00000048
+				MOVE.W		D7, D0
+				MOVEM.L		-$0088(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1690_CODEREGISTER	PROC	EXPORT
+
+				IMPORT		INTERC_12E0_CODEPREPARE
+				IMPORT		INTERC_14E0
+				IMPORT		strcat
+				IMPORT		strcpy
+
+Regs			REG			D7/A4
+
+				STRING		C
+
+				LINK.W		A6, #-$0080
+				MOVEM.L		Regs, -(SP)
+				LEA			-$0080(A6), A4
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -(SP)
+				PEA			#'code,AAPL,MacOS,name'
+				PEA			#'pef,AAPL,MacOS,PowerPC,register'
+				JSR			INTERC_14E0
+				MOVE.W		D0, D7
+				LEA			$000C(SP), SP
+				BNE.S		@00000048
+				PEA			#'Devices:device-tree:'
+				MOVE.L		A4, -(SP)
+				JSR			strcpy
+				PEA			#'AAPL,CodeRegister'
+				MOVE.L		A4, -(SP)
+				JSR			strcat
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -(SP)
+				MOVE.L		A4, -(SP)
+				JSR			INTERC_12E0_CODEPREPARE
+				MOVE.W		D0, D7
+				LEA			$0018(SP), SP
+@00000048
+				MOVE.W		D7, D0
+				MOVEM.L		-$0088(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1750_LANLIB	PROC	EXPORT
+
+Regs			REG			D5-D7/A3/A4
+
+				LINK.W		A6, #-$002A
+				MOVEM.L		Regs, -(SP)
+				MOVE.L		#$FFFFF615, D6
+				PEA			-$0012(A6)
+				_RegistryEntryIDInit
+				PEA			-$0016(A6)
+				_RegistryEntryIterateCreate
+				CLR.B		-$0001(A6)
+				ADDQ.W		#8, SP
+				BRA			@000000E0
+@00000028
+				STRING		C
+				LEA			#'ethernet', A3
+				MOVEQ		#$09, D0
+				MOVE.L		D0, -(SP)
+				MOVE.L		A3, -(SP)
+				STRING		C
+				PEA			#'name'
+				PEA			-$0001(A6)
+				PEA			-$0012(A6)
+				MOVEQ		#$01, D1
+				MOVE.L		D1, -(SP)
+				PEA			-$0016(A6)
+				_RegistryEntrySearch
+				MOVE.L		D0, D5
+				LEA			$001C(SP), SP
+				BNE			@000000E0
+				TST.B		-$0001(A6)
+				BNE			@000000E0
+				MOVEQ		#$00, D7
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -$001A(A6)
+				TST.L		D7
+				BNE.S		@0000007E
+				PEA			-$001A(A6)
+				STRING		C
+				PEA			#'lanLib,AAPL,MacOS,PowerPC'
+				PEA			-$0012(A6)
+				_RegistryPropertyGetSize
+				MOVE.L		D0, D7
+				LEA			$000C(SP), SP
+@0000007E
+				TST.L		D7
+				BNE.S		@000000DA
+				MOVE.L		-$001A(A6), D0
+				_NewPtrSys
+				MOVEA.L		A0, A4
+				MOVE.L		A4, D0
+				BEQ.S		@000000DA
+				PEA			-$001A(A6)
+				MOVE.L		A4, -(SP)
+				STRING		C
+				PEA			#'lanLib,AAPL,MacOS,PowerPC'
+				PEA			-$0012(A6)
+				_RegistryPropertyGet
+				MOVE.L		D0, D7
+				LEA			$0010(SP), SP
+				BNE.S		@000000DA
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -$002A(A6)
+				MOVE.L		A4, -$0026(A6)
+				MOVE.L		-$001A(A6), -$0022(A6)
+				CLR.W		-$001E(A6)
+				CLR.W		-$001C(A6)
+				SUBQ.L		#2, SP
+				PEA			-$002A(A6)
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -(SP)
+				STRING		PASCAL
+				PEA			#'lanLib'
+				MOVEQ		#$00, D1
+				MOVE.B		D1, -(SP)
+				MOVE.W		#$FFFC, -(SP)
+				_CodeFragmentDispatch
+				ADDQ.W		#2, SP
+@000000DA
+				TST.L		D7
+				BNE.S		@000000E0
+				MOVEQ		#$00, D6
+@000000E0
+				TST.L		D6
+				BEQ.S		@000000EC
+				TST.B		-$0001(A6)
+				BEQ			@00000028
+@000000EC
+				PEA			-$0016(A6)
+				_RegistryEntryIterateDispose
+				PEA			-$0012(A6)
+				_RegistryEntryIDDispose
+				MOVE.W		D6, D0
+				ADDQ.W		#8, SP
+				MOVEM.L		-$003E(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1890_INITLANDISK	PROC	EXPORT
+
+				IMPORT		INTERC_1750_LANLIB
+
+Regs			REG			D6/D7/A3/A4
+
+				STRING		PASCAL
+
+				LINK.W		A6, #-$0108
+				MOVEM.L		Regs, -(SP)
+				_GetZone
+				MOVEA.L		A0, A3
+				SUBQ.L		#4, SP
+				MOVE.L		$02A6, (SP)
+				MOVEA.L		(SP)+, A0
+				_SetZone
+				JSR			INTERC_1750_LANLIB
+				MOVEQ		#$01, D0
+				MOVE.B		D0, -(SP)
+				MOVEQ		#$FF, D0
+				TST.B		(SP)+
+				SNE			D0
+				MOVE.W		D0, $0B9E
+				SUBQ.L		#4, SP
+				MOVE.L		#'dfrg', -(SP)
+				MOVE.W		#$AF0E, -(SP)
+				_GetResource
+				MOVEA.L		(SP)+, A4
+				MOVE.L		A4, D0
+				BEQ.S		@00000066
+				SUBQ.L		#4, SP
+				MOVE.L		A4, -(SP)
+				_SizeRsrc
+				MOVE.L		(SP)+, D7
+				SUBQ.L		#2, SP
+				MOVE.L		(A4), -(SP)
+				MOVE.L		D7, -(SP)
+				PEA			#'LANDisk'
+				MOVEQ		#$01, D0
+				MOVE.L		D0, -(SP)
+				PEA			-$0108(A6)
+				PEA			-$0104(A6)
+				PEA			-$0100(A6)
+				_GetMemFragment
+				MOVE.W		(SP)+, D6
+@00000066
+				MOVEA.L		A3, A0
+				_SetZone
+				MOVEM.L		-$0118(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1910_USBFAMILYEXPERTLIB	PROC	EXPORT
+
+Regs			REG			A3/A4
+
+				STRING		PASCAL
+
+				LINK.W		A6, #-$0104
+				MOVEM.L		Regs, -(SP)
+				_GetZone
+				MOVEA.L		A0, A3
+				SUBQ.L		#4, SP
+				MOVE.L		$02A6, (SP)
+				MOVEA.L		(SP)+, A0
+				_SetZone
+				MOVEQ		#$08, D0
+				_NewPtrSys
+				MOVEA.L		A0, A4
+				MOVE.L		A4, D0
+				BEQ.S		@0000004E
+				SUBQ.L		#2, SP
+				PEA			#'USBFamilyExpertLib'
+				MOVE.L		#'pwpc', -(SP)
+				MOVEQ		#$01, D0
+				MOVE.L		D0, -(SP)
+				PEA			$0004(A4)
+				PEA			-$0104(A6)
+				PEA			-$0100(A6)
+				_GetSharedLibrary
+				TST.W		(SP)+
+				BNE.S		@0000004E
+				MOVEA.L		$02B6, A0
+				MOVE.L		A4, $02E6(A0)
+@0000004E
+				MOVEA.L		A3, A0
+				_SetZone
+				MOVEM.L		-$010C(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1980_DRIVERS	PROC	EXPORT
+
+				IMPORT		DEVICEMGR_608E0
+				IMPORT		EXPANSIONBUSMGR_VEC0170
+				IMPORT		EXPANSIONBUSMGR_VEC0178
+				IMPORT		EXPANSIONBUSMGR_VEC0188
+				IMPORT		GETHANDLESIZE
+				IMPORT		GETPTRSIZE
+				IMPORT		INTERC_11E0_C2PSTRCPY
+
+Regs			REG			D3-D7/A3/A4
+
+				STRING		C
+
+				LINK.W		A6, #-$00B8
+				MOVEM.L		Regs, -(SP)
+				PEA			-$0024(A6)
+				_RegistryEntryIDInit
+				MOVEQ		#$01, D3
+				PEA			-$0014(A6)
+				_RegistryEntryIterateCreate
+				MOVE.W		D0, D6
+				ADDQ.W		#8, SP
+				BNE			@00000266
+				CLR.B		-$000B(A6)
+@00000026
+				PEA			-$000B(A6)
+				PEA			-$0024(A6)
+				MOVE.L		D3, -(SP)
+				PEA			-$0014(A6)
+				_RegistryEntryIterate
+				MOVE.W		D0, D6
+				MOVEQ		#$00, D0
+				MOVE.B		-$000B(A6), D0
+				TST.L		D0
+				LEA			$0010(SP), SP
+				BNE			@0000024E
+				TST.W		D6
+				BNE			@0000024E
+				MOVEQ		#$3F, D0
+				MOVE.L		D0, -$00B4(A6)
+				MOVEQ		#$00, D7
+				BRA.S		@00000066
+@0000005A
+				LEA			-$00A4(A6), A0
+				CLR.B		$00(A0, D7.W)
+				MOVE.L		D7, D0
+				ADDQ.L		#1, D7
+@00000066
+				CMP.L		-$00B4(A6), D7
+				BCS.S		@0000005A
+				PEA			-$00B4(A6)
+				PEA			-$00A4(A6)
+				PEA			#'name'
+				PEA			-$0024(A6)
+				_RegistryPropertyGet
+				MOVE.W		D0, D6
+				LEA			$0010(SP), SP
+				BNE			@00000254
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -$00B0(A6)
+				PEA			-$00B0(A6)
+				PEA			#'driver,AAPL,MacOS,PowerPC'
+				PEA			-$0024(A6)
+				_RegistryPropertyGetSize
+				MOVE.W		D0, D6
+				LEA			$000C(SP), SP
+				BEQ			@00000254
+				PEA			-$00A4(A6)
+				PEA			-$0064(A6)
+				JSR			INTERC_11E0_C2PSTRCPY
+				SUBQ.L		#2, SP
+				_CurResFile
+				MOVE.W		(SP)+, D4
+				MOVEQ		#$00, D0
+				MOVE.W		D0, -(SP)
+				_UseResFile
+				MOVEQ		#$01, D0
+				MOVE.B		D0, -(SP)
+				MOVEQ		#$FF, D0
+				TST.B		(SP)+
+				SNE			D0
+				MOVE.W		D0, $0B9E
+				SUBQ.L		#4, SP
+				MOVE.L		#'ndrv', -(SP)
+				PEA			-$0064(A6)
+				_Get1NamedResource
+				MOVEA.L		(SP)+, A4
+				MOVE.L		A4, D0
+				ADDQ.W		#8, SP
+				BNE.S		@0000014A
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -$00AC(A6)
+				MOVE.L		D0, -$00A8(A6)
+				PEA			-$00A8(A6)
+				PEA			-$00AC(A6)
+				PEA			-$0024(A6)
+				JSR			DEVICEMGR_608E0
+				TST.L		-$00AC(A6)
+				LEA			$000C(SP), SP
+				BEQ.S		@0000014A
+				MOVEA.L		-$00AC(A6), A3
+				BRA.S		@00000134
+@00000110
+				MOVEQ		#$01, D0
+				MOVE.B		D0, -(SP)
+				MOVEQ		#$FF, D0
+				TST.B		(SP)+
+				SNE			D0
+				MOVE.W		D0, $0B9E
+				SUBQ.L		#4, SP
+				MOVE.L		#'ndrv', -(SP)
+				MOVE.L		A3, -(SP)
+				_Get1NamedResource
+				MOVEA.L		(SP)+, A4
+				MOVEQ		#$00, D0
+				MOVE.B		(A3), D0
+				ADDQ.W		#1, D0
+				ADDA.W		D0, A3
+@00000134
+				MOVE.L		A4, D0
+				BNE.S		@00000144
+				MOVE.L		-$00A8(A6), D0
+				SUBQ.L		#1, -$00A8(A6)
+				TST.L		D0
+				BNE.S		@00000110
+@00000144
+				MOVEA.L		-$00AC(A6), A0
+				_DisposePtr
+@0000014A
+				MOVE.L		A4, D0
+				BEQ			@00000248
+				PEA			-$00B8(A6)
+				MOVE.L		(A4), -(SP)
+				JSR			EXPANSIONBUSMGR_VEC0170
+				MOVE.W		D0, D6
+				ADDQ.W		#8, SP
+				BNE			@00000248
+				SUBQ.L		#4, SP
+				MOVE.L		-$00B8(A6), -(SP)
+				JSR			GETPTRSIZE
+				MOVE.L		-$00B8(A6), -(SP)
+				PEA			#'driver-descriptor'
+				PEA			-$0024(A6)
+				_RegistryPropertyCreate
+				MOVE.W		D0, D6
+				MOVEA.L		-$00B8(A6), A0
+				_DisposePtr
+				TST.W		D6
+				LEA			$0010(SP), SP
+				BNE			@00000248
+				SUBQ.L		#4, SP
+				MOVE.L		A4, -(SP)
+				JSR			GETHANDLESIZE
+				MOVE.L		(SP), -$00B0(A6)
+				MOVE.L		(A4), -(SP)
+				PEA			#'driver,AAPL,MacOS,PowerPC'
+				PEA			-$0024(A6)
+				_RegistryPropertyCreate
+				MOVE.W		D0, D6
+				LEA			$0010(SP), SP
+				BNE			@00000248
+				MOVEQ		#$04, D0
+				MOVE.L		D0, -(SP)
+				MOVE.L		A4, -(SP)
+				PEA			#'driver-ptr'
+				PEA			-$0024(A6)
+				_RegistryPropertyCreate
+				MOVE.W		D0, D6
+				LEA			$0010(SP), SP
+				BNE.S		@00000248
+				PEA			-$00B8(A6)
+				MOVE.L		(A4), -(SP)
+				JSR			EXPANSIONBUSMGR_VEC0170
+				MOVE.W		D0, D6
+				ADDQ.W		#8, SP
+				BNE.S		@00000248
+				MOVEA.L		-$00B8(A6), A0
+				MOVE.L		$002C(A0), D5
+				_DisposePtr
+				MOVEQ		#$01, D0
+				AND.L		D5, D0
+				BEQ.S		@00000248
+				PEA			-$00B8(A6)
+				PEA			-$0006(A6)
+				PEA			-$000A(A6)
+				PEA			-$0064(A6)
+				MOVE.L		-$00B0(A6), -(SP)
+				MOVE.L		(A4), -(SP)
+				JSR			EXPANSIONBUSMGR_VEC0178
+				MOVE.W		D0, D6
+				LEA			$0018(SP), SP
+				BNE.S		@00000248
+				PEA			-$0002(A6)
+				PEA			$03FF
+				MOVEQ		#$30, D0
+				MOVE.L		D0, -(SP)
+				PEA			-$0024(A6)
+				MOVE.L		-$000A(A6), -(SP)
+				JSR			EXPANSIONBUSMGR_VEC0188
+				MOVE.W		D0, D6
+				LEA			$0014(SP), SP
+				BNE.S		@00000248
+				MOVEQ		#$02, D0
+				MOVE.L		D0, -(SP)
+				PEA			-$0002(A6)
+				PEA			#'driver-ref'
+				PEA			-$0024(A6)
+				_RegistryPropertyCreate
+				MOVE.W		D0, D6
+				LEA			$0010(SP), SP
+@00000248
+				MOVE.W		D4, -(SP)
+				_UseResFile
+				BRA.S		@00000254
+@0000024E
+				MOVE.B		#$01, -$000B(A6)
+@00000254
+				TST.B		-$000B(A6)
+				BEQ			@00000026
+				PEA			-$0014(A6)
+				_RegistryEntryIterateDispose
+				ADDQ.W		#4, SP
+@00000266
+				MOVEM.L		-$00D4(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1CA0_INCREMENTSTRUCTFIELD	PROC	EXPORT
+
+Regs			SET			A3
+
+				LINK.W		A6, #$0000
+				MOVE.L		Regs, -(SP)
+				MOVEA.L		$0008(A6), A3
+				MOVEA.L		(A3), A1
+				MOVE.L		A1, D0
+				BEQ.S		@00000016
+				ADDA.L		$000C(A6), A1
+				MOVE.L		A1, (A3)
+@00000016
+				MOVEA.L		-$0004(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1CC0_MOVEUNIVINFOTOSYSHEAP	PROC	EXPORT
+
+				IMPORT		INTERC_1CA0_INCREMENTSTRUCTFIELD
+
+Regs			REG			D5-D7/A2-A4
+
+				LINK.W		A6, #-$0008
+				MOVEM.L		Regs, -(SP)
+				MOVE.L		$2400, D0
+				AND.L		#$40000000, D0
+				BEQ			@000000D8
+				MOVE.L		#$00000228, D6
+				MOVE.L		D6, D0
+				_NewPtrSys
+				MOVEA.L		A0, A3
+				MOVE.L		A3, D0
+				BEQ			@000000D8
+				MOVE.L		A3, D7
+				MOVE.L		D7, D0
+				ADDQ.L		#3, D0
+				MOVEQ		#$FC, D1
+				AND.L		D0, D1
+				MOVE.L		D1, D7
+				MOVE.L		D7, D5
+				MOVEA.L		D5, A3
+				MOVEA.L		D5, A4
+				ADDI.L		#$00000218, D7
+				MOVE.L		D7, -$0008(A6)
+				MOVE.L		D7, D6
+				SUB.L		A3, D6
+				MOVEA.L		$0DD8, A2
+				MOVEA.L		A2, A0
+				MOVEA.L		A4, A1
+				MOVE.L		D6, D0
+				_BlockMoveData
+				MOVEA.L		A2, A3
+				SUBA.L		A4, A3
+				MOVE.L		A3, -(SP)
+				PEA			$0004(A4)
+				JSR			INTERC_1CA0_INCREMENTSTRUCTFIELD
+				MOVE.L		A3, -(SP)
+				PEA			$0008(A4)
+				JSR			INTERC_1CA0_INCREMENTSTRUCTFIELD
+				MOVE.L		A3, -(SP)
+				PEA			$000C(A4)
+				JSR			INTERC_1CA0_INCREMENTSTRUCTFIELD
+				MOVE.L		A3, -(SP)
+				PEA			$0038(A4)
+				JSR			INTERC_1CA0_INCREMENTSTRUCTFIELD
+				MOVE.L		A3, -(SP)
+				PEA			$003C(A4)
+				JSR			INTERC_1CA0_INCREMENTSTRUCTFIELD
+				MOVE.L		A3, -(SP)
+				PEA			$0040(A4)
+				JSR			INTERC_1CA0_INCREMENTSTRUCTFIELD
+				MOVE.L		A3, -(SP)
+				PEA			$0044(A4)
+				JSR			INTERC_1CA0_INCREMENTSTRUCTFIELD
+				MOVE.L		A3, -(SP)
+				PEA			$0048(A4)
+				JSR			INTERC_1CA0_INCREMENTSTRUCTFIELD
+				MOVE.L		A3, -(SP)
+				PEA			$004C(A4)
+				JSR			INTERC_1CA0_INCREMENTSTRUCTFIELD
+				MOVE.L		A3, -(SP)
+				PEA			$0050(A4)
+				JSR			INTERC_1CA0_INCREMENTSTRUCTFIELD
+				MOVE.L		A3, -(SP)
+				PEA			$0064(A4)
+				JSR			INTERC_1CA0_INCREMENTSTRUCTFIELD
+				MOVE.L		A3, -(SP)
+				PEA			$005C(A4)
+				JSR			INTERC_1CA0_INCREMENTSTRUCTFIELD
+				MOVE.L		A4, $0DD8
+				LEA			$0060(SP), SP
+@000000D8
+				MOVEM.L		-$0020(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1DB0		PROC		EXPORT
+
+				LINK.W		A6, #$0000
+				MOVEA.L		$0008(A6), A1
+				MOVE.W		#$0001, (A1)
+				CLR.W		$0002(A1)
+				MOVEQ		#$00, D0
+				MOVE.L		D0, $0004(A1)
+				MOVE.L		D0, $0008(A1)
+				MOVE.L		D0, $000C(A1)
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1DE0		PROC		EXPORT
+
+				IMPORT		INTERC_1DB0
+
+Regs			REG			D7/A4
+
+				LINK.W		A6, #-$0032
+				MOVEM.L		Regs, -(SP)
+				MOVEA.L		$000C(A6), A4
+				MOVE.L		A4, -(SP)
+				JSR			INTERC_1DB0
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -$0020(A6)
+				MOVEA.L		$0008(A6), A0
+				MOVEA.L		(A0), A0
+				MOVE.W		(A0), -$001A(A6)
+				MOVE.W		#$000C, -$0018(A6)
+				MOVE.L		A4, -$0016(A6)
+				LEA			-$0032(A6), A0
+				_Status
+				MOVE.W		D0, D7
+				MOVEM.L		-$003A(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1E20		PROC		EXPORT
+
+Regs			REG			D7/A3/A4
+
+				LINK.W		A6, #-$0032
+				MOVEM.L		Regs, -(SP)
+				MOVEA.L		$0008(A6), A3
+				MOVEA.L		$000C(A6), A4
+				MOVEQ		#$CE, D7
+				MOVE.L		A3, D0
+				BEQ.S		@00000056
+				MOVE.L		A4, D0
+				BEQ.S		@00000056
+				CLR.W		$0004(A4)
+				CLR.W		$0006(A4)
+				MOVEQ		#$00, D0
+				MOVE.L		D0, $0008(A4)
+				MOVE.L		D0, $000C(A4)
+				MOVE.L		D0, $0010(A4)
+				MOVE.L		D0, -$0020(A6)
+				MOVEA.L		(A3), A0
+				MOVE.W		(A0), -$001A(A6)
+				MOVE.W		#$001C, -$0018(A6)
+				MOVE.L		A4, -$0016(A6)
+				LEA			-$0032(A6), A0
+				_Status
+				MOVE.W		D0, D7
+				BNE.S		@00000056
+				MOVEQ		#$FF, D0
+				CMP.L		(A4), D0
+				BNE.S		@00000056
+				MOVEQ		#$EE, D7
+@00000056
+				MOVE.W		D7, D0
+				MOVEM.L		-$003E(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1E90		PROC		EXPORT
+
+				IMPORT		INTERC_1E20
+
+Regs			REG			D6/D7/A2-A4
+
+				LINK.W		A6, #-$0014
+				MOVEM.L		Regs, -(SP)
+				MOVEA.L		$0010(A6), A2
+				MOVEA.L		$000C(A6), A3
+				MOVEA.L		$0008(A6), A4
+				CLR.B		D7
+				MOVEQ		#$FF, D0
+				MOVE.L		D0, -$0014(A6)
+				PEA			-$0014(A6)
+				MOVE.L		A4, -(SP)
+				JSR			INTERC_1E20
+				TST.W		D0
+				ADDQ.W		#8, SP
+				BNE.S		@0000009C
+				MOVE.L		-$0014(A6), D6
+				BRA.S		@00000094
+@00000032
+				MOVE.L		D6, D0
+				SUBQ.L		#1, D6
+				MOVE.L		D0, -$0014(A6)
+				PEA			-$0014(A6)
+				MOVE.L		A4, -(SP)
+				JSR			INTERC_1E20
+				TST.W		D0
+				ADDQ.W		#8, SP
+				BNE.S		@00000094
+				MOVEQ		#$00, D0
+				MOVE.W		-$0010(A6), D0
+				MOVEQ		#$02, D1
+				CMP.L		D0, D1
+				BEQ.S		@0000006E
+				MOVEQ		#$00, D0
+				MOVE.W		-$0010(A6), D0
+				MOVEQ		#$0E, D1
+				CMP.L		D0, D1
+				BEQ.S		@0000006E
+				MOVEQ		#$00, D0
+				MOVE.W		-$0010(A6), D0
+				MOVEQ		#$14, D1
+				CMP.L		D0, D1
+				BNE.S		@00000094
+@0000006E
+				MOVEQ		#$01, D7
+				MOVEQ		#$00, D0
+				MOVE.B		-$000E(A6), D0
+				MOVE.W		D0, (A3)
+				MOVEQ		#$00, D0
+				MOVE.B		-$000D(A6), D0
+				MOVE.W		D0, (A2)
+				MOVE.L		#$00000200, D0
+				AND.L		-$000C(A6), D0
+				BNE.S		@00000094
+				MOVEA.L		$0014(A6), A0
+				MOVE.B		#$01, (A0)
+@00000094
+				TST.L		D6
+				BLS.S		@0000009C
+				TST.B		D7
+				BEQ.S		@00000032
+@0000009C
+				MOVE.B		D7, D0
+				MOVEM.L		-$0028(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_1F40_BACKLIGHT	PROC	EXPORT
+
+				IMPORT		INTERC_1DE0
+				IMPORT		INTERC_1E90
+				IMPORT		OPENDRIVER
+
+Regs			REG			D7/A3/A4
+
+				STRING		PASCAL
+
+				LINK.W		A6, #-$004E
+				MOVEM.L		Regs, -(SP)
+				MOVEQ		#$00, D0
+				MOVEA.L		D0, A3
+				CLR.L		-$0006(A6)
+				SUBQ.L		#2, SP
+				PEA			#'.Backlight'
+				PEA			-$0008(A6)
+				JSR			OPENDRIVER
+				TST.W		(SP)+
+				BNE			@00000124
+				MOVE.L		#'mach', D0
+				LEA			-$001C(A6), A0
+				MOVEA.L		A0, A1
+				_Gestalt
+				MOVE.L		A0, (A1)
+				SUBQ.L		#4, SP
+				_GetDeviceList
+				MOVEA.L		(SP)+, A4
+				BRA			@0000011A
+@0000003E
+				PEA			-$0018(A6)
+				MOVE.L		A4, -(SP)
+				JSR			INTERC_1DE0
+				MOVE.W		D0, D7
+				ADDQ.W		#8, SP
+				BNE.S		@000000BA
+				MOVEQ		#$00, D0
+				MOVE.W		-$0018(A6), D0
+				MOVEQ		#$02, D1
+				CMP.L		D0, D1
+				BEQ.S		@00000072
+				MOVEQ		#$00, D0
+				MOVE.W		-$0018(A6), D0
+				MOVEQ		#$0E, D1
+				CMP.L		D0, D1
+				BEQ.S		@00000072
+				MOVEQ		#$00, D0
+				MOVE.W		-$0018(A6), D0
+				MOVEQ		#$14, D1
+				CMP.L		D0, D1
+				BNE.S		@0000009A
+@00000072
+				MOVE.L		#$00000800, D0
+				AND.L		-$0014(A6), D0
+				BEQ.S		@0000009A
+				MOVEA.L		A4, A3
+				MOVE.B		#$01, -$0001(A6)
+				MOVEQ		#$00, D0
+				MOVE.B		-$0016(A6), D0
+				MOVE.W		D0, -$0006(A6)
+				MOVEQ		#$00, D0
+				MOVE.B		-$0015(A6), D0
+				MOVE.W		D0, -$0004(A6)
+@0000009A
+				MOVE.L		A3, D0
+				BNE.S		@000000BA
+				PEA			-$0001(A6)
+				PEA			-$0004(A6)
+				PEA			-$0006(A6)
+				MOVE.L		A4, -(SP)
+				JSR			INTERC_1E90
+				TST.B		D0
+				LEA			$0010(SP), SP
+				BEQ.S		@000000BA
+				MOVEA.L		A4, A3
+@000000BA
+				MOVE.L		A3, D0
+				BEQ.S		@00000112
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -$003C(A6)
+				MOVE.W		-$0008(A6), -$0036(A6)
+				MOVE.W		#$430B, -$0034(A6)
+				MOVE.W		-$0006(A6), -$0032(A6)
+				MOVE.W		-$0004(A6), -$0030(A6)
+				MOVE.L		-$001C(A6), -$002E(A6)
+				LEA			-$004E(A6), A0
+				_Control
+				MOVE.W		D0, D7
+				TST.B		-$0001(A6)
+				BEQ.S		@00000124
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -$003C(A6)
+				MOVE.W		-$0008(A6), -$0036(A6)
+				MOVE.W		#$430A, -$0034(A6)
+				MOVE.W		#$0007, -$0032(A6)
+				LEA			-$004E(A6), A0
+				_Control
+				MOVE.W		D0, D7
+				BRA.S		@00000124
+@00000112
+				SUBQ.L		#4, SP
+				MOVE.L		A4, -(SP)
+				_GetNextDevice
+				MOVEA.L		(SP)+, A4
+@0000011A
+				MOVE.L		A4, D0
+				BEQ.S		@00000124
+				MOVE.L		A3, D0
+				BEQ			@0000003E
+@00000124
+				MOVEM.L		-$005A(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_2090_POWERMGR	PROC	EXPORT
+
+Regs			REG			D7/A3/A4
+
+				STRING		PASCAL
+
+				LINK.W		A6, #-$010E
+				MOVEM.L		Regs, -(SP)
+				LEA			-$0106(A6), A3
+				_GetZone
+				MOVEA.L		A0, A4
+				SUBQ.L		#4, SP
+				MOVE.L		$02A6, (SP)
+				MOVEA.L		(SP)+, A0
+				_SetZone
+				SUBQ.L		#2, SP
+				PEA			#'NativePowerMgrLib'
+				MOVE.L		#'pwpc', -(SP)
+				MOVEQ		#$01, D0
+				MOVE.L		D0, -(SP)
+				PEA			-$010E(A6)
+				PEA			-$010A(A6)
+				MOVE.L		A3, -(SP)
+				_GetSharedLibrary
+				MOVE.W		(SP)+, D7
+				BNE.S		@00000058
+				SUBQ.L		#2, SP
+				MOVE.L		-$010E(A6), -(SP)
+				PEA			#'PMInitialize'
+				PEA			-$0006(A6)
+				PEA			-$0001(A6)
+				_FindSymbol
+				MOVE.W		(SP)+, D7
+@00000058
+				TST.W		D7
+				BNE.S		@00000062
+				MOVEA.L		-$0006(A6), A0
+				JSR			(A0)
+@00000062
+				MOVEA.L		A4, A0
+				_SetZone
+				MOVEM.L		-$011A(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_2130_CARDBUS	PROC	EXPORT
+
+				IMPORT		INTERC_2250
+				IMPORT		INTERC_24C0
+
+Regs			REG			D7/A4
+
+				STRING		C
+
+				LINK.W		A6, #-$0014
+				MOVEM.L		Regs, -(SP)
+				LEA			-$0004(A6), A4
+				LEA			#'hd', A0
+				LEA			(A4), A1
+				MOVE.W		(A0)+, (A1)+
+				MOVE.B		(A0), (A1)
+				MOVE.L		#$01000000, D0
+				AND.L		$0DD0, D0
+				BEQ.S		@00000050
+				PEA			-$0014(A6)
+				MOVEQ		#$05, D0
+				MOVE.L		D0, -(SP)
+				PEA			#'scsi'
+				JSR			INTERC_24C0
+				MOVE.B		D0, D7
+				LEA			$000C(SP), SP
+				BEQ.S		@00000050
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -(SP)
+				MOVE.L		D0, -(SP)
+				PEA			INTERC_2440
+				PEA			-$0014(A6)
+				JSR			INTERC_2250
+				LEA			$0010(SP), SP
+@00000050
+				MOVE.L		A4, -(SP)
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -(SP)
+				PEA			INTERC_23E0
+				MOVE.L		D0, -(SP)
+				JSR			INTERC_2250
+				PEA			-$0014(A6)
+				MOVEQ		#$08, D0
+				MOVE.L		D0, -(SP)
+				PEA			#'cardbus'
+				JSR			INTERC_24C0
+				MOVE.B		D0, D7
+				LEA			$001C(SP), SP
+				BNE.S		@0000008E
+				PEA			-$0014(A6)
+				MOVEQ		#$07, D0
+				MOVE.L		D0, -(SP)
+				PEA			#'pccard'
+				JSR			INTERC_24C0
+				MOVE.B		D0, D7
+				LEA			$000C(SP), SP
+@0000008E
+				TST.B		D7
+				BEQ.S		@000000A8
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -(SP)
+				MOVE.L		D0, -(SP)
+				PEA			INTERC_2380
+				PEA			-$0014(A6)
+				JSR			INTERC_2250
+				LEA			$0010(SP), SP
+@000000A8
+				PEA			-$0014(A6)
+				MOVEQ		#$04, D0
+				MOVE.L		D0, -(SP)
+				PEA			#'ide'
+				JSR			INTERC_24C0
+				MOVE.B		D0, D7
+				LEA			$000C(SP), SP
+				BNE.S		@000000D6
+				PEA			-$0014(A6)
+				MOVEQ		#$04, D0
+				MOVE.L		D0, -(SP)
+				PEA			#'ata'
+				JSR			INTERC_24C0
+				MOVE.B		D0, D7
+				LEA			$000C(SP), SP
+@000000D6
+				TST.B		D7
+				BEQ.S		@000000F0
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -(SP)
+				MOVE.L		D0, -(SP)
+				PEA			INTERC_2320
+				PEA			-$0014(A6)
+				JSR			INTERC_2250
+				LEA			$0010(SP), SP
+@000000F0
+				MOVEM.L		-$001C(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_2250		PROC		EXPORT
+
+				IMPORT		strcpy
+
+Regs			REG			D7/A3/A4
+
+				STRING		C
+
+				LINK.W		A6, #-$0064
+				MOVEM.L		Regs, -(SP)
+				MOVEA.L		$0014(A6), A3
+				MOVEA.L		$0008(A6), A4
+				LEA			#'generic', A0
+				LEA			-$0008(A6), A1
+				MOVE.L		(A0)+, (A1)+
+				MOVE.L		(A0)+, (A1)+
+				MOVEQ		#$00, D0
+				MOVE.L		D0, -$005C(A6)
+				MOVE.L		$000C(A6), -$0060(A6)
+				MOVE.L		D0, -$0054(A6)
+				MOVE.L		$0010(A6), -$0058(A6)
+				MOVE.L		A4, D1
+				BEQ.S		@00000072
+				PEA			-$0050(A6)
+				MOVE.L		A4, -(SP)
+				_RegistryEntryIDCopy
+				MOVE.L		D0, D7
+				PEA			-$000C(A6)
+				PEA			#'device_type'
+				MOVE.L		A4, -(SP)
+				_RegistryPropertyGetSize
+				MOVE.L		D0, D7
+				LEA			$0014(SP), SP
+				BNE.S		@0000009E
+				PEA			-$000C(A6)
+				PEA			-$003C(A6)
+				PEA			#'device_type'
+				MOVE.L		A4, -(SP)
+				_RegistryPropertyGet
+				MOVE.L		D0, D7
+				LEA			$0010(SP), SP
+				BRA.S		@0000009E
+@00000072
+				PEA			-$0050(A6)
+				_RegistryEntryIDInit
+				MOVE.L		D0, D7
+				MOVE.L		A3, D0
+				ADDQ.W		#4, SP
+				BEQ.S		@00000090
+				MOVE.L		A3, -(SP)
+				PEA			-$003C(A6)
+				JSR			strcpy
+				ADDQ.W		#8, SP
+				BRA.S		@0000009E
+@00000090
+				PEA			-$0008(A6)
+				PEA			-$003C(A6)
+				JSR			strcpy
+				ADDQ.W		#8, SP
+@0000009E
+				LEA			-$0064(A6), A0
+				MOVEQ		#$22, D0
+				_PowerDispatch
+				MOVEM.L		-$0070(A6), Regs
+				UNLK		A6
+				RTS
+
+
+
+INTERC_2320		PROC		EXPORT
+
+				IMPORT		ATAMGR_5DF30
+				IMPORT		ATAMGR_5DFB0
+
+				LINK.W		A6, #$0000
+				MOVE.L		$0014(A6), D0
+				SUBQ.L		#2, D0
+				BEQ.S		@00000026
+				SUBQ.L		#1, D0
+				BEQ.S		@00000020
+				SUBI.L		#$0000000A, D0
+				BEQ.S		@00000026
+				SUBQ.L		#2, D0
+				BEQ.S		@00000020
+				SUBQ.L		#4, D0
+				BNE.S		@0000002A
+@00000020
+				JSR			ATAMGR_5DFB0
+				BRA.S		@0000002A
+@00000026
+				JSR			ATAMGR_5DF30
+@0000002A
+				MOVEQ		#$00, D0
+				MOVE.L		D0, $0018(A6)
+				UNLK		A6
+				RTD			#$0010
+
+
+
+				END
