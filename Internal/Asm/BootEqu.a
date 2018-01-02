@@ -87,7 +87,13 @@ postBootNewPtrStartup	ds.l	1			;	  4	pointer to implementation of NewPtrStartup
 bufPtrLimit				ds.l	1			;	  4 barrier; how low bufPtr is allowed to go
 resetFlag				ds.w	1			;	  2 clear if don’t reset; -1 if do reset
 reservedForAfterBoot	ds.l	1			;	  4 minSysHeapFreeAfterBoot until launch time
-						ds.b	86			;	 86	padding (so we match the ROM boot code)
+						ds.b	24
+sysRsrcFirstBlk			ds.w	1			;	  2 $32
+sysRsrcPhysicalLen		ds.l	1			;	  4 $34
+enablerRsrcFirstBlk		ds.w	1			;	  2 $38
+enablerRsrcPhysicalLen	ds.l	1			;	  4 $3A
+boot3Size				ds.l	1			;	  4 $3E
+						ds.b	46			;	 46	padding (so we match the ROM boot code)
 port					ds.b	portRec		;	108	GrafPort already opened by the boot code
 fileName				ds.b	256			;	256	file name used by INIT file opening code
 						ds.b	148			;	148	padding (so we match the ROM boot code)
@@ -108,17 +114,17 @@ processMgrCode0 		equ 	-16470		; resource ID of jump table for the Process Mgr.
 minRAMNeededToBoot		equ		3*512*1024	; 1.5 MB You just gotta have it.
 
 ; MacsBug sizes
-debuggerGlobalSize		equ 	1*1024		; size above BufPtr needed by MacsBug
+debuggerGlobalSize		equ 	4			; size above BufPtr needed by MacsBug
 
 ; system heap sizes
-initialSysHeapSize		equ		700*1024	; for Finder and 1 cdev
-minSysHeapFreeForINIT 	equ 	24*1024 	; minimum amount that INITs need in the system heap
-minSysHeapFreeAfterBoot equ 	100*1024 	; minimum amount that must remain free in system heap
+initialSysHeapSize		equ		10*1024*1024; for Finder and 1 cdev and I'm guessing a bit more
+minSysHeapFreeForINIT 	equ 	256*1024 	; minimum amount that INITs need in the system heap
+minSysHeapFreeAfterBoot equ 	400*1024 	; minimum amount that must remain free in system heap
 sysHeapFreeSpaceSlop	equ 	16*1024 	; slop for MakeSysFree routine
 minSysHeapFreeSpace		equ		64*1024		; this goes into emMinSysHeapFreeSpace for use by Finder & Process Mgr
 
 ; size of heap used to load INITs, script systems, and
-minBootAppHeapSize		equ		32*1024		; smallest heap for INIT loading
+minBootAppHeapSize		equ		256*1024	; smallest heap for INIT loading
 
 ; Process Mgr. sizes
 processMgrStackSize 	equ 	8*1024		; stack size

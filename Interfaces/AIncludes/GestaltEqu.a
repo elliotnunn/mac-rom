@@ -602,8 +602,30 @@ gestaltInternalDisplay		EQU		'idsp'			; slot number of internal display location
 			dc.w		$ABF1
 		ENDM
 
+		MACRO
+		_SetGestaltValue
+			move.w		#$0404,d0
+			dc.w		$ABF1
+		ENDM
+
 	ENDIF	; _NewGestaltValue
 	
 	
 	
 	ENDIF	; ...already included 
+
+gestaltOpenFirmwareInfo	EQU		'opfw'		; Open Firmware info 
+gestaltMacOSCompatibilityBoxAttr EQU	'bbox'				; Classic presence and features 
+gestaltMacOSCompatibilityBoxPresent EQU	0					; True if running under the Classic 
+gestaltMacOSCompatibilityBoxHasSerial EQU 1					; True if Classic serial support is implemented. 
+gestaltMacOSCompatibilityBoxless EQU	2					; True if we're Boxless (screen shared with Carbon/Cocoa) 
+gestaltPowerMgrVers		EQU		'pwrv'						; power manager version 
+gestaltVMHasPagingControl	EQU	4			; true if MakeMemoryResident, MakeMemoryNonResident, FlushMemory, and ReleaseMemoryData are available 
+gestaltMemoryMapAttr	EQU		'mmap'		; Memory map type 
+gestaltMemoryMapSparse	EQU		0			; Sparse memory is on 
+gestaltVMInfoType				EQU		'vmin'				; Indicates how the Finder should display information about VM in 
+															; the Finder about box. 
+gestaltVMInfoSizeStorageType	EQU		0					; Display VM on/off, backing store size and name 
+gestaltVMInfoSizeType			EQU		1					; Display whether VM is on or off and the size of the backing store 
+gestaltVMInfoSimpleType			EQU		2					; Display whether VM is on or off 
+gestaltVMInfoNoneType			EQU		3					; Display no VM information 

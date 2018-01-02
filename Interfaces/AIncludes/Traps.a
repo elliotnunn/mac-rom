@@ -2002,6 +2002,12 @@ selectLockMemory			EQU		2
 selectLockMemoryContiguous 	EQU		4
 selectUnlockMemory			EQU		3
 selectGetPhysical			EQU		5
+selectLockMemoryForOutput	EQU		10
+selectMakeMemoryResident	EQU		11
+selectReleaseMemoryData		EQU		12
+selectMakeMemoryNonResident	EQU		13
+selectFlushMemory			EQU		14
+selectGetVolumeVMInfo		EQU		15
 
 selectDebuggerGetMax		EQU		0
 selectDebuggerEnter			EQU		1
@@ -2041,6 +2047,36 @@ selectEnterSupervisorMode	EQU		8
 		MACRO
 		_GetPhysical
 			DoDispatch _MemoryDispatchA0Result,selectGetPhysical
+		ENDM
+
+		MACRO
+		_LockMemoryForOutput
+			DoDispatch _MemoryDispatch,selectLockMemoryForOutput
+		ENDM
+
+		MACRO
+		_MakeMemoryResident
+			DoDispatch _MemoryDispatch,selectMakeMemoryResident
+		ENDM
+
+		MACRO
+		_ReleaseMemoryData
+			DoDispatch _MemoryDispatch,selectReleaseMemoryData
+		ENDM
+
+		MACRO
+		_MakeMemoryNonResident
+			DoDispatch _MemoryDispatch,selectMakeMemoryNonResident
+		ENDM
+
+		MACRO
+		_FlushMemory
+			DoDispatch _MemoryDispatch,selectFlushMemory
+		ENDM
+
+		MACRO
+		_GetVolumeVirtualMemoryInfo
+			DoDispatch _MemoryDispatch,selectGetVolumeVMInfo
 		ENDM
 
 ; DebugUtil calls

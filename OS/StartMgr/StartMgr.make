@@ -42,7 +42,6 @@ StartTestObjs			=	"{ObjDir}USTStartTest.a.o"							¶
 
 
 Boot3Objects			=	"{ObjDir}Boot3.a.o"									¶
-							"{ObjDir}DispatchPatch.a.o"
 
 
 "{RsrcDir}Gibbly.rsrc"		ÄÄ	"{StartDir}Gibbly.r"
