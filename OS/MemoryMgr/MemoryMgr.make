@@ -17,9 +17,6 @@
 
 FigmentDir = {MemoryMgrDir}FigmentSources:
 
-#include {FigmentDir}Figment.Make
-
-
 MemoryMgrObjs 					=	"{ObjDir}MemoryMgr.a.o"							¶
 									"{ObjDir}MemoryMgrExtensions.a.o"				¶
 									"{ObjDir}MemoryMgrInternal.a.o"					¶
@@ -66,3 +63,4 @@ MemoryMgrObjs 					=	"{ObjDir}MemoryMgr.a.o"							¶
 	Asm {StdAOpts} -o "{Targ}" "{MemoryMgrDir}MemoryMgrInternal.a"
 
 
+#include {FigmentDir}Figment.Make

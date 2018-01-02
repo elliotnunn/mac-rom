@@ -49,7 +49,7 @@ Boot3Objects			=	"{ObjDir}Boot3.a.o"									¶
 	Rez {StdROpts} -a -o "{targ}" -d ROMBuildTime="{ROMBuildTime}" "{StartDir}Gibbly.r" || Exit 1
 
 "{RsrcDir}Gibbly.rsrc"		ÄÄ	{Boot3Objects}
-	Link {StdLOpts} {StdAlign} -o "{Targ}" {Boot3Objects} -rt 'boot=3' -ra =resSysHeap,resLocked || Exit 1
+	Link {StdLOpts}  -o "{Targ}" {Boot3Objects} -rt 'boot=3' -ra =resSysHeap,resLocked || Exit 1
 
 "{LibDir}StartMgr.lib"		Ä	{StartMgrObjs}
 	Lib {StdLibOpts}	{StartMgrObjs} -o "{Targ}"

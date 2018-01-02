@@ -197,11 +197,12 @@ Set	AvailableFeatures  "hasROMGibbly			¶
 						useROMFonts				"
 
 
-	If	"` ParseFeatures -a "{AvailableFeatures}" -f ": ROM {1}" `" =~ /': ROM '(Å)¨1/
-		Set Defines "{¨1}"
-	Else
-		Exit 1
+	For Feature in {AvailableFeatures}
+		Set Defines "{Defines} -d {Feature}=`Evaluate " {1} " =~ /Å {Feature} Å/`"
 	End
+
+	# Ugh!
+	Set Defines "`Echo {Defines} | StreamEdit -e '¥,° Replace /=1/ "=TRUE" -c °' -e '¥,° Replace /=0/ "=FALSE" -c °'`"
 
 	For Override in {2}
 

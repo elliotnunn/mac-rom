@@ -40,7 +40,7 @@ IfSrcDir	=	{Sources}Libs:InterfaceSrcs:
 LibraryDir	=	{Sources}Libs:Libraries:
 
 #include {OSDir}OS.make
-#include {ToolBoxDir}Toolbox.make
+##include {ToolBoxDir}Toolbox.make
 #include {ColorQDDir}ColorQD.make
 #include {IfSrcDir}Interface.make
 

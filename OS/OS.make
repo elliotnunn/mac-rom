@@ -67,14 +67,14 @@ RealTimeDir		=	{OSDir}RealTime:
 #include {ADBDir}ADBMgr.make
 #include {TimeMgrDir}TimeMgr.make
 #include {MemoryMgrDir}MemoryMgr.make
-#include {BeepDir}Beep.make
+##include {BeepDir}Beep.make
 #include {FPEmulationDir}FPEmulation.make
 #include {GestaltDir}Gestalt.make
 #include {KeyboardDir}Keyboard.make
 #include {NetBootDir}NetBoot.make
 #include {VDigDir}VDig.make
 #include {I2CDir}I2C.make
-#include {RealTimeDir}RealTime.make
+##include {RealTimeDir}RealTime.make
 
 
 OSObjs	= 							"{ObjDir}clock.a.o"								¶

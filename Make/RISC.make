@@ -379,12 +379,12 @@ Clean							Ä
 .cp.o							Ä	.c
 	{CPlus} {StdCPOpts} -o {Targ} {DepDir}{Default}.cp
 
-#include {ToolSrcDir}Tools.make
+##include {ToolSrcDir}Tools.make
+
+#include {DriverDir}Drivers.make
 
 #include {MakeDir}MainCode.make
 
 #include {DeclDir}DeclData.make
-
-#include {DriverDir}Drivers.make
 
 #include {ResourceDir}Resources.make
