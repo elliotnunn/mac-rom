@@ -531,15 +531,29 @@ pramFigmentOffset		EQU		$8A			; sayeth SheepShaver
 pramFigmentFlag			EQU		5			; (SheepShaver also sets bits 0 and 2)
 
 
+LogProgress				SET		0			; SET to 1 (at any point) to spam NanoKernel log
+
+
 						MACRO
 &label					Progress
 
-						movem.l		a0/a1, -(sp)
+	IF LogProgress THEN
+@progRegs				reg			a0/a1/d0/d1/d2
+	ELSE
+@progRegs				reg			a0/a1
+	ENDIF
+
+						movem.l		@progRegs, -(sp)
+	IF LogProgress THEN
+						pea			@str + 1	; c string
+						move		#-3, -(sp)
+						dc.w		$AA7F
+	ENDIF
 						move.l		$2b6, a0	; expandmem
 						lea			@str, a1
 						move.l		a1, $324(a0)
 						bsr			NudgeProgressBar
-						movem.l		(sp)+, a0/a1
+						movem.l		(sp)+, @progRegs
 						bra.s		@poststr
 
 						LCLC		&oldstr				; save string setting
@@ -547,6 +561,10 @@ pramFigmentFlag			EQU		5			; (SheepShaver also sets bits 0 and 2)
 						STRING		Pascal				; change it
 @str
 						dc.b		'&label'			; insert string
+	IF LogProgress THEN
+						STRING		C
+						dc.b		'^n'
+	ENDIF
 						align		2
 @poststr
 						STRING		&oldstr				; change it back
