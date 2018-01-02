@@ -1,0 +1,12 @@
+Set Parent "`Files -f "{0}" | StreamEdit -d -e '/((Å:)*)¨1([Â:]*)/ Print ¨1'`"
+
+SetDirectory "{Parent}"
+
+make -w -f :Make:RISC.make -d Sources=: FeatureSet :BuildResults:RISC:Rsrc:Gibbly.rsrc > :BuildResults:RISC:Text:MakeOut
+
+:BuildResults:RISC:Text:MakeOut
+
+Echo "{Parent}"BuildResults:RISC:Rsrc:Gibbly.rsrc
+
+# Suggested command:
+# DeRez -only boot BuildResults/RISC/Rsrc/Gibbly.rsrc > TempRez && Rez -a -o "Mac OS ROM" TempRez
