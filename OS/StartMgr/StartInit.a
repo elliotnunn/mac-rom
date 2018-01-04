@@ -1482,7 +1482,7 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 ;	initialize the expanded low-mem area (really in the system heap)
 
 			WITH	ExpandMemRec					;														<SM40>
-			Move.l	#emRecSize,d0					; size of ext to old low-mem							<SM40>
+			Move.l	#emRecSize + 100,d0					; size of ext to old low-mem							<SM40>
 			_NewPtr	sys,clear						; get a blob											<SM40>
 			Move.l	a0,ExpandMem					; stuff global ptr										<SM40>
 			Move.w	#emCurVersion,(a0)+				; version number										<SM40>
@@ -1537,6 +1537,18 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			MOVE.W	#dsGNLoadFail,D0				; Fatal GoNative load error.							
 			_SysError								; Put up a dialog and die.
 @noPower
+
+		;	PATCH THE CodeFragmentDispatch trap!
+
+		move.l	ExpandMem, a1
+		move.w	#$AA5A, d0
+		_GetToolTrapAddress
+		move.l	a0, ExpandMemRec.emRecSize + 100 - 4(a1)
+
+		lea		MyNewGoNativeTrap, a0
+		move.w	#$AA5A, d0
+		_SetToolTrapAddress
+
 
 ; 268
 			IMPORT	InterC_1690_CodeRegister
@@ -3984,6 +3996,81 @@ FiddleWithEmulator
 @done
 			Rts
 
+
+MyNewGoNativeTrap
+
+			STRING	Pascal
+
+			clr.l	-(sp)						; room to jump!
+			movem.l	a0-a6/d0-d7, -(sp)			; 15 registers = 60 bytes of stack
+
+			lea		64(sp), a3					; a3 = stack ptr on entry, contains args!
+
+
+			cmp		#1, 4(a3)
+			bne.s	@notSharedLib
+
+			lea		#'GetSharedLibrary: ', a0
+			bsr		PrintP
+
+			move.l	26(a3), a0
+			bsr		PrintP
+
+			lea		#' ...^n', a0
+			bsr		PrintP
+@notSharedLib
+
+
+			cmp		#5, 4(a3)
+			bne.s	@notGetSym
+
+			lea		#'FindSymbol: ', a0
+			bsr		PrintP
+
+			move.l	14(a3), a0
+			bsr		PrintP
+
+			lea		#' ...^n', a0
+			bsr		PrintP
+@notGetSym
+
+
+			move.l	ExpandMem, a4
+			move.l	ExpandMemRec.emRecSize + 100 - 4(a4), 60(sp)
+
+			movem.l	(sp)+, a0-a6/d0-d7
+
+			rts
+
+
+PrintP ; takes arg in a0, clobbers a1 and d0
+
+			sub.l	#256, sp
+			move.l	sp, a1
+
+			move.b	(a0)+, d0				; copy a0 to a1
+@loop		tst.b	d0
+			bz.s	@exitLoop
+			move.b	(a0)+, (a1)+
+			sub.b	#1, d0
+			bra.s	@loop
+@exitLoop
+			clr.b	(a1)+
+
+			move.l	sp, a0
+			bsr		PrintC
+
+			add.l	#256, sp
+
+			rts
+
+
+PrintC
+			move.l	a0, -(sp)
+			move.w	#-3, -(sp)
+			dc.w	$AA7F
+
+			rts
 
 
 			align 16
