@@ -256,6 +256,35 @@ DIP			EQU		-3								; DiskInPlace offset in DQE
 VMGlobals	EQU		$0B78							; VMGlobals [V0 constant]								<SM49>
 
 
+						MACRO
+&label					Progress
+
+@progRegs				reg			a0/a1/d0/d1/d2
+
+						movem.l		@progRegs, -(sp)
+
+						pea			@str				; c string
+						move		#-3, -(sp)
+						dc.w		$AA7F
+
+						movem.l		(sp)+, @progRegs
+
+						bra.s		@poststr
+
+						LCLC		&oldstr				; save string setting
+&oldstr					SETC		&SETTING('STRING')
+						STRING		AsIs				; change it
+@str
+						dc.b		'&label'			; insert string
+						dc.b		'^n'
+						dc.b		0
+						align		2
+@poststr
+						STRING		&oldstr				; change it back
+
+						ENDM
+
+
 ;---------------------------------------------------
 ; IMPORTs
 ;---------------------------------------------------
@@ -294,8 +323,10 @@ BootMe		PROC	EXPORT
 			EXPORT	InitSys7Toolbox
 			EXPORT	OpenSlots
 
+PreFind Progress
 			BSR		FindStartupDevice				; Find the startup device & load boot blocks.
 													; (see StartSearch.a)
+PostFind Progress
 
 ; SCSI people mess with the zones.  Reunify the sys and app zones for
 ; possible expansion.  Code borrowed from StartInit.

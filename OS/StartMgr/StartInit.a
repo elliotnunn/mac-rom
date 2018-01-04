@@ -1021,6 +1021,36 @@ ioNuBusTTxlat	EQU		$500FC040					; I/O space and nuBus $6-$7 with serialized wri
 			SETMACHINE
 
 
+						MACRO
+&label					Progress
+
+@progRegs				reg			a0/a1/d0/d1/d2
+
+						movem.l		@progRegs, -(sp)
+
+						pea			@str				; c string
+						move		#-3, -(sp)
+						dc.w		$AA7F
+
+						movem.l		(sp)+, @progRegs
+
+						bra.s		@poststr
+
+						LCLC		&oldstr				; save string setting
+&oldstr					SETC		&SETTING('STRING')
+						STRING		AsIs				; change it
+@str
+						dc.b		'&label'			; insert string
+						dc.b		'^n'
+						dc.b		0
+						align		2
+@poststr
+						STRING		&oldstr				; change it back
+
+						ENDM
+
+
+
 
 ;---------------------------------------------------
 ; EXPORTs and IMPORTs
@@ -1516,6 +1546,9 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 
 			BSR.L	InitRSRCMgr						; initialize the Resource Manager
 			BSR.L	NMInit							; Initialize the Notification Manager
+
+
+I_Know_I_Saved_The_Company Progress
 		
 			CLR.W	-(SP)							; pass the INIT message to ShutDown
 			_ShutDown								;  to initialize the queue
@@ -1555,21 +1588,25 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 
 			IMPORT	InterC_2560
 			BSR		InterC_2560
-
-
+x1 Progress
+AboutToSwapToolScratch Progress
 			CLR.L	-(SP)							; who wrote this?
 			MOVE.L	(SP)+, ($D18)
 			MOVE.L	ToolScratch, -(SP)
 			LEA.L	SetUpTimeK, A0
 			MOVE.L	A0, ToolScratch
 
-			IMPORT	InterC_2090_PowerMgr
-			BSR		InterC_2090_PowerMgr
+Doing_InterC_2090_PowerMgr Progress ; crashes after this one.
+
+;			IMPORT	InterC_2090_PowerMgr
+;			BSR		InterC_2090_PowerMgr
+
+Doing_InterC_2a80_EtherPrintfLib Progress
 
 			IMPORT	InterC_2a80_EtherPrintfLib
 			BSR.L	InterC_2a80_EtherPrintfLib
 			MOVE.L	(SP)+, ToolScratch
-
+x2 Progress
 
 			BSR		GetPRAM							; get 20 bytes PRAM, and TIME
 
@@ -1588,7 +1625,7 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 
 			IMPORT RSETKMAP
 			BSR.L     RSETKMAP
-
+x3 Progress
 			IMPORT	InterC_2bc0_DebugPrint
 			BSR.L	InterC_2bc0_DebugPrint
 
@@ -1605,52 +1642,64 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			BSR		InitCrsrMgrMiddle
 			BSR.L	InitCrsrDev						; initialize Cursor globals								<H9>
 													; (InitCrsrDev must preceed InitADB)
-
-			SUBQ	#2, SP
-			MOVEQ.L	#-1, D0
-			_DisplayDispatch
-			ADDQ	#2, SP
+x4 Progress
+;			SUBQ	#2, SP
+;			MOVEQ.L	#-1, D0
+;			_DisplayDispatch						; selectInstallDisplayManager
+;			ADDQ	#2, SP
 
 ;----------------------------------------------------------------
 ; Install Drivers (Disk, Sound, Video).
 ;----------------------------------------------------------------
 ; 300
+x4_half Progress
 
 			LEA		DrvQHdr, A1						; Initialize the drive queue.
 			BSR.L	InitQueue
-
+x5 Progress
 			BSR		InitDeviceMgr					; Init unit I/O table and install the drivers.
 
 			IMPORT	InitDeviceDispatch
 			BSR.L	InitDeviceDispatch
-
+x6 Progress
 			BTST.B	#$6, ($2400)
 			BNE.B	@definitely
 			BTst.B	#$0, ($DD0)
-			BEQ.B	@dont
+			BEQ.B	bigdont
 @definitely
+x6_1 Progress
 
 			BSR		NewStartInitFunc
+x6_2 Progress
 			BSR.L	InitSCSIMgr						; Init old and new SCSI Mgrs
-@dont
+bigdont
+x6_3 Progress
 
 			IMPORT	InitExpansionMgr
 			BSR.L	InitExpansionMgr
+x6_4 Progress
 
 			IMPORT	InterC_1980_Drivers
 			BSR.L	InterC_1980_Drivers
+x6_5 Progress
 
 			BSR		LoadDrivers						; load the standard drivers
+HackyWayToReturnFromLoadDrivers
+x6_6 Progress
 
 			BSR.L	InitADB							; initialize ADB interface
+x6_7 Progress
 
-	import	InterC_1910_USBFamilyExpertLib
-	bsr.l	InterC_1910_USBFamilyExpertLib
+;	import	InterC_1910_USBFamilyExpertLib
+;	bsr.l	InterC_1910_USBFamilyExpertLib
+
+x6_8 Progress
 
 			BSR		InitCrsrMgr						; Initialize cursor variables
-
+x7 Progress
 			IMPORT	InitBCScreen
 			BSR.L	InitBCScreen
+x7_1 Progress
 
 			BSR.L	TEGlobalInit					; initialize TextEdit vectors
 
@@ -1677,16 +1726,21 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			MOVE.L	bkLim(A0),HeapEnd				; end of dynamic sys/appl zone
 			LEA		BootGlobalsSize(SP), A6			; boot blocks load pt
 			LEA 	QDBootGlobalsSize(SP),A5		; leaving room for globals
+x7_2 Progress
 
 			BSR.L	EnableSlotInts					; enable NuBus slot interrupts
+x7_3 Progress
 
 			BSR.L	InitFasterInvals				; init the expandmem variable for WindowMgr
 
 		IF hasPwrControls THEN
+x7_4 Progress
 			BSR.L	PowerDownAll					; power down all peripheral subsystems
 		ENDIF
 	
-			BSR		DrawBeepScreen					; Horst Beepmanh’s patented gray screen
+x7_5 Progress
+;			BSR		DrawBeepScreen					; Horst Beepmanh’s patented gray screen
+x7_6 Progress
 			
 			MOVE.L	#WmStConst,WarmStart			; write warm start constant to indicate warm start
 
@@ -1694,7 +1748,7 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			move.l	#WmStConst,StartGlobals.sgWarmStart(A0)	; flag warm start in a
 															; place where StarTest can see it w/o an MMU
 
-
+x8 Progress
 
 
 			import	InterC_2780_FireWire
@@ -1713,7 +1767,7 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 ; <65>, Other Terror changes...
 ;----------------------------------------------------------------
 ; 3b6
-
+x9 Progress
 			BTST	#$1, $2409
 			BEQ.B	@dont_do_mysterious_thing
 			IMPORT	LoadPCCardLib
@@ -1731,21 +1785,24 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			BSR.L	INITSCSIBOOT					; allocate some memory for SCSI booting
 													; and load third party SIMs (SCSI Interface
 													; modules
-
+x10 Progress
 			IMPORT	ATAMgr_5dae0
 			BSR.L	ATAMgr_5dae0
+x10_1 Progress
 			IMPORT	ATAMgr_5dde0
 			BSR.L	ATAMgr_5dde0
 
-			IMPORT	InterC_2130_CardBus
-			BSR		InterC_2130_CardBus
-
+x10_2 Progress
+;			IMPORT	InterC_2130_CardBus
+;			BSR		InterC_2130_CardBus
+MoneyShot Progress
 
 *************************************************************************************************
 *																								*
 *				Everything's ready to go, so go look for a disk to boot from					*
 *																								*
 *************************************************************************************************
+GoLookForADiskToBootFrom Progress
 
 			BRA		BootMe								; Exit Stage Right
 
@@ -2794,6 +2851,7 @@ LoadDrivers
 ;
 ;—————————  Floppy Driver  —————————
 ;
+FloppyDriver Progress
 			LEA 	-IOQElSize(SP),SP				; allocate parameter block for device manager calls
 			MOVE.L	SP,A0
 			CLR.B	IOPermssn(A0)					; r/w permissions
@@ -2804,6 +2862,7 @@ LoadDrivers
 ; if we don't have an EDisk driver, this will not affect anything
 ; to enable the EDisk, make sure that it is included in the rom resources
 
+EDiskDriver Progress
 		IF hasEDisk THEN
 			LEA.L 	EDiskName,A1					
 			MOVEQ.L	#$30,D2							;  and resource ID										<SM84>
@@ -2815,6 +2874,7 @@ LoadDrivers
 ;—————————  LAN Disk Driver  —————————
 ;
 
+LanDiskDriver Progress
 			IMPORT	InterC_1890_InitLANDisk
 			BSR		InterC_1890_InitLANDisk
 
@@ -2826,6 +2886,7 @@ LoadDrivers
 
 			IF		hasBCScreen THEN
 
+BCScreenDriver Progress
 			SubQ.L	#$2, sp
 			Move.L	sp, -(sp)
 			Move.L	#$3FF, -(sp)
@@ -2847,7 +2908,9 @@ LoadDrivers
 ;—————————  Backlight Driver  —————————
 ;
 
-		IF hasPwrControls THEN
+;		IF hasPwrControls THEN
+		IF 0 THEN
+BacklightDriver Progress
 			BTst.B    #$0, (HWCfgFlags)
 			BEQ.B     @noBacklight
 			BTst.B    #$6, ($2409)
@@ -2870,7 +2933,7 @@ LoadDrivers
 @skipALine
 
 			  BTst.B    #$3, ($DD3)
-			  BEQ       @exitDrivers
+			  BEQ       at_exitDrivers
 		ENDIF
 
 
@@ -2887,13 +2950,14 @@ LoadDrivers
 ; whose entry point is an installation procedure. A 'SERD' installs itself into the unit
 ; table, remaining closed and inactive until opened by a client.
 
+SerialDriver Progress
 			subq	#4,sp							; allocate space for return value
 			move.l	#'nsrd',-(sp)					; push serial driver resource type
 			move.w	#1,-(sp)						; SerialDMA driver is 'SERD' (1)
 			move.w	#mapTrue,ROMMapInsert			; get resource from ROM
 			_GetResource
 			move.l	(sp)+,d0						; did it get the handle?
-			beq.b	@exitDrivers
+			beq.b	at_exitDrivers
 			movea.l	d0,a2
 			movea.l	(a2),a1
 			SubQ      #$4, A7
@@ -2913,7 +2977,9 @@ LoadDrivers
 			_BlockMove
 			jsr		(a1)							; call the install code
 
-@exitDrivers
+at_exitDrivers
+ExitingDrivers Progress
+			bra HackyWayToReturnFromLoadDrivers
 			rts
 
 

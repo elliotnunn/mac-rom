@@ -248,6 +248,71 @@ A5_bootGlobs	EQU		A5
 A6_bootBlocks	EQU		A6
 
 
+
+
+						MACRO
+&label					Progress
+
+@progRegs				reg			a0/a1/d0/d1/d2
+
+						movem.l		@progRegs, -(sp)
+
+						pea			@str				; c string
+						move		#-3, -(sp)
+						dc.w		$AA7F
+
+						movem.l		(sp)+, @progRegs
+
+						bra.s		@poststr
+
+						LCLC		&oldstr				; save string setting
+&oldstr					SETC		&SETTING('STRING')
+						STRING		AsIs				; change it
+@str
+						dc.b		'&label'			; insert string
+						dc.b		'^n'
+						dc.b		0
+						align		2
+@poststr
+						STRING		&oldstr				; change it back
+
+						ENDM
+
+
+
+
+						MACRO
+						RProgress	&label
+
+@progRegs				reg			a0/a1/d0/d1/d2
+
+						movem.l		@progRegs, -(sp)
+
+						pea			@str				; c string
+						move		#-3, -(sp)
+						dc.w		$AA7F
+
+						movem.l		(sp)+, @progRegs
+
+						bra.s		@poststr
+
+						LCLC		&oldstr				; save string setting
+&oldstr					SETC		&SETTING('STRING')
+						STRING		AsIs				; change it
+@str
+						dc.b		'&label'			; insert string
+						dc.b		'^n'
+						dc.b		0
+						align		2
+@poststr
+						STRING		&oldstr				; change it back
+
+						ENDM
+
+
+
+
+
 ;________________________________________________________________________________________
 ;
 ; Routine:	FindStartupDevice 3600
@@ -274,26 +339,46 @@ FindStartupDevice	PROC	EXPORT
 			IMPORT	GetDefaultStartup			; StartSearch.a
 		
 			link	A4, #frameSize
-			
+
+YoWassup Progress			
+
 			BSR		EmbarkOnSearch				; Initialize our state.
+
+LoadingSlotDrivers Progress			
 
 			BSR		LoadSlotDrivers				; Default is a slot device, execute boot code
 												; When booting a Mac OS, execution will continue here
+
+DoneThat Progress			
+
 			MOVEQ.L	#0, D7
 			MOVE.L	Ticks, startTicks(A4)		; Init the time we got here	in case we have PowerMgr
+
+ RProgress srch_1
 
 			BSR		LoadSCSIDrivers				; Load all the drivers we can
 			BSR		WaitForPollDrive			; Wait until the boot drive has warmed up
 
+ RProgress srch_2
+
 			CLR.B	-6(A4)
+
+ RProgress srch_3
 			
-			BSR		LoadATADrivers
+;			BSR		LoadATADrivers
+
+ RProgress srch_4
 
 			BSR		OpenLANDiskDriver
+
+ RProgress srch_5
 
 			BRA		@FirstEntry					; First time through: keep original goal
 
 @NextPass
+
+ RProgress NextPass
+
 		IF hasPwrControls THEN					;													<SM7>
 			WITH	PmgrRec,pmCommandRec
 			TestFor	hwCbPwrMgr					; do we have Power Manager?
