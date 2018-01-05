@@ -532,6 +532,7 @@ pramFigmentFlag			EQU		5			; (SheepShaver also sets bits 0 and 2)
 
 
 LogProgress				SET		0			; SET to 1 (at any point) to spam NanoKernel log
+FarDisplacements		EQU		1			; EQU to 1 to add 1k+ code without linker errors
 
 
 						MACRO
@@ -572,6 +573,16 @@ LogProgress				SET		0			; SET to 1 (at any point) to spam NanoKernel log
 						ENDM
 
 
+						MACRO				; PC-relative JSR is limited to a 16-bit displacement
+						_jsr		&label
+	IF FarDisplacements THEN
+						bsr			&label
+	ELSE
+						jsr			&label
+	ENDIF
+						ENDM
+
+
 						MACRO
 						ParanoidDebugStr &strPtr
 
@@ -601,6 +612,12 @@ LogProgress				SET		0			; SET to 1 (at any point) to spam NanoKernel log
 						move.l	(sp)+, d0
 
 						ENDM
+
+
+	IF FarDisplacements THEN
+						BRANCH	LONG
+						FORWARD	LONG
+	ENDIF
 
 
 BootCode	MAIN
@@ -788,7 +805,7 @@ PrepareGibblyResourceMap
 			move.l	d0, mNext(a0)
 
 
-			jsr		Unexplored_2568
+			_jsr	Unexplored_2568
 @noEnablerFile
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
@@ -1095,7 +1112,7 @@ RelocateBootWorldOnPCIMachines
 
 FinishMovingBootWorldForPCIMachines
 
-			jsr		Unexplored_780A
+			_jsr	Unexplored_780A
 			move.l	ExpandMem, a0
 			move.l	$320(a0), a0
 			move.l	(a0), a0
@@ -1156,7 +1173,7 @@ CheckTooOld
 
 LoadMultitaskingNanoKernel
 
-			jsr		Unexplored_7914
+			_jsr	Unexplored_7914
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
@@ -1169,7 +1186,7 @@ PatchSomethingPrettyLowLevel
 			beq.s	@no ; bbox present
 
 			clr.b	-(sp)
-			jsr		Unexplored_7910
+			_jsr	Unexplored_7910
 			tst.b	(sp)+
 			bne.s	@no
 
@@ -1187,7 +1204,7 @@ InitLotsOfNativeManagers
 			move	CurMap, -(sp)
 
 			clr		-(sp)
-			jsr		Unexplored_7F70
+			_jsr	Unexplored_7F70
 			move	(sp)+, d1
 			bz.s	@noErr
 
@@ -1210,7 +1227,7 @@ InstallNameRegistryTrap
 
 DoSomethingWithSystemVersion
 
-			jsr		Unexplored_790C
+			_jsr	Unexplored_790C
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
@@ -1329,7 +1346,7 @@ MakeEDiskPagesWriteThrough
 
 MessWithSomeTraps
 
-			jsr		Unexplored_3708
+			_jsr	Unexplored_3708
 
 ;ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
@@ -1549,8 +1566,8 @@ LoadVMAndDebugger
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
-			jsr		Unexplored_7BDA
-			jsr		Unexplored_5E0A
+			_jsr	Unexplored_7BDA
+			_jsr	Unexplored_5E0A
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
@@ -1743,6 +1760,20 @@ FinishMovingBootWorld										;									<10>
 @noVM
 
 DontUnholdAndRehold
+
+; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
+
+	IF FarDisplacements THEN
+			bra.s	JumpOverHackyLoadIsland
+
+			EXPORT	GetAddressOfFinishMovingBootWorld
+
+GetAddressOfFinishMovingBootWorld
+			lea		FinishMovingBootWorld, a0
+			rts
+
+JumpOverHackyLoadIsland
+	ENDIF
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
@@ -2076,7 +2107,7 @@ LoadLinkedPatches
 			move.l	ExpandMem, a0
 			tst.b	$33B(a0)
 			bnz		@dontJump
-			jsr		Unexplored_5FF8
+			_jsr	Unexplored_5FF8
 @dontJump
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
@@ -2099,10 +2130,10 @@ LoadLinkedPatches
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
 			bsr		Unexplored_2A1C
-			jsr		Unexplored_69D2
+			_jsr	Unexplored_69D2
 			bsr.l	Unexplored_C5EA
-			jsr		Unexplored_7F6C
-			jsr		Unexplored_7F68
+			_jsr	Unexplored_7F6C
+			_jsr	Unexplored_7F68
 			bsr		Unexplored_35BE
 			bsr		Unexplored_5506
 
@@ -2139,7 +2170,7 @@ MakeGibblyResident Progress
 			btst.l	#gestaltMacOSCompatibilityBoxPresent, d0
 			bz.s	@no_bbox
 
-			jsr		Unexplored_7D2C
+			_jsr	Unexplored_7D2C
 @no_bbox
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
@@ -2163,7 +2194,7 @@ LoadGoNative Progress
 
 			beq.s	@noLoad
 			clr		-(SP)
-			jsr		Unexplored_7F64 ; RealLoadGoNative
+			_jsr	Unexplored_7F64 ; RealLoadGoNative
 			add		#2, SP
 @noLoad
 
@@ -2207,7 +2238,7 @@ TestForNeedToReset Progress
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
 IncreaseEventQueueSize Progress
-			jsr		Unexplored_70EE
+			_jsr	Unexplored_70EE
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
@@ -2529,7 +2560,7 @@ GoInstallSerialDMA Progress
 
 InstallOFDiskNameMaker Progress
 
-			jsr		Unexplored_8C08
+			_jsr	Unexplored_8C08
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
@@ -2580,7 +2611,7 @@ LoadNativeDriversFromExtensionFolder Progress
 
 			subq	#2,sp
 			clr		-(sp)
-			jsr		Unexplored_5F4C
+			_jsr	Unexplored_5F4C
 			addq	#2,sp
 
 begoneNativeDrivers
@@ -2605,7 +2636,7 @@ RestorePropertiesFromPreferenceFile Progress
 
 USBDiskCheck Progress
 
-			jsr		Unexplored_60E4
+			_jsr	Unexplored_60E4
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
@@ -2614,7 +2645,7 @@ USBDiskCheck Progress
 			bnz		no_fw
 
 FireWirePerformLateInits Progress
-			jsr		Unexplored_60A2
+			_jsr	Unexplored_60A2
 
 no_fw
 
@@ -3046,7 +3077,7 @@ StartProcessMgr
 			BZ.S	@no_mmap
 
 			MOVE.L	SP,BufPtr				; CASE: non-blue box with ?mmap
-			JSR		Unexplored_8D62
+			_jsr	Unexplored_8D62
 
 @no_mmap	MOVE.L	SP,A0					; CASE: no mmap
 			SUB.L	DefltStack,A0			; A0 = SP - Default Stack
@@ -3632,11 +3663,11 @@ ReiterateWithoutIncrementing
 			lea		BootGlobals.paramBlock(a5), a0
 			move.l	d7, $30(a0)
 			move.l	a0, -(sp)
-			jsr		Unexplored_663E
+			_jsr	Unexplored_663E
 			move	(sp)+, d0
 			cmp		#0, d0
 			bne.s	@nm
-			jsr		Unexplored_65B4
+			_jsr	Unexplored_65B4
 			movem.l	(sp)+, d1-d3/a0-a3
 			bra		ThisFileAgain
 @nm
@@ -3650,14 +3681,14 @@ ReiterateWithoutIncrementing
 			lea		BootGlobals.paramBlock(a5), a0
 			move.l	d7, $30(a0)
 			move.l	a0, -(sp)
-			jsr		Unexplored_6798
+			_jsr	Unexplored_6798
 			move	(sp)+, d0
 			cmp		#0, d0
 			bne.s	@nm2
 			move.b	$2C(a5), d0
 			cmp.b	#0, d0
 			bne.s	@nm3
-			jsr		Unexplored_6780
+			_jsr	Unexplored_6780
 			move.b	#1, d0
 			move.b	d0, $2C(a5)
 @nm3		movem.l	(sp)+, d0-d3/a0-a3
@@ -5675,10 +5706,39 @@ GetEndOfBootCode
 	move.l	(sp)+, a0
 	rts
 
+
+
 	PROC		; we know that this module-break goes here because
 				; the assembler puts a lea-string just above
 
-	IMPORT	FinishMovingBootWorld, LoadDSAT, LoadBelowBufPtr
+	IF FarDisplacements THEN
+
+		IMPORT	GetAddressOfFinishMovingBootWorld, LoadDSAT, LoadBelowBufPtr
+
+		MACRO
+		_bsr	&label
+		bsr.w	__island__&label
+		ENDM
+
+__island__LoadDSAT
+		bra.l	LoadDSAT
+
+__island__LoadBelowBufPtr
+		bra.l	LoadBelowBufPtr
+
+__island__GetAddressOfFinishMovingBootWorld
+		bra.l	GetAddressOfFinishMovingBootWorld
+
+	ELSE
+
+		IMPORT	FinishMovingBootWorld, LoadDSAT, LoadBelowBufPtr
+
+		MACRO
+		_bsr	&label
+		bsr.w	&label
+		ENDM
+
+	ENDIF
 
 	EXPORT	Unexplored_2bae
 	EXPORT	Unexplored_35be
@@ -5881,7 +5941,11 @@ Unexplored_2bae
 	dc.w	$d080	; 2ca8
 	dc.w	$d0b8	; 2caa
 	dc.w	$0322	; 2cac
+	IF FarDisplacements THEN
+	_bsr	GetAddressOfFinishMovingBootWorld
+	ELSE
 	lea		FinishMovingBootWorld, a0	; 2cae
+	ENDIF
 	dc.w	$91c0	; 2cb2
 	dc.w	$2240	; 2cb4
 	dc.w	$7001	; 2cb6
@@ -10769,7 +10833,7 @@ Unexplored_52c6
 	dc.w	$0014	; 52ce
 	dc.w	$0a5a	; 52d0
 	dc.w	$7000	; 52d2
-	bsr.w	LoadDSAT	; 52d4
+	_bsr	LoadDSAT	; 52d4
 	dc.w	$2c00	; 52d8
 	dc.w	$43fa	; 52da
 	dc.w	$0602	; 52dc
@@ -10824,7 +10888,7 @@ Unexplored_52ea
 	dc.w	$665a	; 533c
 	dc.w	$43ed	; 533e
 	dc.w	$02ba	; 5340
-	bsr.w	LoadBelowBufPtr	; 5342
+	_bsr	LoadBelowBufPtr	; 5342
 	dc.w	$663e	; 5346
 	dc.w	$0c82	; 5348
 	dc.w	$0000	; 534a
@@ -11093,7 +11157,7 @@ Unexplored_5506
 	dc.w	$6100	; 554a
 	dc.w	$0458	; 554c
 	dc.w	$7000	; 554e
-	bsr.w	LoadDSAT	; 5550
+	_bsr	LoadDSAT	; 5550
 	dc.w	$3f38	; 5554
 	dc.w	$0a58	; 5556
 	dc.w	$2078	; 5558
