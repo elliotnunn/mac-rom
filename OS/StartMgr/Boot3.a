@@ -545,14 +545,7 @@ LogProgress				SET		1			; SET to 1 (at any point) to spam NanoKernel log
 
 						movem.l		@progRegs, -(sp)
 	IF LogProgress THEN
-;						MOVE.L	a5,-(SP)				; C arg 3: (long)value = globals
-						BSR		DirtyWork
-
-						MOVE.L	$10C,-(SP)				; C arg 3: (long)value = BufPtr
-						BSR		DirtyWork
-
-						MOVE.L	$108,-(SP)				; C arg 3: (long)value = MemTop
-						BSR		DirtyWork
+						bsr			DumpStuff
 
 						pea			@str + 1	; c string
 						move		#-3, -(sp)
@@ -700,17 +693,6 @@ PositionStack
 
 			lea		BootGlobals.initialSP(a5), sp
 
-			bra.s	SkipDirtyWork
-DirtyWork
-						MOVE.L	(sp), a0
-						MOVE.L	4(sp), a1
-						MOVE.L	a1, (sp)
-						MOVE.L	a2, 4(sp)
-						MOVE.L	#3,-(SP)				; C arg 2: (short)howWide /* want 8 hex digits */
-						MOVE	#-2,-(SP)				; C arg 1: (short)selector /* to print hex */
-						DC.W	$AA7F
-						RTS
-SkipDirtyWork
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
@@ -3014,6 +2996,39 @@ PatchComponentManager Progress
 			string	Pascal
 			move.l	sp,a0					; pass those parameters
 			_Launch
+
+
+
+			bra.s	SkipDirtyWork
+
+DumpStuff
+
+						PEA		BootCode				; C arg 3: (long)value = globals
+						MOVE.L	#3,-(SP)				; C arg 2: (short)howWide /* want 8 hex digits */
+						MOVE	#-2,-(SP)				; C arg 1: (short)selector /* to print hex */
+						DC.W	$AA7F
+
+						MOVE.L	a5,-(SP)				; C arg 3: (long)value = globals
+						MOVE.L	#3,-(SP)				; C arg 2: (short)howWide /* want 8 hex digits */
+						MOVE	#-2,-(SP)				; C arg 1: (short)selector /* to print hex */
+						DC.W	$AA7F
+
+						MOVE.L	$10C,-(SP)				; C arg 3: (long)value = BufPtr
+						MOVE.L	#3,-(SP)				; C arg 2: (short)howWide /* want 8 hex digits */
+						MOVE	#-2,-(SP)				; C arg 1: (short)selector /* to print hex */
+						DC.W	$AA7F
+
+						MOVE.L	$108,-(SP)				; C arg 3: (long)value = MemTop
+						MOVE.L	#3,-(SP)				; C arg 2: (short)howWide /* want 8 hex digits */
+						MOVE	#-2,-(SP)				; C arg 1: (short)selector /* to print hex */
+						DC.W	$AA7F
+
+						rts
+
+SkipDirtyWork
+
+
+
 
 StartProcessMgr
 
