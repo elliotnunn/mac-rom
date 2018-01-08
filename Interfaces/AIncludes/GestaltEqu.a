@@ -607,3 +607,11 @@ gestaltInternalDisplay		EQU		'idsp'			; slot number of internal display location
 	
 	
 	ENDIF	; ...already included 
+
+gestaltPowerPCProcessorFeatures	EQU		'ppcf'				; Optional PowerPC processor features 
+gestaltPowerPCHasGraphicsInstructions EQU 0					; has fres, frsqrte, and fsel instructions 
+gestaltPowerPCHasSTFIWXInstruction EQU	1					; has stfiwx instruction 
+gestaltPowerPCHasSquareRootInstructions EQU 2				; has fsqrt and fsqrts instructions 
+gestaltPowerPCHasDCBAInstruction EQU	3					; has dcba instruction 
+gestaltPowerPCHasVectorInstructions EQU	4					; has vector instructions 
+gestaltPowerPCHasDataStreams	EQU		5					; has dst, dstt, dstst, dss, and dssall instructions 

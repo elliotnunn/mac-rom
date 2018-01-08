@@ -1135,6 +1135,8 @@ ioNuBusTTxlat	EQU		$500FC040					; I/O space and nuBus $6-$7 with serialized wri
 			IMPORT	INITSCSIBOOT
 		ENDIF  
 
+			IMPORT	GetRealProc						; GetReal.a
+
 
 MyROM		MAIN	Export
 
@@ -1492,7 +1494,7 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			IMPORT	InterC_1cc0_MoveUnivInfoToSysHeap
 			BSR.L	InterC_1cc0_MoveUnivInfoToSysHeap
 			BSR.L	initGestalt						; initialize Gestalt									<SM39>
-			BSR.L	FiddleWithEmulator
+			BSR.L	CreateAltiVecBufForEmulator
 			BSR.L	InitIntHandler					; initialize interrupt vectors and dispatch tables
 
 			BSR		CheckForEgretOrCuda				; Do we have an Egret/Caboose/Cuda?						<mc2>
@@ -1630,7 +1632,7 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			BEQ.B	@dont
 @definitely
 
-			BSR		NewStartInitFunc
+			BSR		SetScsiIdFromPram				; taken from SCSIMgrInit.a
 			BSR.L	InitSCSIMgr						; Init old and new SCSI Mgrs
 @dont
 
@@ -3927,62 +3929,105 @@ CheckForEgretOrCuda									;														<T2>
 
 
 
-NewStartInitFunc
+;иииииииииииииииииииииииииииииииииииииииииииииииииииииииииииииииииииииииииииииииии
+;
+;	Taken from SCSIMgrInit.a
+;
+;яяя Do PRAM stuff : Bytes 2 & 3 are allocated for SCSI stuff
+;
+;	яяя Byte 2 яяя
+;  bit	-  def: meaning
+;	7	-	0 : If set, disable the SCSIReset on machine reset
+;	6	-	1 : unused
+;	5	-	0 : unused
+;	4	-	0 : unused (on PDM debug, affects Read DMA reads)
+;	3	-	1 : validity bit (both must be 1 for bytes 2&3 to be valid, else init them)
+;	2	-	1 : \
+;	1	-	1 :  я Host ID (i.e. SCSI ID of this Macintosh)
+;	0	-	1 : /
+;
+;	яяя Byte 3 яяя
+;	7	-	0 : unused
+;	6	-	1 : unused
+;	5	-	0 : unused
+;	4	-	0 : unused (on PDM debug, affects Read DMA writes)
+;	3	-	1 : validity bit (see above)
+;	2	-	0 : \
+;	1	-	0 :  я "Internal Drive" ID (i.e. zero generally because nobody changes this)
+;	0	-	0 : /
+;
+
+SetScsiIdFromPram
 ; 1148
-			SubQ.L    #$2, A7
-			MoveA.L   A7, A0
-			Move.L    #$20002, D0
-			_ReadXPRam
-			Move      (A7), D0
-			AndI      #$808, D0
-			CmpI      #$808, D0
-			BEQ.B     @skipwrite
-			Move      #$4F48, (A7)
-			MoveA.L   A7, A0
-			Move.L    #$20002, D0
-			_WriteXPRam
-@skipwrite
-			Move      (A7)+, D0
-			LsR       #$8, D0
-			AndI      #$7, D0
-			MoveQ.L   #$1, D1
-			LsL.B     D0, D1
-			Move.B    D1, (SCSIDrvrs)
-			Rts
+
+			subq.l	#2,sp					; make space for PRAM SCSI id					<v1.4>
+			move.l	sp,a0					; address of PRAM return buffer
+
+			move.l	#$00020002,d0			; read 2 bytes of PRAM at offset 2	<C613>
+			_ReadXPRam						; get the SCSI id
+			move.w	(sp),d0					; check high bits for validity		<A324>
+			and.w	#$0808,d0				; look at upper bit in lower nibble	<SM15> pdw
+			cmp.w	#$0808,d0				; equal to magic pattern?			<C613>
+			beq.s	@GotID					; yes, so use those SCSI IDs		<A324>
+
+;--- if invalid, reinitialize values to defaults
+@SetID
+			move.w	#(($48+7)<<8) + ($48+0),(sp)	; defaults: CPU=7,hd=0	<C613>
+			move.l	sp,a0					; address of new PRAM value
+			move.l	#$00020002,d0			; write 2 bytes of PRAM to offset 2	<C613>
+			_WriteXPRam						; save the IDs in parameter RAM		<C613>
+@GotID
+			move.w	(sp)+, d0
+			
+			lsr.w	#8,d0					; get CPU SCSI ID for shift count
+			and.w	#$7,d0					; mask all but the ID bit
+
+			moveq.l	#1,d1					; 1 << SCSI id
+			lsl.b	d0,d1					; form the SCSI id mask
+			move.b	d1,SCSIDrvrs			; clear all SCSI driver flags but our own
+
+			rts
 
 
 
 
-FiddleWithEmulator
+CreateAltiVecBufForEmulator
 ; 1180
-			Move.L    #'ppcf', D0
+OnePage		equ		$1000
+
+			move.l	#gestaltPowerPCProcessorFeatures, d0
 			_Gestalt
-			BNE.B     @done
-			Move.L    A0, D0
-			AndI.L    #$10, D0
-			BEQ.B     @done
-			Move.L    #$2000, D0
-			_NewPtrSysClear
-			BNE.B     @done
-			Lea.L     ($68FFF000).L, A2
-			Move.L    A0, D0
-			AddI.L    #$FFF, D0
-			AndI.L    #$FFFFF000, D0
-			Move.L    D0, $E0(A2)
-			Move.L    #$FE000000, $E8(A2)
-			Clr.L     $EC(A2)
+			bne.s	@done
 
-			MoveA.L   D0, A0
-			MoveA     #$1000, A1
-			MoveQ.L   #$2, D0
-			_MemoryDispatch
+			move.l	a0, d0
+			and.l	#1<<gestaltPowerPCHasVectorInstructions, d0
+			bz.s	@done
 
-			import	GETREALPROC
-			bsr.l	GETREALPROC
-			BMI.B     @done
-			Move.L    A0, $E4(A2)
+			move.l	#OnePage * 2, d0		; allocate 2 pages but only use one
+			_NewPtr	,sys,clear
+			bne.s	@done
+
+			lea		$68FFF000, a2			; emulator data page
+
+			move.l	a0, d0					; align up to page boundary
+			add.l	#OnePage-1, d0
+			and.l	#-OnePage, d0
+
+			move.l	d0, $E0(a2)				; save logical ptr
+			move.l	#$FE000000, $E8(a2)
+			clr.l	$EC(a2)
+
+			move.l	d0, a0
+			move.l	#OnePage, a1
+			_LockMemory
+
+			bsr.l	GetRealProc
+			bmi.s	@done
+
+			move.l	a0, $E4(a2)				; save physical ptr
+
 @done
-			Rts
+			rts
 
 
 
