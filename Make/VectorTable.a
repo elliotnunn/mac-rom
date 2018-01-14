@@ -3136,8 +3136,8 @@ ExpMgrInterruptAcknowledgeReadWord	vIndirect	$208c,	$0088,	A7	; _ExpansionBusDis
 ExpMgrInterruptAcknowledgeReadLong	vIndirect	$208c,	$008c,	A7	; _ExpansionBusDispatch selector 19
 ExpMgrSpecialCycleWriteLong		vIndirect	$208c,	$0090,	A7		; _ExpansionBusDispatch selector 25
 ExpMgrSpecialCycleBroadcastLong	vIndirect	$208c,	$0094,	A7		; _ExpansionBusDispatch selector 26
-EXPANSIONBUSMGR_VEC0098			vIndirect	$208c,	$0098,	A7		; _ExpansionBusDispatch selector 44
-EXPANSIONBUSMGR_VEC0100			vIndirect	$208c,	$0100,	A7		; _ExpansionBusDispatch selector 29
+ExpMgrRestorePropsFromPrefFile	vIndirect	$208c,	$0098,	A7		; _ExpansionBusDispatch selector 44
+ExpMgrLoadExptsFromExtnFolder	vIndirect	$208c,	$0100,	A7		; _ExpansionBusDispatch selector 29
 EXPANSIONBUSMGR_VEC0104			vIndirect	$208c,	$0104,	A7
 EXPANSIONBUSMGR_VEC0108			vIndirect	$208c,	$0108,	A7
 EXPANSIONBUSMGR_VEC010C			vIndirect	$208c,	$010c,	A7
