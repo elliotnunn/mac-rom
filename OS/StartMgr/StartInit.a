@@ -3003,7 +3003,7 @@ DrawBeepScreen
 	Pea.L     -$10(A2)
 	_FillRect
 	MoveQ.L   #$5, D0
-	DC.W      $ABE0
+	DC.W      $ABE0			; QD2: drawCursor?
 			RTS
 @DoNormalBeepScreen
 		ENDIF										;														<SM81>
@@ -4028,6 +4028,578 @@ OnePage		equ		$1000
 
 @done
 			rts
+
+
+
+			CASE	ON
+			STRING	C
+BetterDispMgrInstaller PROC EXPORT
+
+		IMPORT	DISPLAY_4E3A0, DISPLAY_4E590, DISPLAY_4EE10, DISPLAY_51310, DISPLAY_51450, DISPLAY_51A60, DISPLAY_55D50, DISPLAY_57460
+		IMPORT	CheckExpandMem
+		IMPORT	DM__GestaltProc
+
+		; my log messages might have been clobbering registers
+
+		PEA		#'entering dm routine^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		LINK.W     A6,#-$0014
+		MOVEM.L    D5-D7/A2-A4,-(A7)
+
+		CLR.W      D7							; error so far
+
+		DC.W       $A11A ; _GetZone
+		MOVE.L     A0,-$0004(A6)				; only for SetZine
+
+		CLR.W      D6
+		MOVEQ      #$01,D5						; assume that ExpandMem *does* need expanding
+
+		MOVE.L     #'dply',D0
+		LEA        -$0008(A6),A0
+		MOVEA.L    A0,A1
+		DC.W       $A1AD ; _Gestalt
+		MOVE.L     A0,(A1)
+		TST.W      D0
+		BNE.S      @must_update_expandmem
+
+		MOVEQ      #$01,D0
+		AND.L      -$0008(A6),D0
+		BEQ.S      @must_update_expandmem
+
+		MOVE.L     #'dplv',D0
+		LEA        -$0008(A6),A0
+		MOVEA.L    A0,A1
+		DC.W       $A1AD ; _Gestalt
+		MOVE.L     A0,(A1)
+		TST.W      D0
+		BNE.S      @must_update_expandmem
+
+		MOVEQ      #$0A,D0
+		CMP.L      -$0008(A6),D0
+		BGE.S      @must_update_expandmem
+
+		CLR.B      D5							; nope, everything installed!
+
+		BRA.S      @endif
+
+@must_update_expandmem
+
+		PEA		#'updating expandmem^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		MOVEQ      #$01,D0
+		MOVE.L     D0,-(A7)
+		JSR        CheckExpandMem
+		MOVE.W     D0,D7
+		ADDQ.W     #4,A7
+
+@endif
+
+		TST.W      D7							; test error code
+		BNE        @restoreZoneAndReturn
+
+		TST.B      D5							; = 1 if we had to CheckExpandMem
+		BEQ        @restoreZoneAndReturn
+
+		PEA		#'continuing^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		MOVEA.L    $02B6,A0
+		MOVEA.L    $1FC(A0),A2					; ExpandMemRec.emDisplayManagerGlobals
+		MOVE.L     A2,D0
+		BEQ.S      @dm_globals_not_present_to_check
+		MOVEQ      #$00,D0
+		MOVE.W     $0094(A2),D0
+		CMPI.W     #$0002,D0
+		BCC        @label_23E
+@dm_globals_not_present_to_check
+
+
+		SUBQ.L     #4,A7
+		MOVE.L     $2A6,(A7)	; SysZone
+		MOVEA.L    (A7)+,A0
+		DC.W       $A01B ; _SetZone
+
+
+		MOVE.L     A2,D0						; A2 = DM globals ptr
+		BEQ.S      @label_94
+		MOVE.W     $0094(A2),D6
+@label_94
+
+		MOVE.L     A2,D0
+		BNE.S      @label_A4
+		MOVE.L     #$000000D0,D0
+		DC.W       $A71E ; _NewPtrSysClear
+		MOVEA.L    A0,A4
+		BRA.S      @label_A6
+@label_A4
+
+		MOVEA.L    A2,A4
+@label_A6
+
+
+		PEA		#'made it so far^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+
+
+
+		MOVE.L     A4,D0
+		BEQ        @fail
+		MOVE.L     A2,D0
+		BEQ.S      @label_EE
+		TST.W      D6
+		BNE.S      @label_EE
+		MOVE.L     (A2),-$0014(A6)
+		MOVEA.L    A2,A0
+		MOVEA.L    A4,A1
+		MOVE.L     #$000000D0,D0
+		DC.W       $A22E ; _BlockMoveData
+		TST.L      -$0014(A6)
+		BEQ.S      @label_E4
+		MOVE.L     -$0014(A6),-(A7)
+		DC.W       $AA02 ; _CloseCPort
+		MOVEA.L    -$0014(A6),A3
+		LEA        $006C(A3),A3
+		BRA.S      @label_DC
+@label_DA
+		CLR.B      (A3)
+@label_DC
+		SUBQ.W     #1,A3
+		CMPA.L     -$0014(A6),A3
+		BCC.S      @label_DA
+@label_E4
+		MOVEQ      #$6C,D0
+		DC.W       $A71E ; _NewPtrSysClear
+		MOVE.L     A0,(A4)
+		CLR.B      $0097(A4)
+@label_EE
+
+
+		PEA		#'got clear of an extended block^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+
+
+
+		MOVE.W     #$0002,$0094(A4)
+		MOVE.L     A2,D0
+		BNE.S      @label_16E
+		MOVEQ      #$6C,D0
+		DC.W       $A71E ; _NewPtrSysClear
+		MOVE.L     A0,(A4)
+		SUBQ.L     #4,A7
+		DC.W       $A8D8 ; _NewRgn
+		MOVE.L     (A7)+,$0070(A4)
+		SUBQ.L     #4,A7
+		DC.W       $A8D8 ; _NewRgn
+		MOVE.L     (A7)+,$0074(A4)
+		SUBQ.L     #4,A7
+		DC.W       $A8D8 ; _NewRgn
+		MOVE.L     (A7)+,$0078(A4)
+		SUBQ.L     #4,A7
+		DC.W       $A8D8 ; _NewRgn
+		MOVE.L     (A7)+,$0080(A4)
+		SUBQ.L     #4,A7
+		DC.W       $A8D8 ; _NewRgn
+		MOVE.L     (A7)+,$0084(A4)
+		MOVE.B     #$01,$009C(A4)
+		MOVEQ      #-1,D0
+		MOVE.L     D0,$0098(A4)
+		MOVEQ      #$00,D0
+		MOVE.L     D0,$0088(A4)
+		MOVE.L     D0,$008C(A4)
+		CLR.B      $0096(A4)
+		MOVE.L     #$00000100,$00A0(A4)
+		MOVE.W     #$0024,$009E(A4)
+		MOVE.L     D0,$00B0(A4)
+		CLR.W      $00B4(A4)
+		CLR.B      $00B6(A4)
+		JSR        DISPLAY_55D50
+		MOVE.B     D0,$00B6(A4)
+		MOVE.L     #$000000CE,D0
+		DC.W       $A51E ; _NewPtrSys
+		MOVE.L     A0,$00BC(A4)
+@label_16E
+
+
+		PEA		#'and then another big fat thing^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+
+
+		MOVEA.L    $02B6,A0
+		MOVE.L     A4,$01FC(A0)
+
+
+;		JSR        DISPLAY_51A60
+
+		IMPORT		BETTER_51A60
+		JSR			BETTER_51A60
+
+		PEA		#'FIRST JSR OKAY^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		MOVE.L     A4,-(A7)
+
+
+		JSR        DISPLAY_4E590
+
+		PEA		#'----------- SECOND JSR OKAY^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		MOVE.W     D6,D0
+		BEQ.S      @label_194
+		SUBQ.W     #1,D0
+		BEQ        @label_222
+		SUBQ.W     #1,D0
+		BEQ        @label_22C
+		BRA        @label_22C
+@label_194
+
+
+		PEA		#'about to make first dd call^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+
+
+		SUBQ.L     #2,A7
+		MOVEQ      #$00,D0
+		MOVE.L     D0,-(A7)
+		MOVE.L     D0,-(A7)
+		MOVE.W     #$04EE,D0
+		DC.W       $ABEB ; _DisplayDispatch
+		JSR        DISPLAY_4E3A0
+		SUBQ.L     #2,A7
+		PEA        -$0014(A6)
+		MOVE.W     #$021E,D0
+		DC.W       $ABEB ; _DisplayDispatch
+		TST.W      (A7)+
+		ADDQ.W     #2,A7
+		BNE.S      @label_1F4
+		SUBQ.L     #4,A7
+		MOVE.L     -$0014(A6),-(A7)
+		JSR        DISPLAY_4EE10
+		MOVEA.L    (A7)+,A3
+		MOVE.L     (A4),-(A7)
+		DC.W       $AA00 ; _OpenCPort
+		MOVEA.L    (A4),A0
+		MOVE.L     $0018(A0),-(A7)
+		MOVE.L     #$80008000,-(A7)
+		MOVE.L     #$7FFF7FFF,-(A7)
+		DC.W       $A8DE ; _SetRecRgn
+		MOVE.L     (A4),-(A7)
+		MOVE.L     #$00040009,D0
+		DC.W       $AB1D ; _QDExtensions
+		MOVE.L     (A4),-(A7)
+		DC.W       $A873 ; _SetPort
+		SUBQ.L     #4,A7
+		MOVE.L     A3,-(A7)
+		JSR        DISPLAY_4EE10
+		ADDQ.W     #4,A7
+@label_1F4
+		MOVE.L     $0080(A4),-(A7)
+		MOVE.L     #$80008000,-(A7)
+		MOVE.L     #$7FFF7FFF,-(A7)
+		DC.W       $A8DE ; _SetRecRgn
+		SUBQ.L     #2,A7
+		MOVEQ      #$00,D0
+		MOVE.L     D0,-(A7)
+		MOVE.L     D0,-(A7)
+		MOVE.W     #$04EE,D0
+		DC.W       $ABEB ; _DisplayDispatch
+		TST.W      D7
+		ADDQ.W     #2,A7
+		BNE.S      @label_222
+		JSR        DISPLAY_51450
+		JSR        DISPLAY_51310
+@label_222
+		MOVE.L     A2,-(A7)
+		MOVE.L     A4,-(A7)
+		JSR        DISPLAY_57460
+		ADDQ.W     #8,A7
+@label_22C
+		MOVE.L     A2,D0
+		BEQ.S      @label_23E
+		CMPA.L     A2,A4
+		BEQ.S      @label_23E
+		MOVEA.L    A2,A0
+		DC.W       $A01F ; _DisposePtr
+		BRA.S      @label_23E
+
+@fail
+		MOVEQ      #$19,D0
+		DC.W       $A9C9 ; _SysError
+
+@label_23E
+
+		PEA		#'followed 23E^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+
+		TST.W      D7
+		BNE.S      @label_26A
+		MOVE.L     #'dply',D0
+		LEA        DM__GestaltProc,A0
+		DC.W       $A3AD ; _NewGestalt
+		MOVE.W     D0,D7
+		BEQ.S      @label_26A
+		MOVE.L     #'dply',D0
+		LEA        DM__GestaltProc,A0
+		LEA        -$000C(A6),A1
+		MOVE.L     A1,-(A7)
+		DC.W       $A5AD ; _ReplaceGestalt
+		MOVEA.L    (A7)+,A1
+		MOVE.L     A0,(A1)
+		MOVE.W     D0,D7
+
+@label_26A
+		TST.W      D7
+		BNE.S      @restoreZoneAndReturn
+		MOVE.L     #'dplv',D0
+		LEA        DM__GestaltProc,A0
+		DC.W       $A3AD ; _NewGestalt
+		MOVE.W     D0,D7
+		BEQ.S      @restoreZoneAndReturn
+		MOVE.L     #'dplv',D0
+		LEA        DM__GestaltProc,A0
+		LEA        -$000C(A6),A1
+		MOVE.L     A1,-(A7)
+		DC.W       $A5AD ; _ReplaceGestalt
+		MOVEA.L    (A7)+,A1
+		MOVE.L     A0,(A1)
+		MOVE.W     D0,D7
+@restoreZoneAndReturn
+
+		PEA		#'returning from disp mgr^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		MOVEA.L    -$0004(A6),A0
+		DC.W       $A01B ; _SetZone
+		MOVE.W     D7,$0008(A6)
+		MOVEM.L    -$002C(A6),D5-D7/A2-A4
+		UNLK       A6
+		RTS
+
+
+
+BETTER_51A60	PROC	EXPORT
+
+		IMPORT		FixLowMem, DM_NewGDevice
+
+		LINK.W     A6,#-$0016
+		MOVEM.L    A2-A4,-(A7)
+		MOVEQ      #$00,D0
+		MOVE.L     D0,-$0016(A6)
+		MOVEA.L    D0,A2
+
+		SUBQ.L     #2,A7
+		PEA        $00FF
+		PEA        -$0016(A6)
+		MOVEQ      #$00,D0
+		MOVE.B     D0,-(A7)
+
+		MOVE.W     #$0520,D0
+		_DisplayDispatch ; pascal OSErr DM_GetGDeviceByDisplayID(DisplayIDType displayID, GDHandle* displayDevice, Boolean failToMain)
+
+		PEA		#'DM_GetGDeviceByDisplayID returned^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		TST.W      (A7)+
+		BNE.S      @dd_went_badly
+		TST.L      -$0016(A6)
+		BNE        @return
+@dd_went_badly
+
+		PEA		#'DM_GetGDeviceByDisplayID: did not decide on early return afterwards^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		PEA        -$0008(A6)
+		MOVEQ      #$00,D0
+		MOVE.W     D0,-(A7)
+		MOVE.W     D0,-(A7)
+		MOVEQ      #$20,D0             ; ' '
+		MOVE.W     D0,-(A7)
+		MOVE.W     D0,-(A7)
+		_SetRect                       ; A8A7
+		MOVE.W     #$0004,-$000A(A6)
+		MOVE.W     -$000A(A6),D0
+		EXT.L      D0
+		ASL.L      #5,D0
+		_NewPtrSysClear                      ; A71E
+		MOVE.L     A0,-$000E(A6)
+		BEQ        @skipBulk
+		MOVEQ      #-1,D0
+		MOVE.L     D0,-(A7)
+		MOVEQ      #$00,D0
+		MOVE.L     D0,-(A7)
+		JSR        DM_NewGDevice       ; id: 386
+		MOVE.L     D0,-$0016(A6)
+		ADDQ.W     #8,A7
+		BEQ        @skipBulk
+		MOVEA.L    -$0016(A6),A0
+		MOVEA.L    (A0),A0
+		MOVEA.L    $0016(A0),A3
+		MOVEA.L    (A3),A0
+		MOVEA.L    $002A(A0),A4
+		MOVEA.L    -$0016(A6),A0
+		MOVEA.L    (A0),A0
+		MOVE.W     #$0004,$000A(A0)
+		MOVEA.L    -$0016(A6),A0
+		MOVEA.L    (A0),A0
+		MOVE.W     #$4001,$0014(A0)
+		MOVEA.L    -$0016(A6),A0
+		MOVEA.L    (A0),A0
+		LEA        $0022(A0),A0
+		LEA        -$0008(A6),A1
+		MOVE.L     (A1)+,(A0)+
+		MOVE.L     (A1)+,(A0)+
+		MOVEA.L    (A3),A0
+		MOVE.L     -$000E(A6),(A0)
+		MOVEA.L    (A3),A0
+		MOVE.W     -$000A(A6),$0004(A0)
+		MOVEA.L    (A3),A0
+		ADDQ.L     #6,A0
+		LEA        -$0008(A6),A1
+		MOVE.L     (A1)+,(A0)+
+		MOVE.L     (A1)+,(A0)+
+		MOVEA.L    (A3),A0
+		MOVE.L     #$00480000,$0016(A0)
+		MOVEA.L    (A3),A0
+		MOVE.L     #$00480000,$001A(A0)
+		MOVEA.L    (A3),A0
+		MOVE.W     #$0001,$0020(A0)
+		MOVEA.L    (A3),A0
+		MOVE.W     #$0001,$0022(A0)
+		MOVEA.L    (A3),A0
+		MOVE.W     #$0001,$0024(A0)
+		MOVEA.L    (A4),A0
+		MOVEQ      #$01,D0
+		MOVE.L     D0,(A0)
+		MOVEA.L    (A4),A0
+		CLR.W      $0004(A0)
+		MOVEA.L    (A4),A0
+		MOVE.W     #$0001,$0006(A0)
+		MOVEA.L    (A4),A0
+		CLR.W      $0008(A0)
+		MOVEA.L    (A4),A0
+		MOVE.W     #$FFFF,$000A(A0)
+		MOVEA.L    (A4),A0
+		MOVE.W     #$FFFF,$000C(A0)
+		MOVEA.L    (A4),A0
+		MOVE.W     #$FFFF,$000E(A0)
+		MOVEA.L    (A4),A0
+		MOVE.W     #$0001,$0010(A0)
+		MOVEA.L    (A4),A0
+		CLR.W      $0012(A0)
+		MOVEA.L    (A4),A0
+		CLR.W      $0014(A0)
+		MOVEA.L    (A4),A0
+		CLR.W      $0016(A0)
+		SUBQ.L     #2,A7
+		MOVE.L     -$0016(A6),-(A7)
+		PEA        $00FF
+		MOVE.W     #$04EE,D0
+		_DisplayDispatch                      ; ABEB
+		ADDQ.W     #2,A7
+@skipBulk
+
+		PEA		#'got thru the bulk^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+
+		SUBQ.L     #4,A7
+		MOVE.L     $08A8,(A7)
+		MOVEA.L    (A7)+,A2
+		MOVE.L     A2,D0
+		BEQ.S      @whoTheHellKnows
+		CMPA.L     #$FFFFFFFF,A2
+		BNE        @return
+@whoTheHellKnows
+
+		PEA		#'about to mess with GDHandle^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		MOVEA.L    -$0016(A6),A0
+		MOVEA.L    (A0),A0
+		ORI.W      #$BC00,$0014(A0)						; gdFlags |= ramInit mainScreen allInit screenDevice screenActive
+
+		PEA		#'changed flags without crash^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		MOVE.L     -$0016(A6),-(A7)
+		MOVE.L     (A7)+,$0CC8							; TheGDevice
+
+		PEA		#'changed TheGDevice^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		MOVE.L     -$0016(A6),-(A7)
+		MOVE.L     (A7)+,$08A8							; DeviceList
+
+		PEA		#'changed DeviceList^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		MOVE.L     -$0016(A6),-(A7)
+		MOVE.L     (A7)+,$08A4							; MainDevice
+
+		PEA		#'changed MainDevice^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		MOVE.L     -$0016(A6),$08A0						; SrcDevice
+
+		PEA		#'changed SrcDevice^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		MOVE.L     -$0016(A6),$089C						; CrsrDevice
+
+		PEA		#'enough palaver!^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		MOVEQ      #$00,D0
+		MOVE.L     D0,-(A7)
+		MOVE.L     D0,-(A7)
+		MOVE.L     -$0016(A6),-(A7)
+		MOVE.L     D0,-(A7)
+
+		JSR        FixLowMem           ; id: 385
+
+		PEA		#'... which was successful^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+		LEA        $0010(A7),A7
+@return
+
+		PEA		#'returning from supplementary dm install function^n'
+		MOVE.W	#-3, -(SP)
+		DC.W	$AA7F
+
+
+		MOVEM.L    -$0022(A6),A2-A4
+		UNLK       A6
+		RTS        
 
 
 
