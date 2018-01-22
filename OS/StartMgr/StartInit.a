@@ -2863,7 +2863,7 @@ LoadDrivers
 	
 			  MoveA.L   A7, A0
 			  Clr.B     $1B(A0)
-			  Bsr       (* + $128)
+			  Bsr       FROVideo
 			  Lea.L     $32(A7), A7
 			  BTst.B    #$6, ($2409)
 			  BEQ.B     @skipALine
@@ -2988,22 +2988,33 @@ DrawBeepScreen
 			BSR.L	LCDScreenChk					; is this an LCD screen ? 								<SM16><SM68>
 			BEQ.B	@DoNormalBeepScreen				; -> no, do the normal stuff							<SM16><SM68>
 			
-	Clr.B     ($B3E)
-	Pea.L     -$74(A2)
-	Clr.B     -(A7)
-	Jsr       (* + $204A)
-	Tst.B     (A7)+
-	BNE.B     (* + $8)
-	Pea.L     -$18(A2)
-	Bra.B     (* + $14)
-	MoveA.L   ($2b6), A0
-	ST.B      $341(A0)
-	Pea.L     (* + $62)
-	_RGBForeColor
-	Pea.L     -$10(A2)
-	_FillRect
-	MoveQ.L   #$5, D0
-	DC.W      $ABE0
+			CLR.B	ntsc
+
+			PEA 	ScreenBits+bounds(A2)			;  screen rectangle										<SM84>
+			CLR.B	-(SP)
+			IMPORT	INTERC_2B20_GRAYPAGE
+			JSR		INTERC_2B20_GRAYPAGE
+			TST.B	(SP)+
+			BNZ.B	@graypage_returned_nonzero
+
+;graypage_returned_zero
+			PEA		gray(A2)						;  fill pattern
+			BRA.B	@graypage_endif
+
+@graypage_returned_nonzero
+			MOVE.L	ExpandMem,A0
+			ST.B	$341(A0)
+			PEA		@GrayColor
+			_RGBForeColor
+			PEA		black(A2)
+
+@graypage_endif
+
+			_FillRect
+
+			MOVEQ	#5,D0
+			DC.W	$ABE0 ; QDExtensions2, ?showCursor selector
+
 			RTS
 @DoNormalBeepScreen
 		ENDIF										;														<SM81>
@@ -3029,18 +3040,26 @@ DrawBeepScreen
 
 			_PenNormal								; restore the pen
 
-	Pea.L     (* + $24)
-	_RGBForeColor
-	Move.L    #$100010, -(A7)
-	Pea.L     -$10(A2)
-	Bra.B     (* + $C)
-	DC.L      $2F3C0010       ; '/<  '
-	DC.L      $0010486A       ; '  Hj'
-	DC.W      $FFE8           ; '  '
-	_FillRoundRect
-	MoveQ.L   #$5, D0
-	DC.W      $ABE0
+			PEA		@GrayColor
+			_RGBForeColor
+
+			MOVE.L	#$00100010, -(SP)				;  rounding factor
+			PEA 	black(A2)						;  fill pattern
+			BRA.B	@skipOldPatternSelection
+
+			MOVE.L	#$00100010, -(SP)				;  rounding factor
+			PEA 	gray(A2)						;  fill pattern
+@skipOldPatternSelection
+			_FillRoundRect							; fill the screen with 50% gray
+
+			MOVEQ	#5,D0
+			DC.W	$ABE0 ; QDExtensions2, ?showCursor selector
+
 			RTS
+
+@GrayColor
+			DC.W	$8888, $8888, $8888
+
 
 
 ;________________________________________________________________________________________
@@ -3055,8 +3074,6 @@ DrawBeepScreen
 ;
 ; Function:	finds, reads parameters for, and opens the driver for a video sRsrc
 ;________________________________________________________________________________________
-
-			DC.W	$8888, $8888, $8888
 
 			WITH	spBlock,seBlock,vpBlock
 
