@@ -1,0 +1,8 @@
+Set MAKE_FILE :Make:RISC.make
+Set MAKE_OUT :BuildResults:RISC:Text:MakeFile
+
+Set Parent "`Files -f "{0}" | StreamEdit -d -e '/((Å:)*)¨1([Â:]*)/ Print ¨1'`"
+SetDirectory "{Parent}"
+
+Make -w -d Sources=: -f "{MAKE_FILE}" RomMondo > "{MAKE_OUT}"
+"{MAKE_OUT}"
