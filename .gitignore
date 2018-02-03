@@ -1,0 +1,9 @@
+.DS_Store
+Dump*
+*.dump
+BuildResults/*
+*.NJ
+Tools/ToolSource/*.o
+*.dmg
+Tools/RomLayout
+Tools/Vectorize
