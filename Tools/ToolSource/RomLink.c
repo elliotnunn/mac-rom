@@ -61,6 +61,9 @@ void get_program(unsigned char **prog_p, long *len_p, unsigned char *name)
 		fprintf(stderr, "Could not find program \"%.*s\"\n", *name, name+1);
 	}
 
+	MoveHHi(hdl);
+	HLock(hdl);
+
 	*prog_p = *(unsigned char **)hdl;
 	*len_p = GetHandleSize(hdl);
 }
@@ -68,7 +71,9 @@ void get_program(unsigned char **prog_p, long *len_p, unsigned char *name)
 
 void free_program(unsigned char *prog)
 {
-	DisposeHandle(RecoverHandle((Ptr)prog));
+	Handle hdl = RecoverHandle((Ptr)prog);
+	HUnlock(hdl);
+	DisposeHandle(hdl);
 }
 
 
