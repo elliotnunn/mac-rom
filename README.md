@@ -18,12 +18,20 @@ Append this to `.git/info/attributes`:
 	* filter=maclines
 	*.lib -filter
 	*.o -filter
+	*.sh -filter
 	.gitignore -filter
 
 Finally, do a once-off "re-smudge":
 
 	rm -rf ../mac-rom/*
 	git checkout .
+
+Setting type and creator codes
+------------------------------
+
+Some MPW Tools require their input files to have the correct Mac OS file type ("TEXT" or "OBJ "), but Git does not save Mac OS type and creator codes. This shell script will correct the file types in a freshly cloned repo:
+
+	sh Misc/SetFileTypes.sh
 
 Building
 --------
