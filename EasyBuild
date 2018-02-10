@@ -4,5 +4,12 @@ Set MAKE_OUT :BuildResults:RISC:Text:MakeFile
 Set Parent "`Files -f "{0}" | StreamEdit -d -e '/((Å:)*)¨1([Â:]*)/ Print ¨1'`"
 SetDirectory "{Parent}"
 
+Set AllMiscRsrcFiles "`WhereIs -s :Misc .rsrc` `WhereIs -s :Misc GoNativeResources`" # quoted for us!
+
+For ToRez in `Files -n -x r {AllMiscRsrcFiles} | StreamEdit -d -e "/(Å)¨1 0b°/ Print ¨1"`
+	Echo EasyBuild: Rezzing (once-off) "{ToRez}"
+	Rez -t rsrc -c RSED -o "{ToRez}" "{ToRez}"
+End
+
 Make -w -d Sources=: -f "{MAKE_FILE}" RomMondo > "{MAKE_OUT}"
 "{MAKE_OUT}"

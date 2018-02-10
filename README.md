@@ -25,13 +25,6 @@ Finally, do a once-off "re-smudge":
 	rm -rf ../mac-rom/*
 	git checkout .
 
-Restoring resource forks
-------------------------
-Some files in the `Misc` folder contain pre-built resources that have been DeRezzed to gel with version control. On your Mac with the command line developer tools installed:
-
-	cd Misc
-	for x in *.rsrc GoNativeResources; do Rez -o $x $x; done
-
 Building
 --------
 This code is built with the [Macintosh Programmer's Workshop](https://en.wikipedia.org/wiki/Macintosh_Programmer%27s_Workshop) (MPW), which runs on the Classic Mac OS. To satisfy the memory requirements of the build process, the MPW Shell should get a memory partition of at least 16 MB. Once you have MPW set up, the build process is not particularly fussy.
