@@ -1064,9 +1064,9 @@ POSTWRITE
 			MOVE.L	#$4000C,D0
 			_WriteXPRam
 
-			IMPORT	InterC_29c0_Wireless
-			MACHINE	MC68030
-			BSR.L	InterC_29c0_Wireless
+;			IMPORT	InterC_29c0_Wireless
+;			MACHINE	MC68030
+;			BSR.L	InterC_29c0_Wireless
 ;			MACHINE	MC68000
 
 ClkXit		MOVE.W	(SP)+,D0				; pass back error code							<30oct85> LAK

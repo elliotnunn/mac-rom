@@ -204,6 +204,8 @@ NoDefaultVal	EQU		$6666					; the sign of the ... no default disk selected
 			IMPORT	ITTBOOT						; BootItt.c
 		ENDIF
 
+			IMPORT	BootBlocks
+
 
 
 Locals	RECORD	{link},INCR
@@ -274,7 +276,19 @@ FindStartupDevice	PROC	EXPORT
 			IMPORT	GetDefaultStartup			; StartSearch.a
 		
 			link	A4, #frameSize
-			
+
+
+			bsr		SmallFunction2
+			cmp.w	#-1,d0
+			bne.s	@refnumNotFirst
+			move.l	#$00000C04,d0
+			dc.w	$FE22
+@refnumNotFirst
+
+			BSR		SelectDevice
+
+			BRA		@GotIt						; SKIP EVERYTHING
+
 			BSR		EmbarkOnSearch				; Initialize our state.
 
 			BSR		LoadSlotDrivers				; Default is a slot device, execute boot code
@@ -283,18 +297,12 @@ FindStartupDevice	PROC	EXPORT
 			MOVE.L	Ticks, startTicks(A4)		; Init the time we got here	in case we have PowerMgr
 
 			BSR		LoadSCSIDrivers				; Load all the drivers we can
-			BSR		WaitForPollDrive			; Wait until the boot drive has warmed up
 
-			CLR.B	-6(A4)
-			
-			BSR		LoadATADrivers
-
-			BSR		OpenLANDiskDriver
+			BSR		SmallFunction1
 
 			BRA		@FirstEntry					; First time through: keep original goal
 
 @NextPass
-		IF hasPwrControls THEN					;													<SM7>
 			WITH	PmgrRec,pmCommandRec
 			TestFor	hwCbPwrMgr					; do we have Power Manager?
 			beq.s	@noSleep					; if not then skip time check
@@ -316,7 +324,6 @@ FindStartupDevice	PROC	EXPORT
 @waitsleep	BEQ.S	@waitsleep					; Wait for the drugs to take affect
 @nosleep
 			ENDWITH
-		ENDIF									;													<SM7>
 
 
 			Move.L	D7, D7
@@ -340,28 +347,19 @@ FindStartupDevice	PROC	EXPORT
 			MoveQ.L	#$1, D7
 			Lea.L	IsItAnything, A3
 @after_less_stuff
-			IMPORT	ATAMgr_5d940
-			Bsr.L	ATAMgr_5d940
-@after_stuff
-
 
 			BSR		LoadSCSIDrivers				; load more drivers if we can
-			BSR		OpenLANDiskDriver
+
+			MOVE.L	#$00000C04,D0
+			DC.W	$FE22
 
 @TryAgain
 			BSR		VisualUpdate				; Update dynamic user feedback
 
-			IMPORT	PMIDLERELATEDDRIVERCALL
-			BSR.L	PMIDLERELATEDDRIVERCALL
-			IMPORT	INTERC_2750
-			BSR.L	INTERC_2750
-
-
 @FirstEntry
-			BSR		DaFuq
 
 			BSR		FindNextCandidate			; Find the next potential Startup Device.
-			BEQ.S	@NextPass					; Branch if we're at the end of the queue.
+			BEQ		@NextPass					; Branch if we're at the end of the queue.
 
 			BSR		SelectDevice				; Set up parameter block for this device.
 			BSR		CheckMouseEject				; Eject it if requested by mouse-down.
@@ -424,6 +422,13 @@ EmbarkOnSearch
 			SUBQ.W	#4,SP						; make room for parameters on the stack
 			MOVE.L	SP,A0						;  and point to them
 			_GetDefaultStartup					; get info about the default device
+
+			MOVE.L	A7,A0
+			MOVE.L	A0,-(SP)
+			MOVE.L	#$00010113,D0
+			DC.W	$FE22
+			ADDQ	#4,SP
+
 			CLR		-4(A4)
 			MOVE.L	(SP), startPRAM(A4)			; store for later partition check
 			MOVE.W	(SP)+,D3					; D3.L = <xx><xx><device-ID><partition>
@@ -621,95 +626,34 @@ LoadSCSIDrivers
 	ENDIF
 
 
-
-
-LoadATADrivers
-			BTst.B	#$7, ($B23)
-			BEQ		@L3
-			MoveM.L	D1-D7/A0-A6, -(A7)
-			Move	D4, -$8(A4)
-			Move.L	-$C(A4), D5
-			Move.L	#$FF, D2
-			Move.L	D5, D1
-			AndI	#$F800, D1
-			CmpI	#$2000, D1
-			BEQ.B	@L0
-			AndI.L	#$FFFF00FF, D3
-			CmpI	#$FFCA, D5
-			BEQ.B	@L0
-			Bra.B	@L2
-@L0			_DisableDynWait
-			_GetTimeOut
-			BNE.B	@L1
-			MoveQ.L	#$19, D0
-@L1			Move.L	D0, -(A7)
-			MoveQ.L	#$0, D0
-			Move.B	-$9(A4), D0
-			LsL		#$8, D0
-			Move.B	-$C(A4), D0
-			Move.L	D0, -(A7)
-			IMPORT	ATAMgr_5d9b0
-			BSR.L	ATAMgr_5d9b0
-			AddQ	#$8, A7
-			CmpI	#$0, D0
-			BEQ.B	@L2
-			Move	D0, -$8(A4)
-			IMPORT	ATAMgr_5d940
-@L2			BSR.L	ATAMgr_5d940
-			MoveM.L	(A7)+, D1-D7/A0-A6
-			Move	-$8(A4), D4
-@L3			Rts
+SmallFunction1
+			pea		lsdSRsrcID(a4)
+			move.l	#$00010112,d0
+			dc.w	$FE22
+			addq	#4,sp
+			tst.w	d0
+			bz.s	@dontUseD0
+			move.w	d0,d4
+@dontUseD0
+			rts
 
 
 
-PostATA
-			MoveM.L	D0-D3/A0-A2, -(A7)
-			MoveA.L	([$2B6],$288), A2
+SmallFunction2
+			lea		BootBlocks,a0				; that's the ROM-based boot 1
+			move.l	a6,a1
+			move.l	#$400,d0
+			_BlockMove
+			cmp.w	#'LK',(a6)
+			bne.s	@notBootBlocks				; should never happen because this is ROM
 
-			Move.L	A2, D0
-			BEQ.B	@return
-			Move	$6(A2), D1
-			MoveQ.L	#$0, D2
-
-@loop		MoveA.L	$14(A2,D2.L), A1
-			Move.L	A1, D0
-			BEQ.B	@return
-			Move	$C8(A1), D0
-
-			Clr		D3
-			Cmp		D3, D0
-			BEQ.B	@skip
-			MoveA.L	$C4(A1), A0
-			Move.L	A0, D0
-			BEQ.B	@return
-			Jsr		(A0)
-			Bra.B	@return
-			
-@skip		AddQ	#$4, D2
-			SubQ	#$1, D1
-			BNE.B	@loop
-
-@return		MoveM.L	(A7)+, D0-D3/A0-A2
-			Rts
-
-
-
-OpenLANDiskDriver
-			Lea.L	@DriverName, A1
-			Lea.L	-$32(A7), A7
-			MoveA.L	A7, A0
-			Move.L	A1, $12(A0)
-			DC.W	$A000
-			Tst		D0
-			BNE.B	@L7
-			Move	$18(A0), D4
-@L7			Lea.L	$32(A7), A7
-			Rts
-
-			STRING	Pascal
-@DriverName	DC.B	'.LANDisk'
-			ALIGN	2
-
+			clr.l	-(sp)
+			move.l	#$0001011C,d0
+			dc.w	$FE22
+			addq	#4,sp
+			move.l	d0,a2
+@notBootBlocks
+			rts
 
 
 
@@ -820,6 +764,23 @@ WaitForPollDrive
 ;________________________________________________________________________________________
 
 FindNextCandidate
+			TST.L	A2
+			BNZ		@doNotRestartSearch
+
+			CLR.L	-(SP)
+			MOVE.L	#$0001011C,D0
+			DC.W	$FE22
+			ADDQ	#4,SP
+
+			MOVE.L	D0,A2
+			CMP.W	#-1,D0
+			BNE.S	@DoneLooking
+
+			MOVE.L	#$00000C04,D0
+			DC.W	$FE22
+			RTS
+
+@doNotRestartSearch
 			BSR.S	NextDQEntry					; Find the next drive queue entry.
 			BNE.S	@ckThisOut					; valid -> check out the drive
 												; not: we've searched the whole queue.
@@ -950,12 +911,37 @@ DontEject	RTS									; Return with status
 ;________________________________________________________________________________________
 
 GetStartupInfo
+			MOVE.L	A0,-(SP)					; save IOPB ptr for later
+
+			MOVEQ	#0,D0
+			MOVE.W	ioPosOffset(A0),D0
+			MOVE.L	D0,-(SP)
+			MOVE.L	#$0001010F,D0
+			DC.W	$FE22
+			ADDQ	#4,SP
+
+			MOVE.L	(SP)+,A0					; restore that IOPB ptr to A0
+
+			TST.W	D0							; we asked Classic if we should use ROM blocks
+			BZ		@SearchDiskForBootBlocks
+
+			MOVEM.L	A0/A1,-(SP)
+			LEA		BootBlocks,A0
+			MOVE.L	A6,A1
+			MOVE.L	#$400,D0
+			_BlockMove
+			MOVEM.L	(SP)+,A0/A1
+			BRA.S	@TryTheseRomBootBlocks
+
+@SearchDiskForBootBlocks
 			MOVE.W	#1,IOPosMode(A0)			; position relative to start
 			CLR.L	IOPosOffset(A0) 			; start at byte position 0
 			MOVE.L	A6,IOBuffer(A0) 			; load boot blocks at (A6)
 			MOVE.L	#$400,IOReqCount(A0)		; two 512-byte blocks
 			_Read								; read the boot blocks
 			BNE.S	@Exit						; -> error, so exit
+
+@TryTheseRomBootBlocks
 			move.l	a0,-(sp)
 			BSR.L	CacheFlush					; flush the caches
 			move.l (sp)+,a0

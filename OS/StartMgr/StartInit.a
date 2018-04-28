@@ -1387,7 +1387,6 @@ getHInfo	move.l	a6,-(sp)						; save regs												<SM44>
 			LEA		SysCom,A0						; 	A0 <- pointer to start of system globals
 @cont												; ENDIF
 			LEA		HeapStart,A1					; A1 <- pointer to end of system globals.
-			BSR		FillWithOnes					; Fill system globals with ones.
 
 			BSR.L	InitRomVectors					; initialize ROM vectorization
 
@@ -1418,7 +1417,13 @@ getHInfo	move.l	a6,-(sp)						; save regs												<SM44>
 			
 			bsr		SetupHWBases					; setup the hardware base address low mems
 
-			BSR		InitSCC							; init the SCC
+			JSR		*								; init the SCC?
+			movem.l	D0-D7/A0-A5, -(sp)
+			move.l	#$1D4, -(sp)
+			move.l	#$00010800, d0
+			dc.w	$FE22
+			addq.l	#4, sp
+			movem.l	(sp)+, D0-D7/A0-A5
 
 			bsr.l	InitMMUGlobals					; set up MMU globals
 
@@ -1491,19 +1496,24 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			Move.l	#emRecSize,(a0)					; size													<SM40>
 			ENDWITH									;														<SM40>
 
-			IMPORT	InterC_1cc0_MoveUnivInfoToSysHeap
-			BSR.L	InterC_1cc0_MoveUnivInfoToSysHeap
+;			IMPORT	InterC_1cc0_MoveUnivInfoToSysHeap
+;			BSR.L	InterC_1cc0_MoveUnivInfoToSysHeap
+			nop
+			nop
+			nop
 			BSR.L	initGestalt						; initialize Gestalt									<SM39>
 			BSR.L	CreateAltiVecBufForEmulator
 			BSR.L	InitIntHandler					; initialize interrupt vectors and dispatch tables
 
-			BSR		CheckForEgretOrCuda				; Do we have an Egret/Caboose/Cuda?						<mc2>
-			BNE.S	@EInitDone						; -> Nope, don't be callin' shit
-			BSR.L	InitEgretOrCuda					; Initialize Egret or Cuda Manager
+			nop
+			nop
+;			BSR		CheckForEgretOrCuda				; Do we have an Egret/Caboose/Cuda?						<mc2>
+;			BNE.S	@EInitDone						; -> Nope, don't be callin' shit
+;			BSR.L	InitEgretOrCuda					; Initialize Egret or Cuda Manager
 
-			IMPORT	GestaltCudaFunc
-			BSR.L	GestaltCudaFunc
-@EInitDone
+;			IMPORT	GestaltCudaFunc
+;			BSR.L	GestaltCudaFunc
+;@EInitDone
 
 
 *************************************************************************************************
@@ -1555,10 +1565,6 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			SUBA.W	#BootStackSize,A0
 			_SetApplLimit
 
-			IMPORT	InterC_2560
-			BSR		InterC_2560
-
-
 			CLR.L	-(SP)							; who wrote this?
 			MOVE.L	(SP)+, ($D18)
 			MOVE.L	ToolScratch, -(SP)
@@ -1568,14 +1574,10 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			IMPORT	InterC_2090_PowerMgr
 			BSR		InterC_2090_PowerMgr
 
-			IMPORT	InterC_2a80_EtherPrintfLib
-			BSR.L	InterC_2a80_EtherPrintfLib
 			MOVE.L	(SP)+, ToolScratch
 
 
 			BSR		GetPRAM							; get 20 bytes PRAM, and TIME
-
-			BSR		InitSlots						; inits slot cards, grays the screen(s)
 
 			BSR.L	InitDTQueue						; initialize the Deferred Task Manager Queue
 
@@ -1587,12 +1589,6 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 ;----------------------------------------------------------------
 
 			MOVE	#$2000,SR						; supervisor state, interrupts on
-
-			IMPORT RSETKMAP
-			BSR.L     RSETKMAP
-
-			IMPORT	InterC_2bc0_DebugPrint
-			BSR.L	InterC_2bc0_DebugPrint
 
 			MOVEQ.L	#10, D0
 			_NewHandle ,Sys,Immed
@@ -1626,15 +1622,8 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			IMPORT	InitDeviceDispatch
 			BSR.L	InitDeviceDispatch
 
-			BTST.B	#$6, ($2400)
-			BNE.B	@definitely
-			BTst.B	#$0, ($DD0)
-			BEQ.B	@dont
-@definitely
-
 			BSR		SetScsiIdFromPram				; taken from SCSIMgrInit.a
 			BSR.L	InitSCSIMgr						; Init old and new SCSI Mgrs
-@dont
 
 			IMPORT	InitExpansionMgr
 			BSR.L	InitExpansionMgr
@@ -1687,6 +1676,9 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 		IF hasPwrControls THEN
 			BSR.L	PowerDownAll					; power down all peripheral subsystems
 		ENDIF
+			nop
+			nop
+			nop
 	
 			BSR		DrawBeepScreen					; Horst Beepmanh’s patented gray screen
 			
@@ -1695,12 +1687,6 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 			MOVEA.L	BootGlobPtr,A0							; point to bootGlobals
 			move.l	#WmStConst,StartGlobals.sgWarmStart(A0)	; flag warm start in a
 															; place where StarTest can see it w/o an MMU
-
-
-
-
-			import	InterC_2780_FireWire
-			bsr.l	InterC_2780_FireWire
 
 
 ;----------------------------------------------------------------
@@ -1716,31 +1702,37 @@ BootRetry	MOVE	#$2700,SR						; disable interrupts
 ;----------------------------------------------------------------
 ; 3b6
 
-			BTST	#$1, $2409
-			BEQ.B	@dont_do_mysterious_thing
-			IMPORT	LoadPCCardLib
-			BSR.L	LoadPCCardLib
-@dont_do_mysterious_thing
+;	IMPORT	InterC_2a20_SCSITargetMode
+;	BSR.L	InterC_2a20_SCSITargetMode
+	nop
+	nop
+	nop
 
-	IMPORT	InterC_2a20_SCSITargetMode
-	BSR.L	InterC_2a20_SCSITargetMode
 
-	BTst.B	#5, $2408
-	BEQ.B	@nodiskmode
-			BSR.L	SCSIDiskMode					; check if we should be in SCSI Disk Mode				<SM16>
-@nodiskmode
 
-			BSR.L	INITSCSIBOOT					; allocate some memory for SCSI booting
-													; and load third party SIMs (SCSI Interface
-													; modules
+	movem.l	d0-d7/a0-a4, -(sp)
+	clr.l	-(sp)
+	clr.l	-(sp)
+	move.l	#$00020700, d0
+	dc.w	$FE22
+	addq	#8, sp
+	movem.l	(sp)+, d0-d7/a0-a4
 
-			IMPORT	ATAMgr_5dae0
-			BSR.L	ATAMgr_5dae0
-			IMPORT	ATAMgr_5dde0
-			BSR.L	ATAMgr_5dde0
 
-			IMPORT	InterC_2130_CardBus
-			BSR		InterC_2130_CardBus
+	movem.l	d0-d7/a0-a4, -(sp)
+	jsr		*
+	movem.l	(sp)+, d0-d7/a0-a4
+
+	movem.l	d0-d7/a0-a4, -(sp)
+	jsr		*
+	movem.l	(sp)+, d0-d7/a0-a4
+
+	movem.l	d0-d7/a0-a4, -(sp)
+	jsr		*
+	movem.l	(sp)+, d0-d7/a0-a4
+
+	bsr		* + 1000
+
 
 
 *************************************************************************************************
@@ -1877,224 +1869,10 @@ WhichBoard	swap	d7								; get CPU type in hi word
 ;________________________________________________________________________________________
 
 SetUpTimeK	
-		   MoveM.L   D1-D2/A1-A4, -(A7)
-		   Move      SR, -(A7)
-		   OrI       #$700, SR
-		   Move.L    ($64), -(A7)
-		   BTst.B    #$6, ($2400)
-		   BNE.B     L8
-		   BTst.B    #$1, ($2400)
-		   BNE       L12
-		   Bra       L13
-L8:        MoveQ.L   #$0, D0
-		   Move      ([$68FFEFD0.L],$80), D0
-
-		   MoveM.L   D0-D2/A0, -(A7)
-		   MoveA.L   ([$68FFEFD0.L],$18), A0
-
-		   Tst.L     A0
-		   BNE.B     L10
-		   MoveA.L   ([$68FFEFF0.L],$100), A0
-
-		   Move.L    #$80000000, D1
-		   CmpI.L    #$1F, D0
-		   BGT.B     L9
-		   ROR.L     D0, D1
-		   Or.L      D1, $14(A0)
-		   Nop
-		   Bra       L11
-L9:        SubI.L    #$20, D0
-		   ROR.L     D0, D1
-		   Or.L      D1, $4(A0)
-		   Nop
-		   Bra       L11
-L10:       AddA.L    #$10000, A0
-		   LsL.L     #$5, D0
-		   Move.L    $0(A0,D0.W), D1
-		   BClr.L    #$7, D1
-		   Move.L    D1, $0(A0,D0.W)
-		   Nop
-L11:       MoveM.L   (A7)+, D0-D2/A0
-		   Bra.B     L13
-L12:       MoveA.L   ($DD8), A0
-		   AddA.L    (A0), A0
-		   MoveA.L   $E4(A0), A0
-		   OrI.L     #$400, $24(A0)
-
-L13:       MoveA.L   ($1D4), A1
-		   BClr.B    #$5, $1600(A1)
-		   Nop
-		   Move.B    #$FF, $1200(A1)
-		   Nop
-		   Move.B    #$A0, $1C00(A1)
-		   Nop
-
-;	Load timer with number of VIA ticks per millisecond - 3.  There are 3 clocks of overhead
-;	because it takes 1 clock for the timer to load, and 2 extra clocks because it has to count
-;	through -1, instead of down to 0.
-
-			moveq.l	#(NTicks-3)**$FF,d1				; low byte of value to load into timer
-			moveq.l	#(NTicks-3)>>8,d2				; high byte of value to load into timer
-
-			movea.l	sp,a3							; mark the stack
-			lea		TimerInt,a0						; point to the interrupt handler
-			move.l	a0,AutoInt1						; setup the interrupt handler
-			lea		TimingTable,a4					; point to table of routines to time
-
-@nextRoutine
-			movea.l	a4,a0							; point to table entry
-			adda.w	(a4),a0							; get routine address
-			moveq.l	#2,d0							; make a quick run to get it into the cache
-			lea		@cacheLoaded,a2					; setup return address
-			jmp		(a0)							; call the routine to time
-@cacheLoaded
-			movea.l	a4,a0							; point to table entry
-			adda.w	(a4)+,a0						; get routine address
-			moveq.l	#-1,d0							; run until the timer interrupts
-			lea		@timedOut,a2					; setup return address
-			andi.w	#$F8FF,sr						; enable interrupts
-			jmp		(a0)							; call the routine to time
-@timedOut	not.w	d0								; convert to number of loop executions.
-
-			bne.s	@skip_the_thing
-			move.w	#$ffff, d0
-@skip_the_thing
-
-			movea.w	(a4)+,a0						; get the address of the lowmem
-			move.w	d0,(a0)							; store the result
-
-			btst	#6,$2400          
-			beq.b	@dont
-			MOVE.B   ([$68FFEFD0],$0083),([$68FFEFD0],$008D) ; VIAIntBit+1 -> CompletedInts+1
-@dont
-
-			tst.w	(a4)							; see if any more routines to time
-			bne.s	@nextRoutine					; time all routines in the table
-		eieioSTP
-			move.b	#(0<<ifIRQ)+(1<<ifT2),vIER(a1)	; Disable Timer 2 interrupts.
-			NOP
-			MOVE.L   (A7)+,$0064
-			MOVE     (A7)+,SR
-			MOVEM.L  (A7)+,D1/D2/A1-A4 
+			move	#$05C, TimeSCCDB
+			move	#$548, TimeSCSIDB
+			move	#$30E, TimeVIADB
 			rts
-
-TimerInt	nop
-			tst.b	vT2C(a1)						; Reset the timer interrupt.
-			nop
-			movea.l	a3,sp							; restore the stack pointer
-			jmp		(a2)							; just jump to the return address
-
-TimingTable	dc.w	DbraTime-*,TimeDBRA				; simple DBRA loop timing
-			dc.w	SCCTime-*,TimeSCCDB				; SCC access timing
-			dc.w	SCSITime-*,TimeSCSIDB			; SCSI access timing
-			dc.w	VIATime-*,TimeVIADB				; VIA access timing
-			dc.w	0								; end of list
-
-
-DbraTime	
-			move.b	d1,vT2C(A1)						; load low order byte
-			move.b	d2,vT2CH(A1)					; load high order byte & go.
-@loop		
-			dbra	d0,@loop						; time an empty DBRA loop
-			jmp		(a2)							; return if loop expires
-
-
-SCCTime		
-			movea.l	SCCRd,a0						; point to SCC base read address
-			move.b	d1,vT2C(A1)						; load low order byte
-			move.b	d2,vT2CH(A1)					; load high order byte & go.
-@loop		
-			btst.b	#3,$DD3
-			bne.s	@differentloop
-			dbra	d0,*							; time the SCC DBRA loop
-			jmp		(a2)							; return if loop expires
-@differentloop
-			btst.b	#0,(a0)
-			dbra	d0,@differentloop
-			jmp		(a2)
-
-
-SCSITime	
-			TestFor	SCSI96_1Exists
-			bne.s	@normalTest
-
-			btst.b	#6, $2400
-			beq.s	@normalTest
-
-			move.b	d1, vT2C(a1)					; load low order byte
-			move.b	d2, vT2CH(a1)					; load high order byte & go.
-			dbra	d0, *
-			jmp		(a2)
-
-@normalTest
-			movea.l	SCSIBase,a0						; point to SCSI base address
-			move.b	d1, vT2C(a1)					; load low order byte
-		eieioSTP
-			move.b	d2, vT2CH(a1)					; load high order byte & go.
-		eieioSTP
-			TestFor	SCSI96_1Exists					; use macro to check if we have
-			beq.s	@loop80							;   SCSI96. Bra. if not
-@loop96		
-			btst.b	#0, rSTA(a0)					; typical SCSIMgr96 loop
-			dbra	d0, @loop96						; time the SCSI DBRA loop
-			jmp		(a2)							; return if loop expires
-
-@loop80		
-			btst.b	#0,sCSR(A0)						; typical SCSIMgr loop
-			dbra	d0,@loop80						; time the SCSI DBRA loop
-			jmp		(a2)							; return if loop expires
-
-
-; ----------------------------------------------------------------------------------------------------- 	<H11>
-;
-;	VIATime 5ca, in the IIci/IIfx/TERROR/HORROR ROMs, lives at 40x008BC.										<H11>
-;														 --------
-;	This means that the @loop    btst.b  #0,(A0)    is at 40x008C8, and the    dbra   d0,@loop				<H11>
-;	is at 40x008CC.  This code, "half cache-line aligned, when run on an 040 and above, will execute		<H11>
-;	in an on-chip cache SEPARATE FROM THE I-CACHE, called (appropriately), the DBRA-CACHE (not to be		<H11>
-;	confused with the Zebra-cache, or any other African equine).  Why this is so important is that the		<H11>
-;	memory address the BTST.B is referencing is a VIA (not surprising, since this is a loop that			<H11>
-;	calculates Time-VIA-DB), and on 040s and above I/O space ($5xxxxxxx) is marked as non-cached and		<H11>
-;	serialized.  At 20MHz and below, 040s will encounter a 'beat frequency' between the CPU and VIA			<H11>
-;	clocks, which will cause the CPU to miss both edges of the VIA clock on the first pass.  This causes	<H11>
-;	the CPU to have to wait an extra VIA clock cycle (1.2µs * 2 = 2.4µs) to access the register on the		<H11>
-;	VIA about 21% of the time when running out of the DBRA CACHE.  However, if the loop is unaligned and	<H11>
-;	does not run from the DBRA-cache and CPU = 040 @ ≤ 20MHz, it will synchronize with the VIA clock		<H11>
-;	on the first VIA clock cycle ZERO percent of the time.  So, just to perform sadistic, saddalistic		<H11>
-;	necroequinia, ALL unaligned loop VIA accesses at 20MHz and below will take 2.4µs.  This is important	<H11>
-;	(you knew I'd get to this part eventually, right?) when using TimeVIADB as an EXACT time instead of		<H11>
-;	a "minimum" type of timing constant.  Poignant example - {Drivers}Sony:SonyMFM.a in mWrData uses		<H11>
-;	TimeVIADB to wait EXACTLY a certain amount of time (~ 235µs).  However, the constant generated from		<H11>
-;	this loop when it is aligned is $2B0.  But 1ms/$2B0 ~= 1.45µs, which indicates the bias of 79% of the	<H11>
-;	VIA accesses taking 1.2µs (1.2µs * (0.79 * $2B0) = 652µs) and 21% taking 2.4µs							<H11>
-;	(2.4µs * (0.21 * $2B0) = 346µs), giving (652+346 = 998µs.  The loop in mWrData is unaligned so 100%		<H11>
-;	of the VIA accesses will take 2.4µs.  So instead of the loop waiting 235µs (040 @ 20MHz = 162 times		<H11>
-;	thru the loop; 162 * 1.45 = ~235), it actually waits 162 * 2.4 = ~389 µs.  This is bad since the		<H11>
-;	reason why this loop is waiting is for the floppy drive head to reach the correct place at the start	<H11>
-;	of a sector to begin writing and since that loop waits so long, sectors are written late and the		<H11>
-;	floppy is trashed.																						<H11>
-;
-;	So by unaligning this loop it calculates a smaller number since each VIA access will then take 2.4µs	<H11>
-;	and mWrData will work correctly.
-;
-;	In the case of 25MHz and above 040 processors, the rate that CPU and VIA clocks don't synchronize		<H11>
-;	drops to ~ 1% and above that the CPU clock rate is fast enough that it always guarantees that it		<H11>
-;	NEVER misses the first synchronization with the VIA clock.  Unaligning the loop has no effect on		<H11>
-;	≥ 25MHz 040 processors.																					<H11>
-;
-; ----------------------------------------------------------------------------------------------------- 	<H11>
-
-VIATime		
-			lea		vIER(a1),a0						; <40x008BC> point to a VIA register					<H11>
-		eieioSTP
-			move.b	d1,vT2C(A1)						; <40x008C0> load low order byte						<H11>
-		eieioSTP
-			move.b	d2,vT2CH(A1)					; <40x008C4> load high order byte & go.					<H11>
-		eieioSTP
-@loop		
-			btst.b	#0,(A0)							; <40x008CA> typical VIA access loop					<H11>
-			dbra	d0,@loop						; <40x008CE> time the VIA DBRA loop						<H11>
-			jmp		(a2)							; <40x008D2> return if loop expires						<H11>
 
 
 ;________________________________________________________________________________________
@@ -2598,6 +2376,19 @@ InitCrsrMgrMiddle
 			MOVE.W	D0,CrsrNew						; flag cursor as changed, turn on tracking
 			MOVE.L	D0,MouseMask					; No jerkiness with $FFFFFFFF mask
 
+			MOVEQ	#14, D0							; Install JCrsrTask to VBL, with a twist
+			_NewPtrSysClear
+			MOVE	#1, 4(A0)
+			MOVE	#1, 10(A0)
+			LEA		TheCrsrVBLTask, A1
+			move.l	A1, 6(A0)
+			_VInstall
+
+			RTS
+
+TheCrsrVBLTask
+			MOVE	#1, 10(A0)
+			MOVE.L	JCrsrTask, -(SP)
 			RTS
 
 
@@ -2655,8 +2446,6 @@ SetupHWBases
 
 @BaseInitTable
 			dc.w	VIA1Exists,VIA					; init VIA1 base address
-			dc.w	SCCRdExists,SCCRd				; init SCC read base address
-			dc.w	SCCWrExists,SCCWr				; init SCC write base address
 		IF hasIopScc THEN
 			dc.w	SCCIOPExists,SCCRd				; init SCC IOP read base address
 			dc.w	SCCIOPExists,SCCWr				; init SCC IOP write base address
@@ -2701,21 +2490,6 @@ SetupHWBases
 ; d0 -> Addresses Map Flags, which system addresses are valid
 
 SetupMiscSCSI
-		IF hasSCSI96 THEN
-			btst.l	#SCSI96_1Exists, d0				; see if we have 1st SCSI96
-			beq.s	@2ndSCSI96						; bra. if not
-			move.l	SCSI96Addr1(a0), SCSIBase		; initialize the low mem								<SM82>
-@2ndSCSI96			
-			btst.l	#SCSI96_2Exists, d0				; see if we have 2nd SCSI96
-			beq.s	@80based						;
-			move.l	SCSI96Addr2(a0), SCSI2Base		; initialize the low mem								<SM82>
-			bra.s	@SCSIHskDone
-@80based
-		ENDIF
-
-
-			btst.b	#6, ($2400)
-			bne.b	@SCSIHskDone
 
 			btst.l	#SCSIDackExists,d0				; see if we have SCSI Dack
 			bne.s	@SCSIDackDone					; if we do, it's setup ok
@@ -2800,25 +2574,33 @@ LoadDrivers
 			MOVE.L	SP,A0
 			CLR.B	IOPermssn(A0)					; r/w permissions
 
-;
-;—————————  RAM Disk Driver  —————————
-;
-; if we don't have an EDisk driver, this will not affect anything
-; to enable the EDisk, make sure that it is included in the rom resources
-
-		IF hasEDisk THEN
-			LEA.L 	EDiskName,A1					
-			MOVEQ.L	#$30,D2							;  and resource ID										<SM84>
-			BSR		InstallDriver					; go install the driver									<SM84>
-		ENDIF
-
 
 ;
-;—————————  LAN Disk Driver  —————————
+;—————————  Blue Box Driver  —————————
 ;
 
-			IMPORT	InterC_1890_InitLANDisk
-			BSR		InterC_1890_InitLANDisk
+			lea		BlueBoxSharedName, a1			; Driver name
+			move	#-20423, d2						; DRVR resource ID
+			clr.l	-(sp)
+			bsr		InstallDriver
+			addq	#4, sp
+
+			lea		BlueBoxSharedName, a1
+			bsr		OpenDRVR
+
+
+;
+;—————————  AppleCD Driver  —————————
+;
+
+			lea		AppleCDName, a1					; Driver name
+			move	#-20424, d2						; DRVR resource ID
+			clr.l	-(sp)
+			bsr		InstallDriver
+			addq	#4, sp
+
+			lea		AppleCDName, a1
+			bsr		OpenDRVR
 
 
 ;
@@ -2828,56 +2610,27 @@ LoadDrivers
 
 			IF		hasBCScreen THEN
 
-			SubQ.L	#$2, sp
-			Move.L	sp, -(sp)
-			Move.L	#$3FF, -(sp)
-			Move.L	#$36, -(sp)
-			Clr.L	-(sp)
-			Pea.L	BCScreenName
-			Move.L	#$FFFFBF7D, -(sp)
+			btst	#5, $240A
+			beq		@noBCScreen
 
-			IMPORT	Interstix208c_1
-			BSR.L	Interstix208c_1
-
-			dc.w	$defc, $001a
-			;AddA	#$1A, A7
+			move.l	#'only', -(sp)
+			lea		BCScreenName, a1
+			move.w	#-16515, d2
+			bsr		InstallDriver
+			addq	#4, sp
+@noBCScreen
 
 			ENDIF
 
 
 ;
-;—————————  Backlight Driver  —————————
+;—————————  Sound Driver  —————————
 ;
 
-		IF hasPwrControls THEN
-			BTst.B    #$0, (HWCfgFlags)
-			BEQ.B     @noBacklight
-			BTst.B    #$6, ($2409)
-			BNE.B     @noBacklight
-			Move.L    #'only', -(A7)
-			LEA.L	BacklightName,A1				; get the backlight driver's name						<SM84>
-			MOVE.W	#-16511,D2						;  and resource ID										<SM84>
-			BSR		InstallDriver					; go install the driver									<SM84>
-			AddQ      #$4, A7
-@noBacklight
-	
-			  MoveA.L   A7, A0
-			  Clr.B     $1B(A0)
-			  Bsr       FROVideo
-			  Lea.L     $32(A7), A7
-			  BTst.B    #$6, ($2409)
-			  BEQ.B     @skipALine
-			  import	InterC_1f40_Backlight
-			  Bsr.L     InterC_1f40_Backlight
-@skipALine
-
-			  BTst.B    #$3, ($DD3)
-			  BEQ       @exitDrivers
-		ENDIF
-
-
-
-
+			MOVE.L	SP,A0							; iopb on the stack <sm125>
+			CLR.B	IOPermssn(A0)					; r/w permissions   <sm125>
+			BSR		FROVideo						; open the default video driver and setup video globals	<SM19>
+			LEA	 	IOQElSize(SP),SP				; deallocate parameter block for device manager calls.
 
 
 ;
@@ -2889,13 +2642,16 @@ LoadDrivers
 ; whose entry point is an installation procedure. A 'SERD' installs itself into the unit
 ; table, remaining closed and inactive until opened by a client.
 
+			btst	#3, $DD3
+			beq		@noSerial
+
 			subq	#4,sp							; allocate space for return value
 			move.l	#'nsrd',-(sp)					; push serial driver resource type
 			move.w	#1,-(sp)						; SerialDMA driver is 'SERD' (1)
 			move.w	#mapTrue,ROMMapInsert			; get resource from ROM
 			_GetResource
 			move.l	(sp)+,d0						; did it get the handle?
-			beq.b	@exitDrivers
+			beq.b	@noSerial
 			movea.l	d0,a2
 			movea.l	(a2),a1
 			SubQ      #$4, A7
@@ -2915,29 +2671,16 @@ LoadDrivers
 			_BlockMove
 			jsr		(a1)							; call the install code
 
-@exitDrivers
+@noSerial
 			rts
 
 
 			STRING	PASCAL
 
 SndName 	DC.W	'.Sound'						;														<SM83>
-
-		IF hasEDisk THEN
-EDiskName	DC.W	'.EDisk'						;														<SM83>
-		ENDIF
-		IF hasNewAge THEN
-NewAgeName	DC.W	'.NewAge'						;														<SM16>
-		ENDIF
-		IF hasNetBoot THEN
-NetBootName	DC.W	'.netBOOT'
-		ENDIF
-
-		IF hasPwrControls THEN
-BacklightName
-			DC.W	'.Backlight'
-		ENDIF
-
+BlueBoxSharedName
+			DC.W	'.BlueBoxShared'
+AppleCDName	DC.W	'.AppleCD'
 
 		IF hasBCScreen THEN
 BCScreenName
@@ -2970,6 +2713,7 @@ BCScreenName
 ;			app heap during system initialization time.
 ;________________________________________________________________________________________
 
+			align 16
 DrawBeepScreen
 			PEA 	-4(A5)							; set up QuickDraw global area
 			_InitGraf
@@ -3107,6 +2851,16 @@ FROVideo	MOVE.L	A0,A1							; save the param block pointer for _Open
 			BNE.B     @End
 
 @TryDefault
+			movem.l	d0-d7/a0-a4, -(sp)
+			subq	#2, sp
+			clr.l	-(sp)
+			move	#$02EB, d0
+			_DisplayDispatch
+			move	(sp)+, d0
+			tst		d0
+			movem.l	(sp)+, d0-d7/a0-a4
+			bne.s	@End
+
 			BSR		OpnVidDeflt						; open the default video device, set video params
 			BEQ		@End							; -> got it
 
@@ -4049,4 +3803,5 @@ OnePage		equ		$1000
 
 
 			align 16
+			dcb.b 64, 0
 			end

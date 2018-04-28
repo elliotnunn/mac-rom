@@ -135,9 +135,10 @@ DisassemblerFileName	str16	'Disassembler'
 StartupScreenFileName	str16	'StartUpScreen'
 HelloFileName			str16	'Finder'
 ClipboardFileName		str16	'Clipboard'
+ClassicFileName			str16	'Classic'
 
-NumFCBs					dc.w	10			; number of FCBs to allocate at boot
-NumEvents				dc.w	20			; number of event queue elements
+NumFCBs					dc.w	40			; number of FCBs to allocate at boot
+NumEvents				dc.w	48			; number of event queue elements
 
 SystemHeapSize128K		dc.l	$4300		; size of system heap for 128K system (never used)
 SystemHeapSize256K		dc.l	$8000		; size of system heap for 256K system (never used)
@@ -146,99 +147,6 @@ SystemHeapSize			dc.l	$20000		; size of system heap (used for pre-7.0)
 ; ——————————————————————————————————————————————————————————————————————————————————————————————————
 
 Boot
-
-; There are three things that can happen here.
-;	1) Successful boot; control passed to the code in the 'boot' (2) resource.
-;	2) Old system file; no 'boot' (2) resource; continue booting; get patches from System data fork
-;	3) Failed boot; call Reboot vector.
-;
-; The main boot code below will never return in case 1, but in case 2 or 3 it will return with
-; a result code in D0. The result code is noErr for an old system file (case 2 above), and some
-; other error otherwise (case 3 above).
-;
-; This section here is used on older ROMs that do not understand the result values. It has hardcoded
-; ROM offsets of where to continue booting for cases 2 and 3.
-
-		tst.w	ROM85						; check for very old ROMs
-		bmi.s	BadROM
-
-		move.l	ROMBase,a0					; get the ROM version number
-		move.w	8(a0),d1
-		moveq	#-2,d6						; start before the beginning of the table
-NextROM
-		addq.w	#2,d6						; advance to the next entry in the table
-		move.w	ROMVersionTable(d6.w),d0	; the end of the table?
-		bz.s	MainBootCode				; yes, this is a new ROM that directly calls MainBootCode
-		cmp.w	d0,d1						; the right ROM?
-		bne.s	NextROM						; no, go on to the next one
-
-; At this point, D6.W contains an offset into all of the ROM-specific tables.
-; Next, set the system heap size for pre-Mac II ROMs where it isn’t growable.
-
-		cmp.b	#$76,d1						; is this an old ROM that we must help?
-		bhi.s	NoSysZoneResizeNeeded		; no, system heap is already growable
-
-		move.l	SysZone,a0					; the one true heap
-		add.l	SystemHeapSize,a0			; proper size of the heap
-		_SetAppBase
-		move.l	SysZone,TheZone				; set the zone to system heap
-NoSysZoneResizeNeeded
-
-; Call the boot code, and handle errors that might occur.
-
-		addq	#4,sp						; pop off the return address into the ROM
-		move.l	sp,d7						; here is the place for PB calls to be used
-		bsr.s	MainBootCode				; do normal boot code
-
-		move.w	AfterInitResourcesTable(d6.w),d1	; get ROM offset for continuing 6.0-style boot
-		tst.w	d0							; check and see if there was an error
-		bz.s	JoinROM						; no error, join the ROM to continue booting
-		move.w	RebootTable(d6.w),d1		; get ROM offset for failing and rebooting
-
-JoinROM
-		move.l	ROMBase,a0
-		jmp		0(a0,d1.w)					; jump to the routine
-
-BadROM
-		moveq	#dsNoPatch,d0				; can’t boot on this ROM
-		_SysError
-
-; ——————————————————————————————————————————————————————————————————————————————————————————————————
-
-ROMVersionTable
-
-		; ROM version numbers of old ROMs that have old-fashioned boot code
-
-		dc.w	$0075						; Plus
-		dc.w	$0276						; SE
-		dc.w	$0178						; II
-		dc.w	$037A						; Portable
-		dc.w	$067C						; IIci
-		dc.w	0							; end of table
-
-AfterInitResourcesTable
-
-		; ROM offsets for continuing booting after InitResources
-
-		dc.w	$0A44						; Plus
-		dc.w	$090E						; SE
-		dc.w	$0F1C						; II
-		dc.w	$30E6						; Portable
-		dc.w	$1D96						; IIci
-
-RebootTable
-
-		; ROM offsets for Reboot routine
-
-		dc.w	$0B82						; Plus
-		dc.w	$0A52						; SE
-		dc.w	$11AE						; II
-		dc.w	$336E						; Portable
-		dc.w	$203E						; IIci
-
-; ——————————————————————————————————————————————————————————————————————————————————————————————————
-
-MainBootCode
 
 ; This code will either boot the machine, and not return or return with an error in d0.
 ; If the error returned is noErr (0), then it means that this is an old-style System file,
@@ -255,16 +163,16 @@ GetFileNames
 		lea		SystemFileName,a0
 		lea		SysResName,a1
 		moveq	#16,d0
-		_BlockMove
+		_BlockMoveData
 		lea		FinderFileName,a0
 		lea		FinderName,a1
 		moveq	#16,d0
-		_BlockMove
+		_BlockMoveData
 		lea		ClipboardFileName,a0
 		LEA 	ScrapTag,A1
 		MOVE.L	A1,ScrapName				; point ScrapName to ScrapTag
 		moveq	#16,d0
-		_BlockMove
+		_BlockMoveData
 
 ; ——————————————————————————————————————————————————————————————————————————————————————————————————
 
@@ -275,34 +183,53 @@ InitializeEventManager
 
 ; ——————————————————————————————————————————————————————————————————————————————————————————————————
 
-InitializeFileSystem
-
-		move.w	NumFCBs,d0
-		_InitFS								; note to future generations: InitFS trashes A2!
-
-; ——————————————————————————————————————————————————————————————————————————————————————————————————
-
 MountStartupDisk
 
 		move.l	d7,a0						; point to parameter block
 		move.w	BootDrive,ioDrvNum(a0)		; set up drive number
 		_MountVol							; mount startup disk
-		bnz.s	Return						; reboot if there’s an error
+		bz		@noErr						; reboot if there’s an error, with one exception:
+		cmp.w	#volOnLinErr,d0				; "drive volume already on-line at MountVol"
+		bne		Return
+@noErr
 
 ; ——————————————————————————————————————————————————————————————————————————————————————————————————
 
 FindBlessedFolder
 
+		moveq	#0,d0
+		move.w	ioVRefNum(a0),d0
+
+		move.l	d0,-(sp)
+		clr.l	-(sp)
+		move.l	#-1,-(sp)
+		move.l	#$0001011C,d0
+		dc.w	$FE22
+
+		cmp.w	#-1,d0
+		bne.s	@refnumNotFirst
+		move.l	#$00000C04, d0
+		dc.w	$FE22
+		addq	#4,sp
+@refnumNotFirst
+
+		move.l	d0,ioWDDirID(a0)
+		clr.l	ioFileName(a0)				; ? we don’t want the disk’s name
+		clr.w	ioVolIndex(a0)				; ? use the vRefNum left over from MountVol
+		bra.s	@straightToOpenWD
+
 		clr.l	ioFileName(a0)				; we don’t want the disk’s name
 		clr.w	ioVolIndex(a0)				; use the vRefNum left over from MountVol
 		_HGetVInfo							; see if there is a system folder
-		bnz.s	UnmountAndReturn			; if we fail, tell our caller
+		bnz		UnmountAndReturn			; if we fail, tell our caller
 		move.l	ioVFndrInfo+4(a0),a4		; save dirID of startup app. in a4 for pre-7.0 systems
 		move.l	ioVFndrInfo(a0),ioWDDirID(a0)	; get the dirID of system folder
 		bz.s	@noFolder					; if it is 0, boot the root
 		move.l	#'ERIK',ioWDProcID(a0)		; magic incantation from hell
+
+@straightToOpenWD
 		_OpenWD								; use the vRefNum left over from MountVol
-		bnz.s	UnmountAndReturn			; can’t open, tell our caller
+		bnz		UnmountAndReturn			; can’t open, tell our caller
 		_SetVol								; make blessed folder the default volume
 @noFolder
 
@@ -313,7 +240,67 @@ InitializeResourceManager
 		subq	#2,sp						; make room for function result
 		_InitResources						; open that system file
 		tst.w	(sp)+						; did we get it?
-		bmi.s	InitResourcesFailed			; yes, we’re OK
+		bmi		InitResourcesFailed			; yes, we’re OK
+
+; ——————————————————————————————————————————————————————————————————————————————————————————————————
+
+		subq	#4,sp
+		move.l	#'vers',-(sp)
+		move.w	#1,-(sp)
+		_GetResource
+		move.l	(sp)+,d5
+		beq.s	@noVersResource
+
+		move.l	d5,a0
+		move.l	(a0),a0
+		moveq	#0,d5
+		move.w	(a0),d5
+
+		clr.l	-(sp)
+		move.l	d5,-(sp)
+		move.l	#$00020C03,d0
+		dc.w	$FE22
+		addq	#8,sp
+@noVersResource
+
+; ——————————————————————————————————————————————————————————————————————————————————————————————————
+
+		clr.b	ResLoad
+		subq	#2,sp
+		pea		ClassicFileName
+		_OpenResFile
+		st		ResLoad
+		move.w	(sp)+,d5
+		bmi		@noClassicFile
+
+		subq	#4,sp
+		move.l	#'gvrs',-(sp)				; no docs on this resource
+		move.w	#1,-(sp)
+		_Get1Resource
+		move.l	(sp)+,d6
+		bz.s	@noGvrsResource
+
+		move.l	d6,a0
+		move.l	(a0),a0
+		move.l	(a0),(sp)					; really does not look right
+@noGvrsResource
+
+		move.w	d5,-(sp)
+		_CloseResFile
+@noClassicFile
+
+		move.l	#$0002020A,d0				; does the above set an argument for this?
+		dc.w	$FE22
+		addq	#8,sp
+
+; ——————————————————————————————————————————————————————————————————————————————————————————————————
+
+		move.l	d7,a0						; get back our ParamBlock ptr
+		move.w	ioVRefNum(a0),-(sp)			; save ioVRefNum for _SetVol (not BootDrive!)
+		move.w	BootDrive,ioVRefNum(a0)		; call _MountVol on BootDrive
+		_MountVol
+		move.w	(sp)+,ioVRefNum(a0)			; restore ioVRefNum for _SetVol	
+		_SetVol
 
 ; ——————————————————————————————————————————————————————————————————————————————————————————————————
 
@@ -352,6 +339,7 @@ InitResourcesFailed
 
 UnmountAndReturn
 
+		addq	#8,sp						; oops! been leaking stack have we?
 		move.w	d0,-(sp)					; save the result code
 		move.l	d7,a0						; point to parameter block
 		_UnmountVol							; already set up (for HGetVInfo)
@@ -364,13 +352,13 @@ Return
 ; ——————————————————————————————————————————————————————————————————————————————————————————————————
 
 	bootBlocksSoFar: equ *-BootBlocks
-	if bootBlocksSoFar > maxBootCodeSize then
-		aerror &concat('boot blocks don’t fit: ',	\
-			&i2s(bootBlocksSoFar),' bytes; ',		\
-			'maximum ',&i2s(maxBootCodeSize),' bytes')
-	else
-		dcb.b bootBlocksSize-bootBlocksSoFar,$DA
-	endif
+;	if bootBlocksSoFar > maxBootCodeSize then
+;		aerror &concat('boot blocks don’t fit: ',	\
+;			&i2s(bootBlocksSoFar),' bytes; ',		\
+;			'maximum ',&i2s(maxBootCodeSize),' bytes')
+;	else
+;		dcb.b bootBlocksSize-bootBlocksSoFar,$DA
+;	endif
 
 ; ——————————————————————————————————————————————————————————————————————————————————————————————————
 

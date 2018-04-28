@@ -204,8 +204,6 @@ Features		=	hasRISCV0ResMgrPatches					¶
 					hasCQD									¶
 					hasDisplayMgr 							¶
 					hasDisplayMgrWindows 					¶
-					hasEDisk								¶
-					hasEgret								¶
 					hasExtendedCharacterSet					¶
 					hasGDU									¶
 					hasIdle 								¶
@@ -219,7 +217,6 @@ Features		=	hasRISCV0ResMgrPatches					¶
 					hasVISA2								¶
 					hasWaimeaVIA2							¶
 					isUniversal								¶
-					hasPwrControls							¶
 					hasPwrMgrClock							¶
 					hasSplineFonts							¶
 					hasVIAClock 							¶

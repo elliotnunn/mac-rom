@@ -28,6 +28,7 @@
 StartMgrObjs			=	"{ObjDir}StartTop.a.o"								¶
 							"{ObjDir}StartInit.a.o"								¶
 							"{ObjDir}StartInterstix.c.o"						¶
+							"{ObjDir}Boot1.a.o"									¶
 							"{ObjDir}StartSearch.a.o"							¶
 							"{ObjDir}StartLibGlue.c.o"							¶
 							"{ObjDir}StartBoot.a.o"								¶
@@ -237,6 +238,10 @@ Boot3Objects			=	"{ObjDir}Boot3.a.o"									¶
 										"{StartDir}UnivTestEnv:SONIC_Interrupt.c"	¶
 										"{StartDir}UnivTestEnv:SONIC_Test.h"
 	C {StdCOpts} -o "{Targ}" "{StartDir}UnivTestEnv:SONIC_Test.c" -i "{StartDir}UnivTestEnv:"
+
+
+"{ObjDir}Boot1.a.o"				Ä	"{StartDir}Boot1.a"
+	Asm {StdAOpts} -o "{Targ}" "{StartDir}Boot1.a"
 
 
 "{ObjDir}Boot3.a.o"				Ä	"{IntAIncludes}LinkedPatchMacros.a"				¶
