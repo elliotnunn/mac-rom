@@ -767,7 +767,12 @@ CrsrDevMove
 		WITH 	tempParams
 
 			link	a6,#tempSize			; create temp area
-			
+
+			move.l	ExpandMem,a0
+			move.l	emCursorGlobals(a0),a0
+			btst	#2,CrsrDevFlags(a0)
+			bz		@exit
+
 			tst.l	d0						; and X movement?
 			bne.s	@cont					; yes, continue
 			tst.l	d1						; and Y movement?
@@ -874,8 +879,15 @@ CrsrDevButtons
 			lsl.w	#2,d2 					;
 			sub.l	buttonTicks(a2,d2.w),d0 ;
 			add.l	d0,RndSeed				; randomize our seed
+
+			move.l	ExpandMem,a0
+			move.l	emCursorGlobals(a0),a0
+			btst	#2,CrsrDevFlags(a0)
+			bnz.s	@noDebounce
+
 			subq.l	#2,d0
 			bmi.s	@nextButton				; exit if went down too quickly (bounce)
+@noDebounce
 			bset.b	d3,buttons(a2)			; mark that we're really down...
 			bra.s	@dispatch				; and handle the down event
 			
@@ -988,8 +1000,6 @@ CrsrDevButtonDown
 			move.l	firstCrsrData(a0),a0	; a0 points to main cursor data record
 			cmpa.l	a0,a1					; is this the main cursor?
 			bne.s	@count					; no, just count other cursor's button
-			
-			move.l	doubleClickTime(a2),doubleTime	; set our double-click time
 			
 			tst.b	buttonCount(a1)			; is this the first button to go down?
 			bne.s	@count					; no, no need to post another event…
@@ -1473,6 +1483,16 @@ CrsrDevHandleVBL
 			tst.l	a3
 			beq		@exit
 
+			btst	#2,CrsrDevFlags(a3)
+			beq		@skipClassicCall
+			move.l	Ticks,d0
+			sub.l	reserved+4(a3),d0
+			beq		@skipClassicCall
+			move.l	Ticks,reserved+4(a3)
+			move.l	#$00000726,d0
+			dc.w	$FE22
+@skipClassicCall
+
 			move.l	firstCrsrDev(a3),d0			; get ptr to 1st CrsrDevRec
 			beq		@exit						; if not even 1 device, just exit
 			move.l	d0,a2						;     ptr in a2
@@ -1544,7 +1564,11 @@ CrsrDevHandleVBL
 ; and combine into our only cursor data record.			
 ;------------------------------------------------------	
 
-@accumLoop	move.l	whichCursor(a2),a4			; get ptr to this devices CrsrDataRec in a4
+@accumLoop
+			btst	#2,CrsrDevFlags(a3)
+			bne		@flushCrsrs
+
+			move.l	whichCursor(a2),a4			; get ptr to this devices CrsrDataRec in a4
 			
 			tst.b	isAbs(a4)					; are we in absolute mode?
 			beq.s	@relative					; no, skip

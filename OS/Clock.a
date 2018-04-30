@@ -151,7 +151,7 @@ Clock		PROC	EXPORT
 ;_______________________________________________________________________
 
 OneSecInt	MOVE.B	#1<<ifCA2,VIFR(A1)		; clear the interrupt						<1.4>
-			NOP
+			ADDQ.L	#1,Time
 			BCLR	#5,AlarmState			; flag GNEFilter to flash if enabled
 
 			TST.B	SPVolCtl				; bit 7 is alarm enable

@@ -116,7 +116,7 @@ bootBlocksSize			equ		1024		; two 512-byte disk blocks
 
 ; ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
-BootBlocks		main	export
+BootBlocks		proc	export
 
 ; Here is the boot block header.
 

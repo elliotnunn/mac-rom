@@ -179,6 +179,15 @@ DSErrorHandler
 			MOVE.W	#$2500,SR				; turn off interrupts 'cept power off		<C448>
 			MOVEQ	#0,D6					; clear upper word stuff					<C309><C448><1.3>
 			MOVE.W	DSErrCode,D6			; get saved error code						<C822>
+
+			CMP.W	#dsGreeting,D6
+			BEQ		@noClassicCall
+			TST.W	D6
+			BLE.S	@noClassicCall
+			MOVE.L	#$00001646,D0
+			DC.W	$FE22
+@noClassicCall
+
 			MOVE.L	DSAlertTab,D7			; get alert table pointer					<C448>
 			BNE.S	@GoAlert				; installed, go nuts						<C448>
 
@@ -300,6 +309,10 @@ DSErrorHandler
 			BEQ.S	@NoRestart
 			ADDQ.W 	#1,D0					;yes, increment the buttonID number
 @NoRestart	BSR		DoButtons				;draw the button list and hit test it
+
+			MOVE.L	#$00011661,D0
+			DC.W	$FE22
+
 			BEQ.S	@NoSemantics			;if none, we're done						<1.3>
 
 ; we got a semantic routine associated with a button so invoke it
@@ -466,7 +479,9 @@ DrawSysAlert
 ; use rect at (A0)
 
 ; 4c74
-DrawBox2	MOVE.L	A0, -(SP)				; rect for EraseRect
+DrawBox2	MOVE.L	#$00011660, D0
+			DC.W	$FE22
+			MOVE.L	A0, -(SP)				; rect for EraseRect
 			MOVE.L	A0, -(SP)				; rect for FrameRect
 			MOVE.L	A0, -(SP)				; rect for InsetRect
 			MOVE.L	A0, -(SP)				; rect for FrameRect
@@ -814,6 +829,8 @@ GCmd		BSR 	ReadToken				; try for address
 
 GotResume	ADD.W	#20,SP					; get rid of event record, RTS
 			CLR.B	DSWndUpdate 			; flag GNE to remove the alert . . .
+			MOVE.L	#$00011661,D0
+			DC.W	$FE22
 			BRA 	RTS2SysErr				; return to SysError handler
 
 ; Erase the rect on the stack

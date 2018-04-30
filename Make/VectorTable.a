@@ -2900,6 +2900,12 @@ TEGETOFFSET 					vATrap	 	A???					; {sources}Toolbox:TextEdit:TextEdit.a
 ;__MICROSECONDS					vATrap	 	A???					; {sources}OS:TimeMgr:TimeMgr.a
 ;FREEZETIME						vIndirect	$2080,	$0014,	A7		; {sources}OS:TimeMgr:TimeMgr.a
 ;INITTIMEMGR 					vNoVector							; {sources}OS:TimeMgr:TimeMgr.a
+ELTM1 vIndirect $2080, $0004, A1
+ELTM2 vIndirect $2080, $0008, A1
+ELTM3 vIndirect $2080, $000c, A1
+ELTM4 vIndirect $2080, $0010, A1
+ELTM5 vIndirect $2080, $0014, A1
+ELTM6 vIndirect $2080, $0018, A1
 
 ;============================== End Time Manager Vectors
 

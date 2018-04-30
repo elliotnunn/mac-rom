@@ -127,6 +127,9 @@ GetRealProc	PROC	EXPORT
 			MOVE.L	D0,A0					; Put the page number back into A0
 			
 			_nkMMUGetPhysicalPage			; Get the physical page in D0
+
+			CMP.L	#-1,D0
+			BEQ.S	@returnedNegativeOne
 			
 			LSL.L	D1,D0					; Turn the Phys page number into an Address
 			MOVE.L	mdPageSize(A2),D1		; Get the page size
@@ -137,9 +140,15 @@ GetRealProc	PROC	EXPORT
 			MOVE.L	D0,A0					; Put the physical address into A0
 			MOVEQ	#0,D0					; Signal no error
 
+@return
 			MOVEM.L	(SP)+,A2/D1/D2			; Restore regs
 *			BRA.S	@Done					; -> Exit
 			RTS
+
+@returnedNegativeOne
+			MOVE.L	D0,A0
+			MOVEQ	#-1,D0
+			bra.s	@return
 
 
 ;----------------------------------------------------------------------------------

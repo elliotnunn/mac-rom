@@ -710,6 +710,12 @@ SetupGlobals
 			lea		$FFFFFFA4,a0
 			move.l	a0,sgAllocOff(a6)			; save allocation offset						<SM6> CSS
 
+			clr.w	d0
+			move.b	#$AF,d0
+			bsr		ReadPRAMByte
+			and.l	#$FF,d0
+			bz.s	@noEdisk
+
 			clr.l	d3							;	clear counter								<T23>
 			move.l	sgTestSpace+24(a6),d1		; Get the amount of bytes allocated by SizeMem for the EDisk	<MC3>
 								;

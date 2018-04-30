@@ -30,7 +30,6 @@ StartMgrObjs			=	"{ObjDir}StartTop.a.o"								¶
 							"{ObjDir}StartInterstix.c.o"						¶
 							"{ObjDir}Boot1.a.o"									¶
 							"{ObjDir}StartSearch.a.o"							¶
-							"{ObjDir}StartLibGlue.c.o"							¶
 							"{ObjDir}StartBoot.a.o"								¶
 							"{ObjDir}StartFail.a.o"								¶
 							"{ObjDir}StartErr.a.o"								¶

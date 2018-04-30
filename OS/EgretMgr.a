@@ -1347,7 +1347,7 @@ NewEgretFunc
 			move.w	pbByteCnt(a0),d2	; get the length
 			movea.l	pbBufPtr(a0),a2		; get the buffer pointer
 			bsr.s	@FillInVars			; setup A3, and ADB globals for ADB Parser
-			bclr.b	#fDBExpRunning,fDBAuFlag(a3)	; explicit command completed, allow new ones
+;			bclr.b	#fDBExpRunning,fDBAuFlag(a3)	; explicit command completed, allow new ones
 
 ;
 ;	For Egret must check the ADB Device address against the Device Bitmap				<5>

@@ -177,6 +177,11 @@ SysErrInit	PROC	EXPORT					;												<C152>
 
 			MOVEQ	#13-1,D0				; point unassigned (vector 12) thru spurious	<1.4>
 @1			MOVE.L	A1,(A0)+				;  interrupt vectors to the "undefined" handler
+			CMP.W	#$58,A0
+			BNE.S	@1SkipIter
+			ADDQ	#4,A0
+			SUBQ	#1,D0
+@1SkipIter
 			DBRA	D0,@1					;  (System Error #11)
 
 			LEA 	IRQException,A2 		; point to the IRQ exception handler
@@ -359,6 +364,39 @@ SysErr2
 
 			MOVE.W	D0,DSErrCode			; Save the possibly modified ErrCode			<SM7>
 
+
+			MOVEM.L	d0-d7/a0-a5,-(sp)
+
+			PEA		SystemErrorStr
+			MOVE.L	$41000120,d0			; special Classic memory location above ROM?
+			BTST	#0,d0
+			BNZ.S	@hiBitSet
+			MOVE.L	#$00011404,d0
+			DC.W	$FE22
+@hiBitSet
+			ADDQ.L	#4,sp
+
+			MOVE.W	DSErrCode,d0
+			EXT.L	d0
+			MOVE.L	d0,-(sp)
+			MOVE.L	$41000120,d0
+			BTST	#0,d0
+			BNZ.S	@hiBitSet2
+			MOVE.L	#$00011406,d0
+			DC.W	$FE22
+@hiBitSet2
+			ADDQ.L	#4,sp
+
+			MOVE.L	$41000120,d0
+			BTST	#0,d0
+			BNZ.S	@hiBitSet3
+			MOVE.L	#$00001408,d0
+			DC.W	$FE22
+@hiBitSet3
+
+			MOVEM.L	(sp)+,d0-d7/a0-a5
+
+
 			MOVE.L	MacJmp,A1
 			MOVE.B	MacJmpFlag,D3
 			ADD.B	D3,D3
@@ -391,6 +429,10 @@ SysErrExit
 			MOVE.L	SEPC,-(SP)				; push user's PC
 			MOVE.W	SESR,-(SP)				; restore status reg
 			RTE 							; and return to caller
+
+SystemErrorStr
+			STRING	C
+			DC.B	'SystemError'
 
 			ENDP							;												<C152>
 
