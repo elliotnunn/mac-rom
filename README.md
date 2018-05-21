@@ -51,6 +51,10 @@ Using EMPW, that's:
 
 	empw EasyBuild
 
+Even nicer is this Unix shell script, which avoids unnecessary launches of the emulator:
+
+	./EasyBuild.sh
+
 The 3 MB image will be at `BuildResults/RISC/Image/RomMondo`.
 
 What's next?

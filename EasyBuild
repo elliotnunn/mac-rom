@@ -13,3 +13,8 @@ End
 
 Make -w -d Sources=: -f "{MAKE_FILE}" RomMondo > "{MAKE_OUT}"
 "{MAKE_OUT}"
+
+# So that RomMondo is definitely the newest thing in the tree!
+SetDirectory :BuildResults:RISC:Image:
+Catenate RomMondo > RomMondoX
+Rename -y RomMondoX RomMondo
