@@ -1,0 +1,284 @@
+
+First:      Flags=$01 Version=$0002
+Comment:    
+    
+   UNLINKED FROM MAC OS ROM -- ELLIOT WAS HERE
+   [331F0, 333FE) 
+
+
+Dictionary:          Flags $00 FirstId 200
+                 200: Main
+Pad         
+Comment:    
+    
+   #####################################################################################
+   
+   Module: INFOSCRAP [331F0, 333FE)
+   
+   Module started due to: vector glue above, FILE directive, MODGUESS (align, label, RTS then padding)
+   
+   Trap A9F9
+   
+   +7C (3326C): UNLOADSCRAP
+                Trap A9FA
+   
+   +B2 (332A2): LOADSCRAP
+                Trap A9FB
+   
+   +E6 (332D6): ZEROSCRAP
+                Trap A9FC
+   
+   +134 (33324): GETSCRAP
+                 Trap A9FD
+   
+   +1A4 (33394): PUTSCRAP
+                 Trap A9FE 
+
+
+Dictionary:          Flags $00 FirstId 201
+                 201: INFOSCRAP
+                 202: UNLOADSCRAP
+                 203: LOADSCRAP
+                 204: ZEROSCRAP
+                 205: GETSCRAP
+                 206: PUTSCRAP
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="INFOSCRAP"(201) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 526
+
+Content:             Flags $08
+Contents offset $0000 size $020E
+00000000: 4A78 096A      'Jx.j'            TST.W      $096A
+00000004: 6C06           'l.'              BGE.S      *+$0008             ; 0000000C
+00000006: 594F           'YO'              SUBQ.W     #4,A7
+00000008: A9FC           '..'              _ZeroScrap                      ; A9FC
+0000000A: 584F           'XO'              ADDQ.W     #4,A7
+0000000C: 205F           ' _'              MOVEA.L    (A7)+,A0
+0000000E: 43F8 0960      'C..`'            LEA        $0960,A1
+00000012: 2E89           '..'              MOVE.L     A1,(A7)
+00000014: 4ED0           'N.'              JMP        (A0)
+00000016: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000018: 4E56 FFA8      'NV..'            LINK.W     A6,#-$0058
+0000001C: 48E7 3F38      'H.?8'            MOVEM.L    D2-D7/A2-A4,-(A7)
+00000020: 2F09           '/.'              MOVE.L     A1,-(A7)
+00000022: 4CF8 0470 0960 'L..p.`'          MOVEM.L    $0960,D4-D6/A2
+00000028: 49F8 0964      'I..d'            LEA        $0964,A4
+0000002C: 41EE FFB0      'A...'            LEA        -$0050(A6),A0
+00000030: 2648           '&H'              MOVEA.L    A0,A3
+00000032: 214A 0012      '!J..'            MOVE.L     A2,$0012(A0)
+00000036: 3178 0210 0016 '1x....'          MOVE.W     $0210,$0016(A0)
+0000003C: 4268 001A      'Bh..'            CLR.W      $001A(A0)
+00000040: 42A8 001C      'B...'            CLR.L      $001C(A0)
+00000044: 4A46           'JF'              TST.W      D6
+00000046: 6600 0066      'f..f'            BNE        *+$0068             ; 000000AE
+0000004A: A000           '..'              _Open                          ; A000
+0000004C: 6762           'gb'              BEQ.S      *+$0064             ; 000000B0
+0000004E: 0C40 FFCF      '.@..'            CMPI.W     #$FFCF,D0
+00000052: 675A           'gZ'              BEQ.S      *+$005C             ; 000000AE
+00000054: 0C40 FFD5      '.@..'            CMPI.W     #$FFD5,D0
+00000058: 6656           'fV'              BNE.S      *+$0058             ; 000000B0
+0000005A: A008           '..'              _Create                        ; A008
+0000005C: 6652           'fR'              BNE.S      *+$0054             ; 000000B0
+0000005E: A00C           '..'              _GetFileInfo                      ; A00C
+00000060: 217C 434C 4950 '!|CLIP'          MOVE.L     #$434C4950,$0020(A0) ; 'CLIP'
+             0020           
+00000068: 217C 4D41 4353 '!|MACS'          MOVE.L     #$4D414353,$0024(A0) ; 'MACS'
+             0024           
+00000070: 08E8 0004 0028 '.....('          BSET       #$04,$0028(A0)
+00000076: A00D           '..'              _SetFileInfo                      ; A00D
+00000078: 6636           'f6'              BNE.S      *+$0038             ; 000000B0
+0000007A: 60CE           '`.'              BRA.S      *-$0030             ; 0000004A
+0000007C: 6198           'a.'              BSR.S      *-$0066             ; 00000016
+0000007E: 661A           'f.'              BNE.S      *+$001C             ; 0000009A
+00000080: 4A46           'JF'              TST.W      D6
+00000082: 6F14           'o.'              BLE.S      *+$0016             ; 00000098
+00000084: 61C4           'a.'              BSR.S      *-$003A             ; 0000004A
+00000086: 6612           'f.'              BNE.S      *+$0014             ; 0000009A
+00000088: 2004           ' .'              MOVE.L     D4,D0
+0000008A: 6142           'aB'              BSR.S      *+$0044             ; 000000CE
+0000008C: A003           '..'              _Write                         ; A003
+0000008E: 660A           'f.'              BNE.S      *+$000C             ; 0000009A
+00000090: 2045           ' E'              MOVEA.L    D5,A0
+00000092: A023           '.#'              _DisposeHandle                      ; A023
+00000094: 429C           'B.'              CLR.L      (A4)+
+00000096: 429C           'B.'              CLR.L      (A4)+
+00000098: 7000           'p.'              MOVEQ      #$00,D0
+0000009A: 48C0           'H.'              EXT.L      D0
+0000009C: 2D40 0008      '-@..'            MOVE.L     D0,$0008(A6)
+000000A0: 7000           'p.'              MOVEQ      #$00,D0
+000000A2: 4CDF 1CFC      'L...'            MOVEM.L    (A7)+,D2-D7/A2-A4
+000000A6: 4E5E           'N^'              UNLK       A6
+000000A8: 205F           ' _'              MOVEA.L    (A7)+,A0
+000000AA: DEC0           '..'              ADDA.W     D0,A7
+000000AC: 4ED0           'N.'              JMP        (A0)
+000000AE: 7000           'p.'              MOVEQ      #$00,D0
+000000B0: 4E75           'Nu'              RTS        
+000000B2: 6100 FF62      'a..b'            BSR        *-$009C             ; 00000016
+000000B6: 66E2           'f.'              BNE.S      *-$001C             ; 0000009A
+000000B8: 4A46           'JF'              TST.W      D6
+000000BA: 66DC           'f.'              BNE.S      *-$0022             ; 00000098
+000000BC: 2004           ' .'              MOVE.L     D4,D0
+000000BE: A122           '."'              _NewHandle                      ; A122
+000000C0: 66D8           'f.'              BNE.S      *-$0026             ; 0000009A
+000000C2: 28C8           '(.'              MOVE.L     A0,(A4)+
+000000C4: 529C           'R.'              ADDQ.L     #1,(A4)+
+000000C6: 2004           ' .'              MOVE.L     D4,D0
+000000C8: 6106           'a.'              BSR.S      *+$0008             ; 000000D0
+000000CA: A002           '..'              _Read                          ; A002
+000000CC: 60CC           '`.'              BRA.S      *-$0032             ; 0000009A
+000000CE: 2045           ' E'              MOVEA.L    D5,A0
+000000D0: 2750 0020      ''P. '            MOVE.L     (A0),$0020(A3)
+000000D4: 2740 0024      ''@.$'            MOVE.L     D0,$0024(A3)
+000000D8: 377C 0001 002C '7|...,'          MOVE.W     #$0001,$002C(A3)
+000000DE: 42AB 002E      'B...'            CLR.L      $002E(A3)
+000000E2: 204B           ' K'              MOVEA.L    A3,A0
+000000E4: 4E75           'Nu'              RTS        
+000000E6: 6100 FF2E      'a...'            BSR        *-$00D0             ; 00000016
+000000EA: 66AE           'f.'              BNE.S      *-$0050             ; 0000009A
+000000EC: 7000           'p.'              MOVEQ      #$00,D0
+000000EE: 21C0 0960      '!..`'            MOVE.L     D0,$0960
+000000F2: 506C 0004      'Pl..'            ADDQ.W     #8,$0004(A4)
+000000F6: 6A04           'j.'              BPL.S      *+$0006             ; 000000FC
+000000F8: 446C 0004      'Dl..'            NEG.W      $0004(A4)
+000000FC: 4A46           'JF'              TST.W      D6
+000000FE: 6710           'g.'              BEQ.S      *+$0012             ; 00000110
+00000100: 6E04           'n.'              BGT.S      *+$0006             ; 00000106
+00000102: A122           '."'              _NewHandle                      ; A122
+00000104: 6004           '`.'              BRA.S      *+$0006             ; 0000010A
+00000106: 2045           ' E'              MOVEA.L    D5,A0
+00000108: A024           '.$'              _SetHandleSize                      ; A024
+0000010A: 28C8           '(.'              MOVE.L     A0,(A4)+
+0000010C: 389C           '8.'              MOVE.W     (A4)+,(A4)
+0000010E: 608A           '`.'              BRA.S      *-$0074             ; 0000009A
+00000110: 42A8 001C      'B...'            CLR.L      $001C(A0)
+00000114: A012           '..'              _SetEOF                        ; A012
+00000116: 6082           '`.'              BRA.S      *-$007C             ; 0000009A
+00000118: 4A46           'JF'              TST.W      D6
+0000011A: 670A           'g.'              BEQ.S      *+$000C             ; 00000126
+0000011C: 2445           '$E'              MOVEA.L    D5,A2
+0000011E: 2052           ' R'              MOVEA.L    (A2),A0
+00000120: D1C3           '..'              ADDA.L     D3,A0
+00000122: A22E           '..'              _BlockMoveData                      ; A22E
+00000124: 6088           '`.'              BRA.S      *-$0076             ; 000000AE
+00000126: 61A6           'a.'              BSR.S      *-$0058             ; 000000CE
+00000128: 2143 002E      '!C..'            MOVE.L     D3,$002E(A0)
+0000012C: 2149 0020      '!I. '            MOVE.L     A1,$0020(A0)
+00000130: A002           '..'              _Read                          ; A002
+00000132: 4E75           'Nu'              RTS        
+00000134: 6100 FEE0      'a...'            BSR        *-$011E             ; 00000016
+00000138: 664C           'fL'              BNE.S      *+$004E             ; 00000186
+0000013A: 6100 0056      'a..V'            BSR        *+$0058             ; 00000192
+0000013E: 6B46           'kF'              BMI.S      *+$0048             ; 00000186
+00000140: 7600           'v.'              MOVEQ      #$00,D3
+00000142: B684           '..'              CMP.L      D4,D3
+00000144: 6C1C           'l.'              BGE.S      *+$001E             ; 00000162
+00000146: 7008           'p.'              MOVEQ      #$08,D0
+00000148: 43EE FFA8      'C...'            LEA        -$0058(A6),A1
+0000014C: 61CA           'a.'              BSR.S      *-$0034             ; 00000118
+0000014E: 6636           'f6'              BNE.S      *+$0038             ; 00000186
+00000150: 5083           'P.'              ADDQ.L     #8,D3
+00000152: 2E19           '..'              MOVE.L     (A1)+,D7
+00000154: BEAE 000C      '....'            CMP.L      $000C(A6),D7
+00000158: 670C           'g.'              BEQ.S      *+$000E             ; 00000166
+0000015A: D699           '..'              ADD.L      (A1)+,D3
+0000015C: 5283           'R.'              ADDQ.L     #1,D3
+0000015E: 0183           '..'              BCLR       D0,D3
+00000160: 60E0           '`.'              BRA.S      *-$001E             ; 00000142
+00000162: 709A           'p.'              MOVEQ      #$9A,D0
+00000164: 6022           '`"'              BRA.S      *+$0024             ; 00000188
+00000166: 246E 0008      '$n..'            MOVEA.L    $0008(A6),A2
+0000016A: 2483           '$.'              MOVE.L     D3,(A2)
+0000016C: 2011           ' .'              MOVE.L     (A1),D0
+0000016E: 2D40 0014      '-@..'            MOVE.L     D0,$0014(A6)
+00000172: 222E 0010      '"...'            MOVE.L     $0010(A6),D1
+00000176: 6714           'g.'              BEQ.S      *+$0016             ; 0000018C
+00000178: 2041           ' A'              MOVEA.L    D1,A0
+0000017A: A024           '.$'              _SetHandleSize                      ; A024
+0000017C: 6608           'f.'              BNE.S      *+$000A             ; 00000186
+0000017E: 2011           ' .'              MOVE.L     (A1),D0
+00000180: 2250           '"P'              MOVEA.L    (A0),A1
+00000182: 6194           'a.'              BSR.S      *-$006A             ; 00000118
+00000184: 6706           'g.'              BEQ.S      *+$0008             ; 0000018C
+00000186: 48C0           'H.'              EXT.L      D0
+00000188: 2D40 0014      '-@..'            MOVE.L     D0,$0014(A6)
+0000018C: 700C           'p.'              MOVEQ      #$0C,D0
+0000018E: 6000 FF12      '`...'            BRA        *-$00EC             ; 000000A2
+00000192: 4A46           'JF'              TST.W      D6
+00000194: 6C0C           'l.'              BGE.S      *+$000E             ; 000001A2
+00000196: 594F           'YO'              SUBQ.W     #4,A7
+00000198: A9FC           '..'              _ZeroScrap                      ; A9FC
+0000019A: 201F           ' .'              MOVE.L     (A7)+,D0
+0000019C: 6BE8           'k.'              BMI.S      *-$0016             ; 00000186
+0000019E: 6100 FE82      'a...'            BSR        *-$017C             ; 00000022
+000001A2: 4E75           'Nu'              RTS        
+000001A4: 6100 FE70      'a..p'            BSR        *-$018E             ; 00000016
+000001A8: 61E8           'a.'              BSR.S      *-$0016             ; 00000192
+000001AA: 6BDA           'k.'              BMI.S      *-$0024             ; 00000186
+000001AC: 6100 FF20      'a.. '            BSR        *-$00DE             ; 000000CE
+000001B0: 7008           'p.'              MOVEQ      #$08,D0
+000001B2: 41EE 000C      'A...'            LEA        $000C(A6),A0
+000001B6: 6114           'a.'              BSR.S      *+$0016             ; 000001CC
+000001B8: 206E 0008      ' n..'            MOVEA.L    $0008(A6),A0
+000001BC: 202E 0010      ' ...'            MOVE.L     $0010(A6),D0
+000001C0: 72FE           'r.'              MOVEQ      #$FE,D1
+000001C2: 5280           'R.'              ADDQ.L     #1,D0
+000001C4: C081           '..'              AND.L      D1,D0
+000001C6: 6104           'a.'              BSR.S      *+$0006             ; 000001CC
+000001C8: 2904           ').'              MOVE.L     D4,-(A4)
+000001CA: 60BA           '`.'              BRA.S      *-$0044             ; 00000186
+000001CC: 2744 002E      ''D..'            MOVE.L     D4,$002E(A3)
+000001D0: D880           '..'              ADD.L      D0,D4
+000001D2: 4A46           'JF'              TST.W      D6
+000001D4: 6716           'g.'              BEQ.S      *+$0018             ; 000001EC
+000001D6: 2245           '"E'              MOVEA.L    D5,A1
+000001D8: A9EF           '..'              _PtrAndHand                      ; A9EF
+000001DA: 670E           'g.'              BEQ.S      *+$0010             ; 000001EA
+000001DC: 3F00           '?.'              MOVE.W     D0,-(A7)
+000001DE: 2038 0960      ' 8.`'            MOVE.L     $0960,D0
+000001E2: A024           '.$'              _SetHandleSize                      ; A024
+000001E4: 301F           '0.'              MOVE.W     (A7)+,D0
+000001E6: 584F           'XO'              ADDQ.W     #4,A7
+000001E8: 609C           '`.'              BRA.S      *-$0062             ; 00000186
+000001EA: 4E75           'Nu'              RTS        
+000001EC: 2748 0020      ''H. '            MOVE.L     A0,$0020(A3)
+000001F0: 2740 0024      ''@.$'            MOVE.L     D0,$0024(A3)
+000001F4: 204B           ' K'              MOVEA.L    A3,A0
+000001F6: A003           '..'              _Write                         ; A003
+000001F8: 6712           'g.'              BEQ.S      *+$0014             ; 0000020C
+000001FA: 3F00           '?.'              MOVE.W     D0,-(A7)
+000001FC: 2178 0960 001C '!x.`..'          MOVE.L     $0960,$001C(A0)
+00000202: A012           '..'              _SetEOF                        ; A012
+00000204: 301F           '0.'              MOVE.W     (A7)+,D0
+00000206: 584F           'XO'              ADDQ.W     #4,A7
+00000208: 6000 FF7C      '`..|'            BRA        *-$0082             ; 00000186
+0000020C: 4E75           'Nu'              RTS        
+
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$007C Entry="UNLOADSCRAP"(202)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00B2 Entry="LOADSCRAP"(203)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00E6 Entry="ZEROSCRAP"(204)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0134 Entry="GETSCRAP"(205)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$01A4 Entry="PUTSCRAP"(206)
+Comment:    
+    
+   INFOSCRAP ended due to: end of FILE directive 
+
+
+Last        
+Record Summary 
+Type Count
+   0 Pad                      1
+   1 First                    1
+   2 Last                     1
+   3 Comment                  3
+   4 Dictionary               2
+   5 Module                   1
+   6 EntryPoint               5
+   7 ModSize                  1
+   8 Content                  1

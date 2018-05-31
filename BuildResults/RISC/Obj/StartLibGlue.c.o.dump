@@ -1,0 +1,296 @@
+
+First:      Flags=$01 Version=$0002
+Comment:    
+    
+   UNLINKED FROM MAC OS ROM -- ELLIOT WAS HERE
+   [41B0, 43FC) 
+
+
+Dictionary:          Flags $00 FirstId 200
+                 200: Main
+Pad         
+Comment:    
+    
+   #####################################################################################
+   
+   Module: STARTLIB_GETSTARTUPDEVICE [41B0, 4266)
+   
+   Module started due to: FILE directive, MODGUESS (align, label, RTS then padding) 
+
+
+Dictionary:          Flags $00 FirstId 201
+                 201: STARTLIB_GETSTARTUPDEVICE
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="STARTLIB_GETSTARTUPDEVICE"(201) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 182
+
+Content:             Flags $08
+Contents offset $0000 size $00B6
+00000000: 4E56 FEF6      'NV..'            LINK.W     A6,#-$010A
+00000004: 48E7 0118      'H...'            MOVEM.L    D7/A3/A4,-(A7)
+00000008: 47FA 00A2      'G...'            LEA        *+$00A4,A3          ; 000000AC
+0000000C: 558F           'U.'              SUBQ.L     #2,A7
+0000000E: 2F0B           '/.'              MOVE.L     A3,-(A7)
+00000010: 2F3C 7077 7063 '/<pwpc'          MOVE.L     #$70777063,-(A7)    ; 'pwpc'
+00000016: 7001           'p.'              MOVEQ      #$01,D0
+00000018: 2F00           '/.'              MOVE.L     D0,-(A7)
+0000001A: 486E FEF6      'Hn..'            PEA        -$010A(A6)
+0000001E: 486E FEFC      'Hn..'            PEA        -$0104(A6)
+00000022: 486E FF00      'Hn..'            PEA        -$0100(A6)
+00000026: 3F3C 0001      '?<..'            MOVE.W     #$0001,-(A7)
+0000002A: AA5A           '.Z'              _CodeFragmentDispatch                      ; AA5A
+0000002C: 3E1F           '>.'              MOVE.W     (A7)+,D7
+0000002E: 665E           'f^'              BNE.S      *+$0060             ; 0000008E
+00000030: 558F           'U.'              SUBQ.L     #2,A7
+00000032: 2F2E FEF6      '/...'            MOVE.L     -$010A(A6),-(A7)
+00000036: 487A 0062      'Hz.b'            PEA        *+$0064             ; 0000009A
+0000003A: 486E FEFC      'Hn..'            PEA        -$0104(A6)
+0000003E: 486E FEFB      'Hn..'            PEA        -$0105(A6)
+00000042: 3F3C 0005      '?<..'            MOVE.W     #$0005,-(A7)
+00000046: AA5A           '.Z'              _CodeFragmentDispatch                      ; AA5A
+00000048: 3E1F           '>.'              MOVE.W     (A7)+,D7
+0000004A: 6634           'f4'              BNE.S      *+$0036             ; 00000080
+0000004C: 598F           'Y.'              SUBQ.L     #4,A7
+0000004E: 2F2E FEFC      '/...'            MOVE.L     -$0104(A6),-(A7)
+00000052: 4878 00E1      'Hx..'            PEA        $00E1
+00000056: 7001           'p.'              MOVEQ      #$01,D0
+00000058: 1F00           '..'              MOVE.B     D0,-(A7)
+0000005A: 7000           'p.'              MOVEQ      #$00,D0
+0000005C: AA59           '.Y'              _MixedModeDispatch                      ; AA59
+0000005E: 285F           '(_'              MOVEA.L    (A7)+,A4
+00000060: 200C           ' .'              MOVE.L     A4,D0
+00000062: 6714           'g.'              BEQ.S      *+$0016             ; 00000078
+00000064: 2F2E 0008      '/...'            MOVE.L     $0008(A6),-(A7)
+00000068: 204C           ' L'              MOVEA.L    A4,A0
+0000006A: 4E90           'N.'              JSR        (A0)
+0000006C: 3E00           '>.'              MOVE.W     D0,D7
+0000006E: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000070: 7001           'p.'              MOVEQ      #$01,D0
+00000072: AA59           '.Y'              _MixedModeDispatch                      ; AA59
+00000074: 584F           'XO'              ADDQ.W     #4,A7
+00000076: 6008           '`.'              BRA.S      *+$000A             ; 00000080
+00000078: 558F           'U.'              SUBQ.L     #2,A7
+0000007A: 3EB8 0220      '>.. '            MOVE.W     $0220,(A7)
+0000007E: 3E1F           '>.'              MOVE.W     (A7)+,D7
+00000080: 558F           'U.'              SUBQ.L     #2,A7
+00000082: 486E FEF6      'Hn..'            PEA        -$010A(A6)
+00000086: 3F3C 0004      '?<..'            MOVE.W     #$0004,-(A7)
+0000008A: AA5A           '.Z'              _CodeFragmentDispatch                      ; AA5A
+0000008C: 544F           'TO'              ADDQ.W     #2,A7
+0000008E: 3007           '0.'              MOVE.W     D7,D0
+00000090: 4CEE 1880 FEEA 'L.....'          MOVEM.L    -$0116(A6),D7/A3/A4
+00000096: 4E5E           'N^'              UNLK       A6
+00000098: 4E75           'Nu'              RTS        
+0000009A: 1047           '.G'              MOVE.B     D7,A0
+0000009C: 6574           'et'              BCS.S      *+$0076             ; 00000112
+0000009E: 5374 6172 7475 'Startu'          SUBQ.W     #1,([$74757044,A4],$6576)
+             7044 6576      
+000000A8: 6963           'ic'              BVS.S      *+$0065             ; 0000010D
+000000AA: 6500 0853      'e..S'            BCS        *+$0855             ; 000008FF
+000000AE: 7461           'ta'              MOVEQ      #$61,D2             ; 'a'
+000000B0: 7274           'rt'              MOVEQ      #$74,D1             ; 't'
+000000B2: 4C69 6200      'Lib.'            DC.W       $4C69 ,$6200 
+
+Comment:    
+    
+   STARTLIB_GETSTARTUPDEVICE ended due to: ran into next module, 10 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: STARTLIB_GETSTARTUPDEVICETYPE [4270, 432A)
+   
+   Module started due to: MODGUESS (align, label) 
+
+
+Dictionary:          Flags $00 FirstId 202
+                 202: STARTLIB_GETSTARTUPDEVICETYPE
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="STARTLIB_GETSTARTUPDEVICETYPE"(202) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 186
+
+Content:             Flags $08
+Contents offset $0000 size $00BA
+00000000: 4E56 FEF6      'NV..'            LINK.W     A6,#-$010A
+00000004: 48E7 0118      'H...'            MOVEM.L    D7/A3/A4,-(A7)
+00000008: 47FA 00A6      'G...'            LEA        *+$00A8,A3          ; 000000B0
+0000000C: 558F           'U.'              SUBQ.L     #2,A7
+0000000E: 2F0B           '/.'              MOVE.L     A3,-(A7)
+00000010: 2F3C 7077 7063 '/<pwpc'          MOVE.L     #$70777063,-(A7)    ; 'pwpc'
+00000016: 7001           'p.'              MOVEQ      #$01,D0
+00000018: 2F00           '/.'              MOVE.L     D0,-(A7)
+0000001A: 486E FEF6      'Hn..'            PEA        -$010A(A6)
+0000001E: 486E FEFC      'Hn..'            PEA        -$0104(A6)
+00000022: 486E FF00      'Hn..'            PEA        -$0100(A6)
+00000026: 3F3C 0001      '?<..'            MOVE.W     #$0001,-(A7)
+0000002A: AA5A           '.Z'              _CodeFragmentDispatch                      ; AA5A
+0000002C: 3E1F           '>.'              MOVE.W     (A7)+,D7
+0000002E: 665E           'f^'              BNE.S      *+$0060             ; 0000008E
+00000030: 558F           'U.'              SUBQ.L     #2,A7
+00000032: 2F2E FEF6      '/...'            MOVE.L     -$010A(A6),-(A7)
+00000036: 487A 0062      'Hz.b'            PEA        *+$0064             ; 0000009A
+0000003A: 486E FEFC      'Hn..'            PEA        -$0104(A6)
+0000003E: 486E FEFB      'Hn..'            PEA        -$0105(A6)
+00000042: 3F3C 0005      '?<..'            MOVE.W     #$0005,-(A7)
+00000046: AA5A           '.Z'              _CodeFragmentDispatch                      ; AA5A
+00000048: 3E1F           '>.'              MOVE.W     (A7)+,D7
+0000004A: 6634           'f4'              BNE.S      *+$0036             ; 00000080
+0000004C: 598F           'Y.'              SUBQ.L     #4,A7
+0000004E: 2F2E FEFC      '/...'            MOVE.L     -$0104(A6),-(A7)
+00000052: 4878 00E1      'Hx..'            PEA        $00E1
+00000056: 7001           'p.'              MOVEQ      #$01,D0
+00000058: 1F00           '..'              MOVE.B     D0,-(A7)
+0000005A: 7000           'p.'              MOVEQ      #$00,D0
+0000005C: AA59           '.Y'              _MixedModeDispatch                      ; AA59
+0000005E: 285F           '(_'              MOVEA.L    (A7)+,A4
+00000060: 200C           ' .'              MOVE.L     A4,D0
+00000062: 6714           'g.'              BEQ.S      *+$0016             ; 00000078
+00000064: 2F2E 0008      '/...'            MOVE.L     $0008(A6),-(A7)
+00000068: 204C           ' L'              MOVEA.L    A4,A0
+0000006A: 4E90           'N.'              JSR        (A0)
+0000006C: 3E00           '>.'              MOVE.W     D0,D7
+0000006E: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000070: 7001           'p.'              MOVEQ      #$01,D0
+00000072: AA59           '.Y'              _MixedModeDispatch                      ; AA59
+00000074: 584F           'XO'              ADDQ.W     #4,A7
+00000076: 6008           '`.'              BRA.S      *+$000A             ; 00000080
+00000078: 558F           'U.'              SUBQ.L     #2,A7
+0000007A: 3EB8 0220      '>.. '            MOVE.W     $0220,(A7)
+0000007E: 3E1F           '>.'              MOVE.W     (A7)+,D7
+00000080: 558F           'U.'              SUBQ.L     #2,A7
+00000082: 486E FEF6      'Hn..'            PEA        -$010A(A6)
+00000086: 3F3C 0004      '?<..'            MOVE.W     #$0004,-(A7)
+0000008A: AA5A           '.Z'              _CodeFragmentDispatch                      ; AA5A
+0000008C: 544F           'TO'              ADDQ.W     #2,A7
+0000008E: 3007           '0.'              MOVE.W     D7,D0
+00000090: 4CEE 1880 FEEA 'L.....'          MOVEM.L    -$0116(A6),D7/A3/A4
+00000096: 4E5E           'N^'              UNLK       A6
+00000098: 4E75           'Nu'              RTS        
+0000009A: 1447           '.G'              MOVE.B     D7,A2
+0000009C: 6574           'et'              BCS.S      *+$0076             ; 00000112
+0000009E: 5374 6172 7475 'Startu'          SUBQ.W     #1,([$74757044,A4],$6576)
+             7044 6576      
+000000A8: 6963           'ic'              BVS.S      *+$0065             ; 0000010D
+000000AA: 6554           'eT'              BCS.S      *+$0056             ; 00000100
+000000AC: 7970           'yp'              DC.W       $7970               ; ????
+000000AE: 6500 0853      'e..S'            BCS        *+$0855             ; 00000903
+000000B2: 7461           'ta'              MOVEQ      #$61,D2             ; 'a'
+000000B4: 7274           'rt'              MOVEQ      #$74,D1             ; 't'
+000000B6: 4C69 6200      'Lib.'            DC.W       $4C69 ,$6200 
+
+Comment:    
+    
+   STARTLIB_GETSTARTUPDEVICETYPE ended due to: ran into next module, 6 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: STARTLIB_GETFIREWIRESTARTUPDEVICEINFO [4330, 43FC)
+   
+   Module started due to: MODGUESS (align, label) 
+
+
+Dictionary:          Flags $00 FirstId 203
+                 203: STARTLIB_GETFIREWIRESTARTUPDEVICEINFO
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="STARTLIB_GETFIREWIRESTARTUPDEVICEINFO"(203) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 204
+
+Content:             Flags $08
+Contents offset $0000 size $00CC
+00000000: 4E56 FEF6      'NV..'            LINK.W     A6,#-$010A
+00000004: 48E7 0118      'H...'            MOVEM.L    D7/A3/A4,-(A7)
+00000008: 47FA 00B8      'G...'            LEA        *+$00BA,A3          ; 000000C2
+0000000C: 558F           'U.'              SUBQ.L     #2,A7
+0000000E: 2F0B           '/.'              MOVE.L     A3,-(A7)
+00000010: 2F3C 7077 7063 '/<pwpc'          MOVE.L     #$70777063,-(A7)    ; 'pwpc'
+00000016: 7001           'p.'              MOVEQ      #$01,D0
+00000018: 2F00           '/.'              MOVE.L     D0,-(A7)
+0000001A: 486E FEF6      'Hn..'            PEA        -$010A(A6)
+0000001E: 486E FEFC      'Hn..'            PEA        -$0104(A6)
+00000022: 486E FF00      'Hn..'            PEA        -$0100(A6)
+00000026: 3F3C 0001      '?<..'            MOVE.W     #$0001,-(A7)
+0000002A: AA5A           '.Z'              _CodeFragmentDispatch                      ; AA5A
+0000002C: 3E1F           '>.'              MOVE.W     (A7)+,D7
+0000002E: 6668           'fh'              BNE.S      *+$006A             ; 00000098
+00000030: 558F           'U.'              SUBQ.L     #2,A7
+00000032: 2F2E FEF6      '/...'            MOVE.L     -$010A(A6),-(A7)
+00000036: 487A 006C      'Hz.l'            PEA        *+$006E             ; 000000A4
+0000003A: 486E FEFC      'Hn..'            PEA        -$0104(A6)
+0000003E: 486E FEFB      'Hn..'            PEA        -$0105(A6)
+00000042: 3F3C 0005      '?<..'            MOVE.W     #$0005,-(A7)
+00000046: AA5A           '.Z'              _CodeFragmentDispatch                      ; AA5A
+00000048: 3E1F           '>.'              MOVE.W     (A7)+,D7
+0000004A: 663E           'f>'              BNE.S      *+$0040             ; 0000008A
+0000004C: 598F           'Y.'              SUBQ.L     #4,A7
+0000004E: 2F2E FEFC      '/...'            MOVE.L     -$0104(A6),-(A7)
+00000052: 4878 0FE1      'Hx..'            PEA        $0FE1
+00000056: 7001           'p.'              MOVEQ      #$01,D0
+00000058: 1F00           '..'              MOVE.B     D0,-(A7)
+0000005A: 7000           'p.'              MOVEQ      #$00,D0
+0000005C: AA59           '.Y'              _MixedModeDispatch                      ; AA59
+0000005E: 285F           '(_'              MOVEA.L    (A7)+,A4
+00000060: 200C           ' .'              MOVE.L     A4,D0
+00000062: 671E           'g.'              BEQ.S      *+$0020             ; 00000082
+00000064: 2F2E 0010      '/...'            MOVE.L     $0010(A6),-(A7)
+00000068: 2F2E 000C      '/...'            MOVE.L     $000C(A6),-(A7)
+0000006C: 2F2E 0008      '/...'            MOVE.L     $0008(A6),-(A7)
+00000070: 204C           ' L'              MOVEA.L    A4,A0
+00000072: 4E90           'N.'              JSR        (A0)
+00000074: 3E00           '>.'              MOVE.W     D0,D7
+00000076: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000078: 7001           'p.'              MOVEQ      #$01,D0
+0000007A: AA59           '.Y'              _MixedModeDispatch                      ; AA59
+0000007C: 4FEF 000C      'O...'            LEA        $000C(A7),A7
+00000080: 6008           '`.'              BRA.S      *+$000A             ; 0000008A
+00000082: 558F           'U.'              SUBQ.L     #2,A7
+00000084: 3EB8 0220      '>.. '            MOVE.W     $0220,(A7)
+00000088: 3E1F           '>.'              MOVE.W     (A7)+,D7
+0000008A: 558F           'U.'              SUBQ.L     #2,A7
+0000008C: 486E FEF6      'Hn..'            PEA        -$010A(A6)
+00000090: 3F3C 0004      '?<..'            MOVE.W     #$0004,-(A7)
+00000094: AA5A           '.Z'              _CodeFragmentDispatch                      ; AA5A
+00000096: 544F           'TO'              ADDQ.W     #2,A7
+00000098: 3007           '0.'              MOVE.W     D7,D0
+0000009A: 4CEE 1880 FEEA 'L.....'          MOVEM.L    -$0116(A6),D7/A3/A4
+000000A0: 4E5E           'N^'              UNLK       A6
+000000A2: 4E75           'Nu'              RTS        
+000000A4: 1C47           '.G'              MOVE.B     D7,A6
+000000A6: 6574           'et'              BCS.S      *+$0076             ; 0000011C
+000000A8: 4669 7265      'Fire'            NOT.W      $7265(A1)
+000000AC: 7769           'wi'              DC.W       $7769               ; ????
+000000AE: 7265           're'              MOVEQ      #$65,D1             ; 'e'
+000000B0: 5374 6172 7475 'Startu'          SUBQ.W     #1,([$74757044,A4],$6576)
+             7044 6576      
+000000BA: 6963           'ic'              BVS.S      *+$0065             ; 0000011F
+000000BC: 6549           'eI'              BCS.S      *+$004B             ; 00000107
+000000BE: 6E66           'nf'              BGT.S      *+$0068             ; 00000126
+000000C0: 6F00 0853      'o..S'            BLE        *+$0855             ; 00000915
+000000C4: 7461           'ta'              MOVEQ      #$61,D2             ; 'a'
+000000C6: 7274           'rt'              MOVEQ      #$74,D1             ; 't'
+000000C8: 4C69 6200      'Lib.'            DC.W       $4C69 ,$6200 
+
+Comment:    
+    
+   STARTLIB_GETFIREWIRESTARTUPDEVICEINFO ended due to: end of FILE directive, 4 nulls trimmed
+
+
+Last        
+Record Summary 
+Type Count
+   0 Pad                      1
+   1 First                    1
+   2 Last                     1
+   3 Comment                  7
+   4 Dictionary               4
+   5 Module                   3
+   7 ModSize                  3
+   8 Content                  3

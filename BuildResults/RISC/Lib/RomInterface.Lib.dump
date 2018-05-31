@@ -1,0 +1,1659 @@
+
+First:      Flags=$01 Version=$0002
+Comment:    
+    
+   UNLINKED FROM MAC OS ROM -- ELLIOT WAS HERE
+   [A8540, A8D40) 
+
+
+Dictionary:          Flags $00 FirstId 200
+                 200: Main
+Pad         
+Comment:    
+    
+   #####################################################################################
+   
+   Module: GETPTRSIZE [A8540, A854E)
+   
+   Module started due to: MOD directive, FILE directive
+
+
+Dictionary:          Flags $00 FirstId 201
+                 201: GETPTRSIZE
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="GETPTRSIZE"(201) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 14
+
+Content:             Flags $08
+Contents offset $0000 size $000E
+00000000: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000002: 205F           ' _'              MOVEA.L    (A7)+,A0
+00000004: A021           '.!'              _GetPtrSize                      ; A021
+00000006: 2E80           '..'              MOVE.L     D0,(A7)
+00000008: 6A02           'j.'              BPL.S      *+$0004             ; 0000000C
+0000000A: 4297           'B.'              CLR.L      (A7)
+0000000C: 4ED1           'N.'              JMP        (A1)
+
+Comment:    
+    
+   GETPTRSIZE ended due to: ran into next module, 2 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: GETHANDLESIZE [A8550, A855E)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 202
+                 202: GETHANDLESIZE
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="GETHANDLESIZE"(202) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 14
+
+Content:             Flags $08
+Contents offset $0000 size $000E
+00000000: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000002: 205F           ' _'              MOVEA.L    (A7)+,A0
+00000004: A025           '.%'              _GetHandleSize                      ; A025
+00000006: 2E80           '..'              MOVE.L     D0,(A7)
+00000008: 6A02           'j.'              BPL.S      *+$0004             ; 0000000C
+0000000A: 4297           'B.'              CLR.L      (A7)
+0000000C: 4ED1           'N.'              JMP        (A1)
+
+Comment:    
+    
+   GETHANDLESIZE ended due to: ran into next module, 2 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: OPENDRIVER [A8560, A8586)
+   
+   Module started due to: MOD directive
+
+
+Dictionary:          Flags $00 FirstId 203
+                 203: OPENDRIVER
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="OPENDRIVER"(203) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 38
+
+Content:             Flags $08
+Contents offset $0000 size $0026
+00000000: 241F           '$.'              MOVE.L     (A7)+,D2
+00000002: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000004: 221F           '".'              MOVE.L     (A7)+,D1
+00000006: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+0000000A: 700B           'p.'              MOVEQ      #$0B,D0
+0000000C: 42A7           'B.'              CLR.L      -(A7)
+0000000E: 51C8 FFFC      'Q...'            DBF        D0,*-$0002          ; 0000000C
+00000012: 204F           ' O'              MOVEA.L    A7,A0
+00000014: 2141 0012      '!A..'            MOVE.L     D1,$0012(A0)
+00000018: A000           '..'              _Open                          ; A000
+0000001A: 32A8 0018      '2...'            MOVE.W     $0018(A0),(A1)
+0000001E: 4E5E           'N^'              UNLK       A6
+00000020: 3E80           '>.'              MOVE.W     D0,(A7)
+00000022: 2242           '"B'              MOVEA.L    D2,A1
+00000024: 4ED1           'N.'              JMP        (A1)
+
+Comment:    
+    
+   OPENDRIVER ended due to: ran into next module, 10 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: DRIVESTATUS [A8590, A85C2)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 204
+                 204: DRIVESTATUS
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="DRIVESTATUS"(204) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 50
+
+Content:             Flags $08
+Contents offset $0000 size $0032
+00000000: 4E56 FFCE      'NV..'            LINK.W     A6,#-$0032
+00000004: 204F           ' O'              MOVEA.L    A7,A0
+00000006: 317C FFFB 0018 '1|....'          MOVE.W     #$FFFB,$0018(A0)
+0000000C: 317C 0008 001A '1|....'          MOVE.W     #$0008,$001A(A0)
+00000012: 316E 000C 0016 '1n....'          MOVE.W     $000C(A6),$0016(A0)
+00000018: A005           '..'              _Status                        ; A005
+0000001A: 3D40 000E      '=@..'            MOVE.W     D0,$000E(A6)
+0000001E: 226E 0008      '"n..'            MOVEA.L    $0008(A6),A1
+00000022: 41E8 001C      'A...'            LEA        $001C(A0),A0
+00000026: 7016           'p.'              MOVEQ      #$16,D0
+00000028: A22E           '..'              _BlockMoveData                      ; A22E
+0000002A: 4E5E           'N^'              UNLK       A6
+0000002C: 225F           '"_'              MOVEA.L    (A7)+,A1
+0000002E: 5C4F           '\O'              ADDQ.W     #6,A7
+00000030: 4ED1           'N.'              JMP        (A1)
+
+Comment:    
+    
+   DRIVESTATUS ended due to: ran into next module, 14 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: NGETTRAPADDRESS [A85D0, A85E4)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 205
+                 205: NGETTRAPADDRESS
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="NGETTRAPADDRESS"(205) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 20
+
+Content:             Flags $08
+Contents offset $0000 size $0014
+00000000: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000002: 121F           '..'              MOVE.B     (A7)+,D1
+00000004: 301F           '0.'              MOVE.W     (A7)+,D0
+00000006: 4A01           'J.'              TST.B      D1
+00000008: 6704           'g.'              BEQ.S      *+$0006             ; 0000000E
+0000000A: A746           '.F'              _GetToolTrapAddress                      ; A746
+0000000C: 6002           '`.'              BRA.S      *+$0004             ; 00000010
+0000000E: A346           '.F'              _GetOSTrapAddress                      ; A346
+00000010: 2E88           '..'              MOVE.L     A0,(A7)
+00000012: 4ED1           'N.'              JMP        (A1)
+
+Comment:    
+    
+   NGETTRAPADDRESS ended due to: ran into next module, 12 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: NSETTRAPADDRESS [A85F0, A8604)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 206
+                 206: NSETTRAPADDRESS
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="NSETTRAPADDRESS"(206) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 20
+
+Content:             Flags $08
+Contents offset $0000 size $0014
+00000000: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000002: 121F           '..'              MOVE.B     (A7)+,D1
+00000004: 301F           '0.'              MOVE.W     (A7)+,D0
+00000006: 205F           ' _'              MOVEA.L    (A7)+,A0
+00000008: 4A01           'J.'              TST.B      D1
+0000000A: 6704           'g.'              BEQ.S      *+$0006             ; 00000010
+0000000C: A647           '.G'              _SetToolTrapAddress                      ; A647
+0000000E: 6002           '`.'              BRA.S      *+$0004             ; 00000012
+00000010: A247           '.G'              _SetOSTrapAddress                      ; A247
+00000012: 4ED1           'N.'              JMP        (A1)
+
+Comment:    
+    
+   NSETTRAPADDRESS ended due to: ran into next module, 12 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: EQUALSTRING [A8610, A8650)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 207
+                 207: EQUALSTRING
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="EQUALSTRING"(207) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 64
+
+Content:             Flags $08
+Contents offset $0000 size $0040
+00000000: 206F 000C      ' o..'            MOVEA.L    $000C(A7),A0
+00000004: 226F 0008      '"o..'            MOVEA.L    $0008(A7),A1
+00000008: 7000           'p.'              MOVEQ      #$00,D0
+0000000A: 1018           '..'              MOVE.B     (A0)+,D0
+0000000C: 4840           'H@'              SWAP       D0
+0000000E: 1019           '..'              MOVE.B     (A1)+,D0
+00000010: 4A2F 0004      'J/..'            TST.B      $0004(A7)
+00000014: 670E           'g.'              BEQ.S      *+$0010             ; 00000024
+00000016: 4A2F 0006      'J/..'            TST.B      $0006(A7)
+0000001A: 6704           'g.'              BEQ.S      *+$0006             ; 00000020
+0000001C: A43C           '.<'              _CmpString  ,Sys                ; A43C
+0000001E: 6010           '`.'              BRA.S      *+$0012             ; 00000030
+00000020: A03C           '.<'              _CmpString                      ; A03C
+00000022: 600C           '`.'              BRA.S      *+$000E             ; 00000030
+00000024: 4A2F 0006      'J/..'            TST.B      $0006(A7)
+00000028: 6704           'g.'              BEQ.S      *+$0006             ; 0000002E
+0000002A: A63C           '.<'              _CmpString  ,Sys,Immed          ; A63C
+0000002C: 6002           '`.'              BRA.S      *+$0004             ; 00000030
+0000002E: A23C           '.<'              _CmpString  ,Immed              ; A23C
+00000030: 0A00 0001      '....'            EORI.B     #$01,D0
+00000034: 1F40 0010      '.@..'            MOVE.B     D0,$0010(A7)
+00000038: 205F           ' _'              MOVEA.L    (A7)+,A0
+0000003A: 4FEF 000C      'O...'            LEA        $000C(A7),A7
+0000003E: 4ED0           'N.'              JMP        (A0)
+
+Comment:    
+    
+   EQUALSTRING ended due to: ran into next module
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: GETDCTLENTRY [A8650, A866A)
+   
+   Module started due to: MOD directive
+
+
+Dictionary:          Flags $00 FirstId 208
+                 208: GETDCTLENTRY
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="GETDCTLENTRY"(208) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 26
+
+Content:             Flags $08
+Contents offset $0000 size $001A
+00000000: 205F           ' _'              MOVEA.L    (A7)+,A0
+00000002: 301F           '0.'              MOVE.W     (A7)+,D0
+00000004: 4297           'B.'              CLR.L      (A7)
+00000006: 4640           'F@'              NOT.W      D0
+00000008: B078 01D2      '.x..'            CMP.W      $01D2,D0
+0000000C: 640A           'd.'              BCC.S      *+$000C             ; 00000018
+0000000E: E548           '.H'              LSL.W      #2,D0
+00000010: 2278 011C      '"x..'            MOVEA.L    $011C,A1
+00000014: 2EB1 0000      '....'            MOVE.L     $00(A1,D0.W),(A7)
+00000018: 4ED0           'N.'              JMP        (A0)
+
+Comment:    
+    
+   GETDCTLENTRY ended due to: ran into next module, 6 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: FSCLOSE [A8670, A8686)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 209
+                 209: FSCLOSE
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="FSCLOSE"(209) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 22
+
+Content:             Flags $08
+Contents offset $0000 size $0016
+00000000: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000002: 301F           '0.'              MOVE.W     (A7)+,D0
+00000004: 4E56 FFCE      'NV..'            LINK.W     A6,#-$0032
+00000008: 204F           ' O'              MOVEA.L    A7,A0
+0000000A: 3140 0018      '1@..'            MOVE.W     D0,$0018(A0)
+0000000E: A001           '..'              _Close                         ; A001
+00000010: 4E5E           'N^'              UNLK       A6
+00000012: 3E80           '>.'              MOVE.W     D0,(A7)
+00000014: 4ED1           'N.'              JMP        (A1)
+
+Comment:    
+    
+   FSCLOSE ended due to: ran into next module, 10 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: FSREAD [A8690, A86D8)
+   
+   Module started due to: MOD directive
+   
+   +4 (A8694): FSWRITE 
+
+
+Dictionary:          Flags $00 FirstId 210
+                 210: FSREAD
+                 211: FSWRITE
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="FSREAD"(210) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 72
+
+Content:             Flags $08
+Contents offset $0000 size $0048
+00000000: 51C1           'Q.'              SF         D1
+00000002: 6002           '`.'              BRA.S      *+$0004             ; 00000006
+00000004: 50C1           'P.'              ST         D1
+00000006: 4E56 FFCE      'NV..'            LINK.W     A6,#-$0032
+0000000A: 204F           ' O'              MOVEA.L    A7,A0
+0000000C: 216E 0008 0020 '!n... '          MOVE.L     $0008(A6),$0020(A0)
+00000012: 316E 0010 0018 '1n....'          MOVE.W     $0010(A6),$0018(A0)
+00000018: 226E 000C      '"n..'            MOVEA.L    $000C(A6),A1
+0000001C: 2151 0024      '!Q.$'            MOVE.L     (A1),$0024(A0)
+00000020: 4268 002C      'Bh.,'            CLR.W      $002C(A0)
+00000024: 42A8 002E      'B...'            CLR.L      $002E(A0)
+00000028: 4A01           'J.'              TST.B      D1
+0000002A: 6604           'f.'              BNE.S      *+$0006             ; 00000030
+0000002C: A002           '..'              _Read                          ; A002
+0000002E: 6002           '`.'              BRA.S      *+$0004             ; 00000032
+00000030: A003           '..'              _Write                         ; A003
+00000032: 3D40 0012      '=@..'            MOVE.W     D0,$0012(A6)
+00000036: 226E 000C      '"n..'            MOVEA.L    $000C(A6),A1
+0000003A: 22A8 0028      '"..('            MOVE.L     $0028(A0),(A1)
+0000003E: 4E5E           'N^'              UNLK       A6
+00000040: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000042: 4FEF 000A      'O...'            LEA        $000A(A7),A7
+00000046: 4ED1           'N.'              JMP        (A1)
+
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0004 Entry="FSWRITE"(211)
+Comment:    
+    
+   FSREAD ended due to: ran into next module, 8 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: GETEOF [A86E0, A8702)
+   
+   Module started due to: MOD directive
+
+
+Dictionary:          Flags $00 FirstId 212
+                 212: GETEOF
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="GETEOF"(212) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 34
+
+Content:             Flags $08
+Contents offset $0000 size $0022
+00000000: 4E56 FFCE      'NV..'            LINK.W     A6,#-$0032
+00000004: 204F           ' O'              MOVEA.L    A7,A0
+00000006: 316E 000C 0018 '1n....'          MOVE.W     $000C(A6),$0018(A0)
+0000000C: A011           '..'              _GetEOF                        ; A011
+0000000E: 3D40 000E      '=@..'            MOVE.W     D0,$000E(A6)
+00000012: 226E 0008      '"n..'            MOVEA.L    $0008(A6),A1
+00000016: 22A8 001C      '"...'            MOVE.L     $001C(A0),(A1)
+0000001A: 4E5E           'N^'              UNLK       A6
+0000001C: 225F           '"_'              MOVEA.L    (A7)+,A1
+0000001E: 5C8F           '\.'              ADDQ.L     #6,A7
+00000020: 4ED1           'N.'              JMP        (A1)
+
+Comment:    
+    
+   GETEOF ended due to: ran into next module, 14 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SETFPOS [A8710, A8736)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 213
+                 213: SETFPOS
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SETFPOS"(213) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 38
+
+Content:             Flags $08
+Contents offset $0000 size $0026
+00000000: 4E56 FFCE      'NV..'            LINK.W     A6,#-$0032
+00000004: 204F           ' O'              MOVEA.L    A7,A0
+00000006: 316E 000E 0018 '1n....'          MOVE.W     $000E(A6),$0018(A0)
+0000000C: 316E 000C 002C '1n...,'          MOVE.W     $000C(A6),$002C(A0)
+00000012: 216E 0008 002E '!n....'          MOVE.L     $0008(A6),$002E(A0)
+00000018: A044           '.D'              _SetFPos                       ; A044
+0000001A: 3D40 0010      '=@..'            MOVE.W     D0,$0010(A6)
+0000001E: 4E5E           'N^'              UNLK       A6
+00000020: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000022: 508F           'P.'              ADDQ.L     #8,A7
+00000024: 4ED1           'N.'              JMP        (A1)
+
+Comment:    
+    
+   SETFPOS ended due to: ran into next module, 10 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: RELSTRING [A8740, A8782)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 214
+                 214: RELSTRING
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="RELSTRING"(214) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 66
+
+Content:             Flags $08
+Contents offset $0000 size $0042
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 206E 0010      ' n..'            MOVEA.L    $0010(A6),A0
+00000008: 226E 000C      '"n..'            MOVEA.L    $000C(A6),A1
+0000000C: 7000           'p.'              MOVEQ      #$00,D0
+0000000E: 1018           '..'              MOVE.B     (A0)+,D0
+00000010: 4840           'H@'              SWAP       D0
+00000012: 1019           '..'              MOVE.B     (A1)+,D0
+00000014: 4A2E 0008      'J...'            TST.B      $0008(A6)
+00000018: 670E           'g.'              BEQ.S      *+$0010             ; 00000028
+0000001A: 4A2E 000A      'J...'            TST.B      $000A(A6)
+0000001E: 6704           'g.'              BEQ.S      *+$0006             ; 00000024
+00000020: A450           '.P'              _RelString  ,Sys                ; A450
+00000022: 6010           '`.'              BRA.S      *+$0012             ; 00000034
+00000024: A050           '.P'              _RelString                      ; A050
+00000026: 600C           '`.'              BRA.S      *+$000E             ; 00000034
+00000028: 4A2E 000A      'J...'            TST.B      $000A(A6)
+0000002C: 6704           'g.'              BEQ.S      *+$0006             ; 00000032
+0000002E: A650           '.P'              _RelString  ,Sys,Immed          ; A650
+00000030: 6002           '`.'              BRA.S      *+$0004             ; 00000034
+00000032: A250           '.P'              _RelString  ,Immed              ; A250
+00000034: 3D40 0014      '=@..'            MOVE.W     D0,$0014(A6)
+00000038: 4E5E           'N^'              UNLK       A6
+0000003A: 205F           ' _'              MOVEA.L    (A7)+,A0
+0000003C: 4FEF 000C      'O...'            LEA        $000C(A7),A7
+00000040: 4ED0           'N.'              JMP        (A0)
+
+Comment:    
+    
+   RELSTRING ended due to: ran into next module, 14 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: C2PSTR [A8790, A87C2)
+   
+   Module started due to: MOD directive
+
+
+Dictionary:          Flags $00 FirstId 215
+                 215: C2PSTR
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="C2PSTR"(215) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 50
+
+Content:             Flags $08
+Contents offset $0000 size $0032
+00000000: 202F 0004      ' /..'            MOVE.L     $0004(A7),D0
+00000004: 2F40 0008      '/@..'            MOVE.L     D0,$0008(A7)
+00000008: 6722           'g"'              BEQ.S      *+$0024             ; 0000002C
+0000000A: 2040           ' @'              MOVEA.L    D0,A0
+0000000C: 2248           '"H'              MOVEA.L    A0,A1
+0000000E: 1019           '..'              MOVE.B     (A1)+,D0
+00000010: 671A           'g.'              BEQ.S      *+$001C             ; 0000002C
+00000012: 1211           '..'              MOVE.B     (A1),D1
+00000014: 12C0           '..'              MOVE.B     D0,(A1)+
+00000016: 1001           '..'              MOVE.B     D1,D0
+00000018: 66F8           'f.'              BNE.S      *-$0006             ; 00000012
+0000001A: 93C8           '..'              SUBA.L     A0,A1
+0000001C: 2009           ' .'              MOVE.L     A1,D0
+0000001E: 5340           'S@'              SUBQ.W     #1,D0
+00000020: 0C80 0000 00FF '......'          CMPI.L     #$000000FF,D0
+00000026: 6F02           'o.'              BLE.S      *+$0004             ; 0000002A
+00000028: 70FF           'p.'              MOVEQ      #$FF,D0
+0000002A: 1080           '..'              MOVE.B     D0,(A0)
+0000002C: 225F           '"_'              MOVEA.L    (A7)+,A1
+0000002E: 584F           'XO'              ADDQ.W     #4,A7
+00000030: 4ED1           'N.'              JMP        (A1)
+
+Comment:    
+    
+   C2PSTR ended due to: ran into next module, 14 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: P2CSTR [A87D0, A87EC)
+   
+   Module started due to: MOD directive
+
+
+Dictionary:          Flags $00 FirstId 216
+                 216: P2CSTR
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="P2CSTR"(216) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 28
+
+Content:             Flags $08
+Contents offset $0000 size $001C
+00000000: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000002: 201F           ' .'              MOVE.L     (A7)+,D0
+00000004: 2E80           '..'              MOVE.L     D0,(A7)
+00000006: 6712           'g.'              BEQ.S      *+$0014             ; 0000001A
+00000008: 2040           ' @'              MOVEA.L    D0,A0
+0000000A: 7000           'p.'              MOVEQ      #$00,D0
+0000000C: 1010           '..'              MOVE.B     (A0),D0
+0000000E: 6004           '`.'              BRA.S      *+$0006             ; 00000014
+00000010: 10E8 0001      '....'            MOVE.B     $0001(A0),(A0)+
+00000014: 51C8 FFFA      'Q...'            DBF        D0,*-$0004          ; 00000010
+00000018: 4210           'B.'              CLR.B      (A0)
+0000001A: 4ED1           'N.'              JMP        (A1)
+
+Comment:    
+    
+   P2CSTR ended due to: ran into next module, 4 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: NUMTOSTRING [A87F0, A87FE)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 217
+                 217: NUMTOSTRING
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="NUMTOSTRING"(217) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 14
+
+Content:             Flags $08
+Contents offset $0000 size $000E
+00000000: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000002: 205F           ' _'              MOVEA.L    (A7)+,A0
+00000004: 201F           ' .'              MOVE.L     (A7)+,D0
+00000006: 2F09           '/.'              MOVE.L     A1,-(A7)
+00000008: 4267           'Bg'              CLR.W      -(A7)
+0000000A: A9EE           '..'              _DECSTR68K                      ; A9EE
+0000000C: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   NUMTOSTRING ended due to: ran into next module, 2 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: HOPENDF [A8800, A8848)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 218
+                 218: HOPENDF
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="HOPENDF"(218) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 72
+
+Content:             Flags $08
+Contents offset $0000 size $0048
+00000000: 4E56 FF86      'NV..'            LINK.W     A6,#-$007A
+00000004: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000006: 3D6E 0016 FF9C '=n....'          MOVE.W     $0016(A6),-$0064(A6)
+0000000C: 2D6E 0012 FFB6 '-n....'          MOVE.L     $0012(A6),-$004A(A6)
+00000012: 2D6E 000E FF98 '-n....'          MOVE.L     $000E(A6),-$0068(A6)
+00000018: 422E FFA0      'B...'            CLR.B      -$0060(A6)
+0000001C: 1D6E 000C FFA1 '.n....'          MOVE.B     $000C(A6),-$005F(A6)
+00000022: 7000           'p.'              MOVEQ      #$00,D0
+00000024: 2D40 FFA2      '-@..'            MOVE.L     D0,-$005E(A6)
+00000028: 41EE FF86      'A...'            LEA        -$007A(A6),A0
+0000002C: 701A           'p.'              MOVEQ      #$1A,D0
+0000002E: A260           '.`'              _HFSDispatch                      ; A260
+00000030: 3E00           '>.'              MOVE.W     D0,D7
+00000032: 206E 0008      ' n..'            MOVEA.L    $0008(A6),A0
+00000036: 30AE FF9E      '0...'            MOVE.W     -$0062(A6),(A0)
+0000003A: 3D47 0018      '=G..'            MOVE.W     D7,$0018(A6)
+0000003E: 2E2E FF82      '....'            MOVE.L     -$007E(A6),D7
+00000042: 4E5E           'N^'              UNLK       A6
+00000044: 4E74 0010      'Nt..'            RTD        #$0010
+
+Comment:    
+    
+   HOPENDF ended due to: ran into next module, 8 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: PTRTOHAND [A8850, A886C)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 219
+                 219: PTRTOHAND
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="PTRTOHAND"(219) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 28
+
+Content:             Flags $08
+Contents offset $0000 size $001C
+00000000: 206F 000C      ' o..'            MOVEA.L    $000C(A7),A0
+00000004: 202F 0004      ' /..'            MOVE.L     $0004(A7),D0
+00000008: A9E3           '..'              _PtrToHand                      ; A9E3
+0000000A: 3F40 0010      '?@..'            MOVE.W     D0,$0010(A7)
+0000000E: 226F 0008      '"o..'            MOVEA.L    $0008(A7),A1
+00000012: 2288           '".'              MOVE.L     A0,(A1)
+00000014: 205F           ' _'              MOVEA.L    (A7)+,A0
+00000016: 4FEF 000C      'O...'            LEA        $000C(A7),A7
+0000001A: 4ED0           'N.'              JMP        (A0)
+
+Comment:    
+    
+   PTRTOHAND ended due to: ran into next module, 4 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: TEFROMSCRAP [A8870, A88C6)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 220
+                 220: TEFROMSCRAP
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="TEFROMSCRAP"(220) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 86
+
+Content:             Flags $08
+Contents offset $0000 size $0056
+00000000: 42A7           'B.'              CLR.L      -(A7)
+00000002: 594F           'YO'              SUBQ.W     #4,A7
+00000004: 42A7           'B.'              CLR.L      -(A7)
+00000006: 2F3C 5445 5854 '/<TEXT'          MOVE.L     #$54455854,-(A7)    ; 'TEXT'
+0000000C: 486F 000C      'Ho..'            PEA        $000C(A7)
+00000010: A9FD           '..'              _GetScrap                      ; A9FD
+00000012: 201F           ' .'              MOVE.L     (A7)+,D0
+00000014: 584F           'XO'              ADDQ.W     #4,A7
+00000016: 6B28           'k('              BMI.S      *+$002A             ; 00000040
+00000018: 0C80 0000 7D01 '....}.'          CMPI.L     #$00007D01,D0
+0000001E: 6506           'e.'              BCS.S      *+$0008             ; 00000026
+00000020: 303C FE0B      '0<..'            MOVE.W     #$FE0B,D0
+00000024: 601A           '`.'              BRA.S      *+$001C             ; 00000040
+00000026: 42A7           'B.'              CLR.L      -(A7)
+00000028: 594F           'YO'              SUBQ.W     #4,A7
+0000002A: 2F38 0AB4      '/8..'            MOVE.L     $0AB4,-(A7)
+0000002E: 2F3C 5445 5854 '/<TEXT'          MOVE.L     #$54455854,-(A7)    ; 'TEXT'
+00000034: 486F 000C      'Ho..'            PEA        $000C(A7)
+00000038: A9FD           '..'              _GetScrap                      ; A9FD
+0000003A: 201F           ' .'              MOVE.L     (A7)+,D0
+0000003C: 584F           'XO'              ADDQ.W     #4,A7
+0000003E: 6A06           'j.'              BPL.S      *+$0008             ; 00000046
+00000040: 4278 0AB0      'Bx..'            CLR.W      $0AB0
+00000044: 600A           '`.'              BRA.S      *+$000C             ; 00000050
+00000046: 426F 0004      'Bo..'            CLR.W      $0004(A7)
+0000004A: 31C0 0AB0      '1...'            MOVE.W     D0,$0AB0
+0000004E: 7000           'p.'              MOVEQ      #$00,D0
+00000050: 3F40 0004      '?@..'            MOVE.W     D0,$0004(A7)
+00000054: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   TEFROMSCRAP ended due to: ran into next module, 10 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: TETOSCRAP [A88D0, A88F6)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 221
+                 221: TETOSCRAP
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="TETOSCRAP"(221) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 38
+
+Content:             Flags $08
+Contents offset $0000 size $0026
+00000000: 2078 0AB4      ' x..'            MOVEA.L    $0AB4,A0
+00000004: A029           '.)'              _HLock                         ; A029
+00000006: 594F           'YO'              SUBQ.W     #4,A7
+00000008: 3F38 0AB0      '?8..'            MOVE.W     $0AB0,-(A7)
+0000000C: 4267           'Bg'              CLR.W      -(A7)
+0000000E: 2F3C 5445 5854 '/<TEXT'          MOVE.L     #$54455854,-(A7)    ; 'TEXT'
+00000014: 2F10           '/.'              MOVE.L     (A0),-(A7)
+00000016: A9FE           '..'              _PutScrap                      ; A9FE
+00000018: 544F           'TO'              ADDQ.W     #2,A7
+0000001A: 3F5F 0004      '?_..'            MOVE.W     (A7)+,$0004(A7)
+0000001E: 2078 0AB4      ' x..'            MOVEA.L    $0AB4,A0
+00000022: A02A           '.*'              _HUnlock                       ; A02A
+00000024: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   TETOSCRAP ended due to: ran into next module, 10 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: GETINDSTRING [A8900, A8946)
+   
+   Module started due to: MOD directive
+
+
+Dictionary:          Flags $00 FirstId 222
+                 222: GETINDSTRING
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="GETINDSTRING"(222) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 70
+
+Content:             Flags $08
+Contents offset $0000 size $0046
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 594F           'YO'              SUBQ.W     #4,A7
+00000006: 2F3C 5354 5223 '/<STR#'          MOVE.L     #$53545223,-(A7)    ; 'STR#'
+0000000C: 3F2E 000A      '?...'            MOVE.W     $000A(A6),-(A7)
+00000010: A9A0           '..'              _GetResource                      ; A9A0
+00000012: 226E 000C      '"n..'            MOVEA.L    $000C(A6),A1
+00000016: 4211           'B.'              CLR.B      (A1)
+00000018: 201F           ' .'              MOVE.L     (A7)+,D0
+0000001A: 6722           'g"'              BEQ.S      *+$0024             ; 0000003E
+0000001C: 2040           ' @'              MOVEA.L    D0,A0
+0000001E: 2050           ' P'              MOVEA.L    (A0),A0
+00000020: 3018           '0.'              MOVE.W     (A0)+,D0
+00000022: 322E 0008      '2...'            MOVE.W     $0008(A6),D1
+00000026: 6716           'g.'              BEQ.S      *+$0018             ; 0000003E
+00000028: B240           '.@'              CMP.W      D0,D1
+0000002A: 6212           'b.'              BHI.S      *+$0014             ; 0000003E
+0000002C: 7000           'p.'              MOVEQ      #$00,D0
+0000002E: 5341           'SA'              SUBQ.W     #1,D1
+00000030: 6706           'g.'              BEQ.S      *+$0008             ; 00000038
+00000032: 1018           '..'              MOVE.B     (A0)+,D0
+00000034: D1C0           '..'              ADDA.L     D0,A0
+00000036: 60F6           '`.'              BRA.S      *-$0008             ; 0000002E
+00000038: 1010           '..'              MOVE.B     (A0),D0
+0000003A: 5240           'R@'              ADDQ.W     #1,D0
+0000003C: A22E           '..'              _BlockMoveData                      ; A22E
+0000003E: 4E5E           'N^'              UNLK       A6
+00000040: 205F           ' _'              MOVEA.L    (A7)+,A0
+00000042: 508F           'P.'              ADDQ.L     #8,A7
+00000044: 4ED0           'N.'              JMP        (A0)
+
+Comment:    
+    
+   GETINDSTRING ended due to: ran into next module, 10 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: NATPASCALLS [A8950, A8AF4)
+   
+   Module started due to: MOD directive
+   
+   +0 (A8950): OPENXPP
+   
+   +26 (A8976): LAPADDATQ
+   
+   +2E (A897E): LAPRMVATQ
+   
+   +3E (A898E): PATTACHPH
+   
+   +46 (A8996): PDETACHPH
+   
+   +4E (A899E): PWRITELAP
+   
+   +56 (A89A6): POPENSKT
+   
+   +5E (A89AE): PCLOSESKT
+   
+   +66 (A89B6): PWRITEDDP
+   
+   +6E (A89BE): PREGISTERNAME
+   
+   +74 (A89C4): PLOOKUPNAME
+   
+   +7A (A89CA): PCONFIRMNAME
+   
+   +80 (A89D0): PREMOVENAME
+   
+   +86 (A89D6): PSETSELFSEND
+   
+   +8C (A89DC): PKILLNBP
+   
+   +92 (A89E2): PGETAPPLETALKINFO
+   
+   +98 (A89E8): PATALKCLOSEPREP
+   
+   +9E (A89EE): POPENATPSKT
+   
+   +A4 (A89F4): PCLOSEATPSKT
+   
+   +AA (A89FA): PSENDREQUEST
+   
+   +B0 (A8A00): PGETREQUEST
+   
+   +B6 (A8A06): PSENDRESPONSE
+   
+   +BC (A8A0C): PADDRESPONSE
+   
+   +C2 (A8A12): PRELTCB
+   
+   +C8 (A8A18): PRELRSPCB
+   
+   +CE (A8A1E): PNSENDREQUEST
+   
+   +D4 (A8A24): PKILLSENDREQ
+   
+   +DA (A8A2A): PKILLGETREQ
+   
+   +E0 (A8A30): ATPKILLALLGETREQ
+   
+   +FC (A8A4C): ASPOPENSESSION
+   
+   +102 (A8A52): ASPCLOSESESSION
+   
+   +108 (A8A58): ASPABORTOS
+   
+   +10E (A8A5E): ASPGETPARMS
+   
+   +114 (A8A64): ASPCLOSEALL
+   
+   +11A (A8A6A): ASPUSERWRITE
+   
+   +120 (A8A70): ASPUSERCOMMAND
+   
+   +126 (A8A76): ASPGETSTATUS
+   
+   +12C (A8A7C): AFPCOMMAND
+   
+   +132 (A8A82): GETLOCALZONES
+   
+   +13C (A8A8C): GETZONELIST
+   
+   +146 (A8A96): GETMYZONE
+
+
+Dictionary:          Flags $00 FirstId 223
+                 223: NATPASCALLS
+                 224: OPENXPP
+                 225: LAPADDATQ
+                 226: LAPRMVATQ
+                 227: PATTACHPH
+                 228: PDETACHPH
+                 229: PWRITELAP
+                 230: POPENSKT
+                 231: PCLOSESKT
+                 232: PWRITEDDP
+                 233: PREGISTERNAME
+                 234: PLOOKUPNAME
+                 235: PCONFIRMNAME
+                 236: PREMOVENAME
+                 237: PSETSELFSEND
+                 238: PKILLNBP
+                 239: PGETAPPLETALKINFO
+                 240: PATALKCLOSEPREP
+                 241: POPENATPSKT
+                 242: PCLOSEATPSKT
+                 243: PSENDREQUEST
+                 244: PGETREQUEST
+                 245: PSENDRESPONSE
+                 246: PADDRESPONSE
+                 247: PRELTCB
+                 248: PRELRSPCB
+                 249: PNSENDREQUEST
+                 250: PKILLSENDREQ
+                 251: PKILLGETREQ
+                 252: ATPKILLALLGETREQ
+                 253: ASPOPENSESSION
+                 254: ASPCLOSESESSION
+                 255: ASPABORTOS
+                 256: ASPGETPARMS
+                 257: ASPCLOSEALL
+                 258: ASPUSERWRITE
+                 259: ASPUSERCOMMAND
+                 260: ASPGETSTATUS
+                 261: AFPCOMMAND
+                 262: GETLOCALZONES
+                 263: GETZONELIST
+                 264: GETMYZONE
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="NATPASCALLS"(223) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 420
+
+Content:             Flags $08
+Contents offset $0000 size $01A4
+00000000: 9EFC 0032      '...2'            SUBA.W     #$0032,A7
+00000004: 204F           ' O'              MOVEA.L    A7,A0
+00000006: 43FA 0182      'C...'            LEA        *+$0184,A1          ; 0000018A
+0000000A: 2149 0012      '!I..'            MOVE.L     A1,$0012(A0)
+0000000E: 4228 001B      'B(..'            CLR.B      $001B(A0)
+00000012: A000           '..'              _Open                          ; A000
+00000014: 3228 0018      '2(..'            MOVE.W     $0018(A0),D1
+00000018: 4FEF 0032      'O..2'            LEA        $0032(A7),A7
+0000001C: 205F           ' _'              MOVEA.L    (A7)+,A0
+0000001E: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000020: 3281           '2.'              MOVE.W     D1,(A1)
+00000022: 3E80           '>.'              MOVE.W     D0,(A7)
+00000024: 4ED0           'N.'              JMP        (A0)
+00000026: 303C 0017      '0<..'            MOVE.W     #$0017,D0
+0000002A: 6000 0164      '`..d'            BRA        *+$0166             ; 00000190
+0000002E: 303C 0018      '0<..'            MOVE.W     #$0018,D0
+00000032: 6000 015C      '`..\'            BRA        *+$015E             ; 00000190
+00000036: 303C 0019      '0<..'            MOVE.W     #$0019,D0
+0000003A: 6000 0154      '`..T'            BRA        *+$0156             ; 00000190
+0000003E: 303C 00F5      '0<..'            MOVE.W     #$00F5,D0
+00000042: 6000 00AC      '`...'            BRA        *+$00AE             ; 000000F0
+00000046: 303C 00F4      '0<..'            MOVE.W     #$00F4,D0
+0000004A: 6000 00A4      '`...'            BRA        *+$00A6             ; 000000F0
+0000004E: 303C 00F3      '0<..'            MOVE.W     #$00F3,D0
+00000052: 6000 009C      '`...'            BRA        *+$009E             ; 000000F0
+00000056: 303C 00F8      '0<..'            MOVE.W     #$00F8,D0
+0000005A: 6000 0094      '`...'            BRA        *+$0096             ; 000000F0
+0000005E: 303C 00F7      '0<..'            MOVE.W     #$00F7,D0
+00000062: 6000 008C      '`...'            BRA        *+$008E             ; 000000F0
+00000066: 303C 00F6      '0<..'            MOVE.W     #$00F6,D0
+0000006A: 6000 0084      '`...'            BRA        *+$0086             ; 000000F0
+0000006E: 303C 00FD      '0<..'            MOVE.W     #$00FD,D0
+00000072: 607C           '`|'              BRA.S      *+$007E             ; 000000F0
+00000074: 303C 00FB      '0<..'            MOVE.W     #$00FB,D0
+00000078: 6076           '`v'              BRA.S      *+$0078             ; 000000F0
+0000007A: 303C 00FA      '0<..'            MOVE.W     #$00FA,D0
+0000007E: 6070           '`p'              BRA.S      *+$0072             ; 000000F0
+00000080: 303C 00FC      '0<..'            MOVE.W     #$00FC,D0
+00000084: 606A           '`j'              BRA.S      *+$006C             ; 000000F0
+00000086: 303C 0100      '0<..'            MOVE.W     #$0100,D0
+0000008A: 6064           '`d'              BRA.S      *+$0066             ; 000000F0
+0000008C: 303C 00FE      '0<..'            MOVE.W     #$00FE,D0
+00000090: 605E           '`^'              BRA.S      *+$0060             ; 000000F0
+00000092: 303C 0102      '0<..'            MOVE.W     #$0102,D0
+00000096: 6058           '`X'              BRA.S      *+$005A             ; 000000F0
+00000098: 303C 0103      '0<..'            MOVE.W     #$0103,D0
+0000009C: 6052           '`R'              BRA.S      *+$0054             ; 000000F0
+0000009E: 303C 00FE      '0<..'            MOVE.W     #$00FE,D0
+000000A2: 6040           '`@'              BRA.S      *+$0042             ; 000000E4
+000000A4: 303C 00FA      '0<..'            MOVE.W     #$00FA,D0
+000000A8: 603A           '`:'              BRA.S      *+$003C             ; 000000E4
+000000AA: 303C 00FF      '0<..'            MOVE.W     #$00FF,D0
+000000AE: 6034           '`4'              BRA.S      *+$0036             ; 000000E4
+000000B0: 303C 00FD      '0<..'            MOVE.W     #$00FD,D0
+000000B4: 602E           '`.'              BRA.S      *+$0030             ; 000000E4
+000000B6: 303C 00FC      '0<..'            MOVE.W     #$00FC,D0
+000000BA: 6028           '`('              BRA.S      *+$002A             ; 000000E4
+000000BC: 303C 00FB      '0<..'            MOVE.W     #$00FB,D0
+000000C0: 6022           '`"'              BRA.S      *+$0024             ; 000000E4
+000000C2: 303C 0100      '0<..'            MOVE.W     #$0100,D0
+000000C6: 601C           '`.'              BRA.S      *+$001E             ; 000000E4
+000000C8: 303C 00F9      '0<..'            MOVE.W     #$00F9,D0
+000000CC: 6016           '`.'              BRA.S      *+$0018             ; 000000E4
+000000CE: 303C 00F8      '0<..'            MOVE.W     #$00F8,D0
+000000D2: 6010           '`.'              BRA.S      *+$0012             ; 000000E4
+000000D4: 303C 0102      '0<..'            MOVE.W     #$0102,D0
+000000D8: 600A           '`.'              BRA.S      *+$000C             ; 000000E4
+000000DA: 303C 0101      '0<..'            MOVE.W     #$0101,D0
+000000DE: 6004           '`.'              BRA.S      *+$0006             ; 000000E4
+000000E0: 303C 0103      '0<..'            MOVE.W     #$0103,D0
+000000E4: 206F 0006      ' o..'            MOVEA.L    $0006(A7),A0
+000000E8: 317C FFF5 0018 '1|....'          MOVE.W     #$FFF5,$0018(A0)
+000000EE: 6060           '``'              BRA.S      *+$0062             ; 00000150
+000000F0: 206F 0006      ' o..'            MOVEA.L    $0006(A7),A0
+000000F4: 317C FFF6 0018 '1|....'          MOVE.W     #$FFF6,$0018(A0)
+000000FA: 6054           '`T'              BRA.S      *+$0056             ; 00000150
+000000FC: 303C 00FF      '0<..'            MOVE.W     #$00FF,D0
+00000100: 604E           '`N'              BRA.S      *+$0050             ; 00000150
+00000102: 303C 00FE      '0<..'            MOVE.W     #$00FE,D0
+00000106: 6048           '`H'              BRA.S      *+$004A             ; 00000150
+00000108: 303C 00F8      '0<..'            MOVE.W     #$00F8,D0
+0000010C: 6042           '`B'              BRA.S      *+$0044             ; 00000150
+0000010E: 303C 00F9      '0<..'            MOVE.W     #$00F9,D0
+00000112: 603C           '`<'              BRA.S      *+$003E             ; 00000150
+00000114: 303C 00F7      '0<..'            MOVE.W     #$00F7,D0
+00000118: 6036           '`6'              BRA.S      *+$0038             ; 00000150
+0000011A: 303C 00FC      '0<..'            MOVE.W     #$00FC,D0
+0000011E: 6030           '`0'              BRA.S      *+$0032             ; 00000150
+00000120: 303C 00FD      '0<..'            MOVE.W     #$00FD,D0
+00000124: 602A           '`*'              BRA.S      *+$002C             ; 00000150
+00000126: 303C 00FB      '0<..'            MOVE.W     #$00FB,D0
+0000012A: 6024           '`$'              BRA.S      *+$0026             ; 00000150
+0000012C: 303C 00FA      '0<..'            MOVE.W     #$00FA,D0
+00000130: 601E           '`.'              BRA.S      *+$0020             ; 00000150
+00000132: 303C 00F6      '0<..'            MOVE.W     #$00F6,D0
+00000136: 343C 0005      '4<..'            MOVE.W     #$0005,D2
+0000013A: 602C           '`,'              BRA.S      *+$002E             ; 00000168
+0000013C: 303C 00F6      '0<..'            MOVE.W     #$00F6,D0
+00000140: 343C 0006      '4<..'            MOVE.W     #$0006,D2
+00000144: 6022           '`"'              BRA.S      *+$0024             ; 00000168
+00000146: 303C 00F6      '0<..'            MOVE.W     #$00F6,D0
+0000014A: 343C 0007      '4<..'            MOVE.W     #$0007,D2
+0000014E: 6018           '`.'              BRA.S      *+$001A             ; 00000168
+00000150: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000152: 121F           '..'              MOVE.B     (A7)+,D1
+00000154: 205F           ' _'              MOVEA.L    (A7)+,A0
+00000156: 3140 001A      '1@..'            MOVE.W     D0,$001A(A0)
+0000015A: 4A01           'J.'              TST.B      D1
+0000015C: 6604           'f.'              BNE.S      *+$0006             ; 00000162
+0000015E: A004           '..'              _Control                       ; A004
+00000160: 6002           '`.'              BRA.S      *+$0004             ; 00000164
+00000162: A404           '..'              _Control   ,Sys                ; A404
+00000164: 3E80           '>.'              MOVE.W     D0,(A7)
+00000166: 4ED1           'N.'              JMP        (A1)
+00000168: 225F           '"_'              MOVEA.L    (A7)+,A1
+0000016A: 121F           '..'              MOVE.B     (A7)+,D1
+0000016C: 205F           ' _'              MOVEA.L    (A7)+,A0
+0000016E: 3142 001C      '1B..'            MOVE.W     D2,$001C(A0)
+00000172: 317C FFD7 0018 '1|....'          MOVE.W     #$FFD7,$0018(A0)
+00000178: 3140 001A      '1@..'            MOVE.W     D0,$001A(A0)
+0000017C: 4A01           'J.'              TST.B      D1
+0000017E: 6604           'f.'              BNE.S      *+$0006             ; 00000184
+00000180: A004           '..'              _Control                       ; A004
+00000182: 6002           '`.'              BRA.S      *+$0004             ; 00000186
+00000184: A404           '..'              _Control   ,Sys                ; A404
+00000186: 3E80           '>.'              MOVE.W     D0,(A7)
+00000188: 4ED1           'N.'              JMP        (A1)
+0000018A: 042E 5850 5000 '..XPP.'          SUBI.B     #$50,$5000(A6)      ; 'P'
+00000190: 206F 0004      ' o..'            MOVEA.L    $0004(A7),A0
+00000194: 2278 0B18      '"x..'            MOVEA.L    $0B18,A1
+00000198: 2E9F           '..'              MOVE.L     (A7)+,(A7)
+0000019A: 4EA9 0002      'N...'            JSR        $0002(A1)
+0000019E: 205F           ' _'              MOVEA.L    (A7)+,A0
+000001A0: 3F00           '?.'              MOVE.W     D0,-(A7)
+000001A2: 4ED0           'N.'              JMP        (A0)
+
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0000 Entry="OPENXPP"(224)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0026 Entry="LAPADDATQ"(225)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$002E Entry="LAPRMVATQ"(226)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$003E Entry="PATTACHPH"(227)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0046 Entry="PDETACHPH"(228)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$004E Entry="PWRITELAP"(229)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0056 Entry="POPENSKT"(230)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$005E Entry="PCLOSESKT"(231)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0066 Entry="PWRITEDDP"(232)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$006E Entry="PREGISTERNAME"(233)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0074 Entry="PLOOKUPNAME"(234)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$007A Entry="PCONFIRMNAME"(235)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0080 Entry="PREMOVENAME"(236)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0086 Entry="PSETSELFSEND"(237)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$008C Entry="PKILLNBP"(238)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0092 Entry="PGETAPPLETALKINFO"(239)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0098 Entry="PATALKCLOSEPREP"(240)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$009E Entry="POPENATPSKT"(241)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00A4 Entry="PCLOSEATPSKT"(242)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00AA Entry="PSENDREQUEST"(243)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00B0 Entry="PGETREQUEST"(244)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00B6 Entry="PSENDRESPONSE"(245)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00BC Entry="PADDRESPONSE"(246)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00C2 Entry="PRELTCB"(247)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00C8 Entry="PRELRSPCB"(248)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00CE Entry="PNSENDREQUEST"(249)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00D4 Entry="PKILLSENDREQ"(250)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00DA Entry="PKILLGETREQ"(251)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00E0 Entry="ATPKILLALLGETREQ"(252)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$00FC Entry="ASPOPENSESSION"(253)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0102 Entry="ASPCLOSESESSION"(254)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0108 Entry="ASPABORTOS"(255)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$010E Entry="ASPGETPARMS"(256)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0114 Entry="ASPCLOSEALL"(257)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$011A Entry="ASPUSERWRITE"(258)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0120 Entry="ASPUSERCOMMAND"(259)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0126 Entry="ASPGETSTATUS"(260)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$012C Entry="AFPCOMMAND"(261)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0132 Entry="GETLOCALZONES"(262)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$013C Entry="GETZONELIST"(263)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0146 Entry="GETMYZONE"(264)
+Comment:    
+    
+   NATPASCALLS ended due to: ran into next module, 12 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: NBPSETENTITY [A8B00, A8B38)
+   
+   Module started due to: MOD directive
+
+
+Dictionary:          Flags $00 FirstId 265
+                 265: NBPSETENTITY
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="NBPSETENTITY"(265) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 56
+
+Content:             Flags $08
+Contents offset $0000 size $0038
+00000000: 48E7 80C0      'H...'            MOVEM.L    D0/A0/A1,-(A7)
+00000004: 701C           'p.'              MOVEQ      #$1C,D0
+00000006: 611A           'a.'              BSR.S      *+$001C             ; 00000022
+00000008: 303C 0018      '0<..'            MOVE.W     #$0018,D0
+0000000C: 6114           'a.'              BSR.S      *+$0016             ; 00000022
+0000000E: 303C 0014      '0<..'            MOVE.W     #$0014,D0
+00000012: 610E           'a.'              BSR.S      *+$0010             ; 00000022
+00000014: 4CDF 0301      'L...'            MOVEM.L    (A7)+,D0/A0/A1
+00000018: 2F57 0010      '/W..'            MOVE.L     (A7),$0010(A7)
+0000001C: DEFC 0010      '....'            ADDA.W     #$0010,A7
+00000020: 4E75           'Nu'              RTS        
+00000022: 2077 0000      ' w..'            MOVEA.L    $00(A7,D0.W),A0
+00000026: 7000           'p.'              MOVEQ      #$00,D0
+00000028: 1010           '..'              MOVE.B     (A0),D0
+0000002A: 5280           'R.'              ADDQ.L     #1,D0
+0000002C: 226F 0020      '"o. '            MOVEA.L    $0020(A7),A1
+00000030: D1AF 0020      '... '            ADD.L      D0,$0020(A7)
+00000034: A22E           '..'              _BlockMoveData                      ; A22E
+00000036: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   NBPSETENTITY ended due to: ran into next module, 8 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: GETBRIDGEADDRESS [A8B40, A8B62)
+   
+   Module started due to: MOD directive
+
+
+Dictionary:          Flags $00 FirstId 266
+                 266: GETBRIDGEADDRESS
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="GETBRIDGEADDRESS"(266) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 34
+
+Content:             Flags $08
+Contents offset $0000 size $0022
+00000000: 2F08           '/.'              MOVE.L     A0,-(A7)
+00000002: 426F 0008      'Bo..'            CLR.W      $0008(A7)
+00000006: 2038 02D8      ' 8..'            MOVE.L     $02D8,D0
+0000000A: 0C80 FFFF FFFF '......'          CMPI.L     #$FFFFFFFF,D0
+00000010: 670C           'g.'              BEQ.S      *+$000E             ; 0000001E
+00000012: 4A80           'J.'              TST.L      D0
+00000014: 6708           'g.'              BEQ.S      *+$000A             ; 0000001E
+00000016: 2040           ' @'              MOVEA.L    D0,A0
+00000018: 1F68 0019 0009 '.h....'          MOVE.B     $0019(A0),$0009(A7)
+0000001E: 205F           ' _'              MOVEA.L    (A7)+,A0
+00000020: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   GETBRIDGEADDRESS ended due to: ran into next module, 14 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: LISTEL1 [A8B70, A8C60)
+   
+   Module started due to: MOD directive
+   
+   +4 (A8B74): MYHNDLRTABLE
+   
+   +1C (A8B8C): THESOCKETTABLE
+   
+   +64 (A8BD4): SAVEAREA
+   
+   +6A (A8BDA): TMPHANDLER
+   
+   +6E (A8BDE): MYRHALEN
+   
+   +70 (A8BE0): TMPHNDLRENTRY
+   
+   +72 (A8BE2): RETADDR
+   
+   +76 (A8BE6): RETURNADDR
+   
+   +7A (A8BEA): SKTQELLIST
+   
+   +7E (A8BEE): MPPNAME
+   
+   +84 (A8BF4): ATPNAME
+   
+   +8A (A8BFA): NBPLOADSTATUS
+   
+   +8C (A8BFC): TMPENTITYNAME 
+
+
+Dictionary:          Flags $00 FirstId 267
+                 267: LISTEL1
+                 268: MYHNDLRTABLE
+                 269: THESOCKETTABLE
+                 270: SAVEAREA
+                 271: TMPHANDLER
+                 272: MYRHALEN
+                 273: TMPHNDLRENTRY
+                 274: RETADDR
+                 275: RETURNADDR
+                 276: SKTQELLIST
+                 277: MPPNAME
+                 278: ATPNAME
+                 279: NBPLOADSTATUS
+                 280: TMPENTITYNAME
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="LISTEL1"(267) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 240
+
+Content:             Flags $08
+Contents offset $0000 size $00F0
+00000000: 0000 0000      '....'            ORI.B      #$00,D0
+00000004: 0000 0000      '....'            ORI.B      #$00,D0
+00000008: 0000 0000      '....'            ORI.B      #$00,D0
+0000000C: 0000 0000      '....'            ORI.B      #$00,D0
+00000010: 0000 0000      '....'            ORI.B      #$00,D0
+00000014: 0000 0000      '....'            ORI.B      #$00,D0
+00000018: 0000 0000      '....'            ORI.B      #$00,D0
+0000001C: 0000 0000      '....'            ORI.B      #$00,D0
+00000020: 0000 0000      '....'            ORI.B      #$00,D0
+00000024: 0000 0000      '....'            ORI.B      #$00,D0
+00000028: 0000 0000      '....'            ORI.B      #$00,D0
+0000002C: 0000 0000      '....'            ORI.B      #$00,D0
+00000030: 0000 0000      '....'            ORI.B      #$00,D0
+00000034: 0000 0000      '....'            ORI.B      #$00,D0
+00000038: 0000 0000      '....'            ORI.B      #$00,D0
+0000003C: 0000 0000      '....'            ORI.B      #$00,D0
+00000040: 0000 0000      '....'            ORI.B      #$00,D0
+00000044: 0000 0000      '....'            ORI.B      #$00,D0
+00000048: 0000 0000      '....'            ORI.B      #$00,D0
+0000004C: 0000 0000      '....'            ORI.B      #$00,D0
+00000050: 0000 0000      '....'            ORI.B      #$00,D0
+00000054: 0000 0000      '....'            ORI.B      #$00,D0
+00000058: 0000 0000      '....'            ORI.B      #$00,D0
+0000005C: 0000 0000      '....'            ORI.B      #$00,D0
+00000060: 0000 0000      '....'            ORI.B      #$00,D0
+00000064: 0000 0000      '....'            ORI.B      #$00,D0
+00000068: 0000 0000      '....'            ORI.B      #$00,D0
+0000006C: 0000 0000      '....'            ORI.B      #$00,D0
+00000070: 0000 0000      '....'            ORI.B      #$00,D0
+00000074: 0000 0000      '....'            ORI.B      #$00,D0
+00000078: 0000 0000      '....'            ORI.B      #$00,D0
+0000007C: 0000 042E      '....'            ORI.B      #$2E,D0             ; '.'
+00000080: 4D50           'MP'              DC.W       $4D50               ; ????
+00000082: 5020           'P '              ADDQ.B     #8,-(A0)
+00000084: 042E 4154 5020 '..ATP '          SUBI.B     #$54,$5020(A6)      ; 'T'
+0000008A: 0000 0000      '....'            ORI.B      #$00,D0
+0000008E: 0000 0000      '....'            ORI.B      #$00,D0
+00000092: 0000 0000      '....'            ORI.B      #$00,D0
+00000096: 0000 0000      '....'            ORI.B      #$00,D0
+0000009A: 0000 0000      '....'            ORI.B      #$00,D0
+0000009E: 0000 0000      '....'            ORI.B      #$00,D0
+000000A2: 0000 0000      '....'            ORI.B      #$00,D0
+000000A6: 0000 0000      '....'            ORI.B      #$00,D0
+000000AA: 0000 0000      '....'            ORI.B      #$00,D0
+000000AE: 0000 0000      '....'            ORI.B      #$00,D0
+000000B2: 0000 0000      '....'            ORI.B      #$00,D0
+000000B6: 0000 0000      '....'            ORI.B      #$00,D0
+000000BA: 0000 0000      '....'            ORI.B      #$00,D0
+000000BE: 0000 0000      '....'            ORI.B      #$00,D0
+000000C2: 0000 0000      '....'            ORI.B      #$00,D0
+000000C6: 0000 0000      '....'            ORI.B      #$00,D0
+000000CA: 0000 0000      '....'            ORI.B      #$00,D0
+000000CE: 0000 0000      '....'            ORI.B      #$00,D0
+000000D2: 0000 0000      '....'            ORI.B      #$00,D0
+000000D6: 0000 0000      '....'            ORI.B      #$00,D0
+000000DA: 0000 0000      '....'            ORI.B      #$00,D0
+000000DE: 0000 0000      '....'            ORI.B      #$00,D0
+000000E2: 0000 0000      '....'            ORI.B      #$00,D0
+000000E6: 0000 0000      '....'            ORI.B      #$00,D0
+000000EA: 0000 0000      '....'            ORI.B      #$00,D0
+000000EE: 0000           '..'              DC.W       $0000 
+
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0004 Entry="MYHNDLRTABLE"(268)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$001C Entry="THESOCKETTABLE"(269)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0064 Entry="SAVEAREA"(270)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$006A Entry="TMPHANDLER"(271)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$006E Entry="MYRHALEN"(272)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0070 Entry="TMPHNDLRENTRY"(273)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0072 Entry="RETADDR"(274)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0076 Entry="RETURNADDR"(275)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$007A Entry="SKTQELLIST"(276)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$007E Entry="MPPNAME"(277)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0084 Entry="ATPNAME"(278)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$008A Entry="NBPLOADSTATUS"(279)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$008C Entry="TMPENTITYNAME"(280)
+Comment:    
+    
+   LISTEL1 ended due to: ran into next module
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: REMOVEHDLBLKS [A8C60, A8C88)
+   
+   Module started due to: MOD directive
+   
+   Resolved outgoing references:
+      +4 (A8C64): LEA LISTEL1, A1
+   
+   +0 (A8C60): REMOVEHDLBLOCKS 
+
+
+Dictionary:          Flags $00 FirstId 281
+                 281: REMOVEHDLBLKS
+                 282: REMOVEHDLBLOCKS
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="REMOVEHDLBLKS"(281) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 40
+
+Content:             Flags $08
+Contents offset $0000 size $0028
+00000000: 48E7 0060      'H..`'            MOVEM.L    A1/A2,-(A7)
+00000004: 43FA 0000      'C...'            LEA        LISTEL1,A1          ; id: 267
+00000008: 40E7           '@.'              MOVE       SR,-(A7)
+0000000A: 007C 0600      '.|..'            ORI.W      #$0600,SR
+0000000E: 2051           ' Q'              MOVEA.L    (A1),A0
+00000010: 2450           '$P'              MOVEA.L    (A0),A2
+00000012: 2008           ' .'              MOVE.L     A0,D0
+00000014: 6702           'g.'              BEQ.S      *+$0004             ; 00000018
+00000016: 2292           '".'              MOVE.L     (A2),(A1)
+00000018: 46DF           'F.'              MOVE       (A7)+,SR
+0000001A: 4A80           'J.'              TST.L      D0
+0000001C: 6704           'g.'              BEQ.S      *+$0006             ; 00000022
+0000001E: A023           '.#'              _DisposeHandle                      ; A023
+00000020: 60E6           '`.'              BRA.S      *-$0018             ; 00000008
+00000022: 4CDF 0600      'L...'            MOVEM.L    (A7)+,A1/A2
+00000026: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="LISTEL1"(267)
+                      00000006
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0000 Entry="REMOVEHDLBLOCKS"(282)
+Comment:    
+    
+   REMOVEHDLBLKS ended due to: ran into next module, 8 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: ISMPPOPEN [A8C90, A8CA8)
+   
+   Module started due to: MOD directive 
+
+
+Dictionary:          Flags $00 FirstId 283
+                 283: ISMPPOPEN
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="ISMPPOPEN"(283) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 24
+
+Content:             Flags $08
+Contents offset $0000 size $0018
+00000000: 7200           'r.'              MOVEQ      #$00,D1
+00000002: 1038 0291      '.8..'            MOVE.B     $0291,D0
+00000006: 6B0A           'k.'              BMI.S      *+$000C             ; 00000012
+00000008: 0200 000F      '....'            ANDI.B     #$0F,D0
+0000000C: 5300           'S.'              SUBQ.B     #1,D0
+0000000E: 6602           'f.'              BNE.S      *+$0004             ; 00000012
+00000010: 7201           'r.'              MOVEQ      #$01,D1
+00000012: 1F41 0004      '.A..'            MOVE.B     D1,$0004(A7)
+00000016: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   ISMPPOPEN ended due to: ran into next module, 8 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: GETNODEADDRESS [A8CB0, A8CDE)
+   
+   Module started due to: MOD directive
+   
+   Resolved outgoing references:
+      +4 (A8CB4): JSR ISMPPOPEN 
+
+
+Dictionary:          Flags $00 FirstId 284
+                 284: GETNODEADDRESS
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="GETNODEADDRESS"(284) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 46
+
+Content:             Flags $08
+Contents offset $0000 size $002E
+00000000: 241F           '$.'              MOVE.L     (A7)+,D2
+00000002: 4267           'Bg'              CLR.W      -(A7)
+00000004: 4EBA 0000      'N...'            JSR        ISMPPOPEN           ; id: 283
+00000008: 4A1F           'J.'              TST.B      (A7)+
+0000000A: 6608           'f.'              BNE.S      *+$000A             ; 00000014
+0000000C: 303C F3E2      '0<..'            MOVE.W     #$F3E2,D0
+00000010: 504F           'PO'              ADDQ.W     #8,A7
+00000012: 6014           '`.'              BRA.S      *+$0016             ; 00000028
+00000014: 2078 02D8      ' x..'            MOVEA.L    $02D8,A0
+00000018: 225F           '"_'              MOVEA.L    (A7)+,A1
+0000001A: 32A8 001A      '2...'            MOVE.W     $001A(A0),(A1)
+0000001E: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000020: 4251           'BQ'              CLR.W      (A1)
+00000022: 1350 0001      '.P..'            MOVE.B     (A0),$0001(A1)
+00000026: 4240           'B@'              CLR.W      D0
+00000028: 3E80           '>.'              MOVE.W     D0,(A7)
+0000002A: 2242           '"B'              MOVEA.L    D2,A1
+0000002C: 4ED1           'N.'              JMP        (A1)
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="ISMPPOPEN"(283)
+                      00000006
+Comment:    
+    
+   GETNODEADDRESS ended due to: ran into next module, 2 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: NBPEXTRACT [A8CE0, A8D40)
+   
+   Module started due to: MOD directive
+   
+   Resolved outgoing references:
+      +0 (A8CE0): JSR REMOVEHDLBLKS 
+
+
+Dictionary:          Flags $00 FirstId 285
+                 285: NBPEXTRACT
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="NBPEXTRACT"(285) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 96
+
+Content:             Flags $08
+Contents offset $0000 size $0060
+00000000: 4EBA 0000      'N...'            JSR        REMOVEHDLBLKS       ; id: 281
+00000004: 41EF 000C      'A...'            LEA        $000C(A7),A0
+00000008: 343C F3E0      '4<..'            MOVE.W     #$F3E0,D2
+0000000C: 3218           '2.'              MOVE.W     (A0)+,D1
+0000000E: 6746           'gF'              BEQ.S      *+$0048             ; 00000056
+00000010: B258           '.X'              CMP.W      (A0)+,D1
+00000012: 6242           'bB'              BHI.S      *+$0044             ; 00000056
+00000014: 2250           '"P'              MOVEA.L    (A0),A1
+00000016: 5341           'SA'              SUBQ.W     #1,D1
+00000018: 6714           'g.'              BEQ.S      *+$0016             ; 0000002E
+0000001A: 5A49           'ZI'              ADDQ.W     #5,A1
+0000001C: 4242           'BB'              CLR.W      D2
+0000001E: 1411           '..'              MOVE.B     (A1),D2
+00000020: D431 2001      '.1 .'            ADD.B      $01(A1,D2.W),D2
+00000024: D431 2002      '.1 .'            ADD.B      $02(A1,D2.W),D2
+00000028: 5602           'V.'              ADDQ.B     #3,D2
+0000002A: D2C2           '..'              ADDA.W     D2,A1
+0000002C: 60E8           '`.'              BRA.S      *-$0016             ; 00000016
+0000002E: 206F 0004      ' o..'            MOVEA.L    $0004(A7),A0
+00000032: 10D9           '..'              MOVE.B     (A1)+,(A0)+
+00000034: 10D9           '..'              MOVE.B     (A1)+,(A0)+
+00000036: 10D9           '..'              MOVE.B     (A1)+,(A0)+
+00000038: 10D9           '..'              MOVE.B     (A1)+,(A0)+
+0000003A: 5249           'RI'              ADDQ.W     #1,A1
+0000003C: 7403           't.'              MOVEQ      #$03,D2
+0000003E: 202F 0008      ' /..'            MOVE.L     $0008(A7),D0
+00000042: 2040           ' @'              MOVEA.L    D0,A0
+00000044: 1211           '..'              MOVE.B     (A1),D1
+00000046: 10D9           '..'              MOVE.B     (A1)+,(A0)+
+00000048: 5301           'S.'              SUBQ.B     #1,D1
+0000004A: 64FA           'd.'              BCC.S      *-$0004             ; 00000046
+0000004C: 0680 0000 0022 '....."'          ADDI.L     #$00000022,D0
+00000052: 5342           'SB'              SUBQ.W     #1,D2
+00000054: 66EC           'f.'              BNE.S      *-$0012             ; 00000042
+00000056: 225F           '"_'              MOVEA.L    (A7)+,A1
+00000058: 4FEF 0010      'O...'            LEA        $0010(A7),A7
+0000005C: 3E82           '>.'              MOVE.W     D2,(A7)
+0000005E: 4ED1           'N.'              JMP        (A1)
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="REMOVEHDLBLKS"(281)
+                      00000002
+Comment:    
+    
+   NBPEXTRACT ended due to: end of FILE directive
+
+
+Last        
+Record Summary 
+Type Count
+   0 Pad                     15
+   1 First                    1
+   2 Last                     1
+   3 Comment                 59
+   4 Dictionary              30
+   5 Module                  29
+   6 EntryPoint              56
+   7 ModSize                 29
+   8 Content                 29
+   9 Reference                3

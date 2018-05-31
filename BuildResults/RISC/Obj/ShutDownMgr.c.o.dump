@@ -1,0 +1,1365 @@
+
+First:      Flags=$01 Version=$0002
+Comment:    
+    
+   UNLINKED FROM MAC OS ROM -- ELLIOT WAS HERE
+   [2CB90, 2D562) 
+
+
+Dictionary:          Flags $00 FirstId 200
+                 200: Main
+Pad         
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNCALLEE2CB90 [2CB90, 2CC16)
+   
+   Module started due to: vector glue above, FILE directive, MODGUESS (align, label, RTS then padding)
+   
+   Resolved outgoing references:
+      +16 (2CBA6): JSR GETDCTLENTRY ; outside file
+   
+   +0 (2CB90): SHUTDOWNMGRC_2CB90
+
+
+Dictionary:          Flags $00 FirstId 201
+                 201: SHUTDOWNCALLEE2CB90
+                 202: SHUTDOWNMGRC_2CB90
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNCALLEE2CB90"(201) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 134
+
+Content:             Flags $08
+Contents offset $0000 size $0086
+00000000: 4E56 FFCE      'NV..'            LINK.W     A6,#-$0032
+00000004: 48E7 0708      'H...'            MOVEM.L    D5-D7/A4,-(A7)
+00000008: 3C2E 000E      '<...'            MOVE.W     $000E(A6),D6
+0000000C: 2A2E 0008      '*...'            MOVE.L     $0008(A6),D5
+00000010: 4247           'BG'              CLR.W      D7
+00000012: 598F           'Y.'              SUBQ.L     #4,A7
+00000014: 3F06           '?.'              MOVE.W     D6,-(A7)
+00000016: 4EBA 0000      'N...'            JSR        GETDCTLENTRY        ; id: 203
+0000001A: 285F           '(_'              MOVEA.L    (A7)+,A4
+0000001C: 200C           ' .'              MOVE.L     A4,D0
+0000001E: 670A           'g.'              BEQ.S      *+$000C             ; 0000002A
+00000020: 2054           ' T'              MOVEA.L    (A4),A0
+00000022: 7020           'p '              MOVEQ      #$20,D0             ; ' '
+00000024: C068 0004      '.h..'            AND.W      $0004(A0),D0
+00000028: 6604           'f.'              BNE.S      *+$0006             ; 0000002E
+0000002A: 7E01           '~.'              MOVEQ      #$01,D7
+0000002C: 604C           '`L'              BRA.S      *+$004E             ; 0000007A
+0000002E: 2054           ' T'              MOVEA.L    (A4),A0
+00000030: 7004           'p.'              MOVEQ      #$04,D0
+00000032: C068 0004      '.h..'            AND.W      $0004(A0),D0
+00000036: 6742           'gB'              BEQ.S      *+$0044             ; 0000007A
+00000038: 3D46 FFE6      '=F..'            MOVE.W     D6,-$001A(A6)
+0000003C: 3D7C 002B FFE8 '=|.+..'          MOVE.W     #$002B,-$0018(A6)
+00000042: 2D7C 656A 6563 '-|ejec'          MOVE.L     #$656A6563,-$0016(A6) ; 'ejec'
+             FFEA           
+0000004A: 426E FFE4      'Bn..'            CLR.W      -$001C(A6)
+0000004E: 41EE FFCE      'A...'            LEA        -$0032(A6),A0
+00000052: A005           '..'              _Status                        ; A005
+00000054: 3C00           '<.'              MOVE.W     D0,D6
+00000056: 6622           'f"'              BNE.S      *+$0024             ; 0000007A
+00000058: 2C2E FFEE      ',...'            MOVE.L     -$0012(A6),D6
+0000005C: 7001           'p.'              MOVEQ      #$01,D0
+0000005E: C085           '..'              AND.L      D5,D0
+00000060: 670A           'g.'              BEQ.S      *+$000C             ; 0000006C
+00000062: 7002           'p.'              MOVEQ      #$02,D0
+00000064: C086           '..'              AND.L      D6,D0
+00000066: 6704           'g.'              BEQ.S      *+$0006             ; 0000006C
+00000068: 7E01           '~.'              MOVEQ      #$01,D7
+0000006A: 600E           '`.'              BRA.S      *+$0010             ; 0000007A
+0000006C: 7002           'p.'              MOVEQ      #$02,D0
+0000006E: C085           '..'              AND.L      D5,D0
+00000070: 6708           'g.'              BEQ.S      *+$000A             ; 0000007A
+00000072: 7001           'p.'              MOVEQ      #$01,D0
+00000074: C086           '..'              AND.L      D6,D0
+00000076: 6702           'g.'              BEQ.S      *+$0004             ; 0000007A
+00000078: 7E01           '~.'              MOVEQ      #$01,D7
+0000007A: 3007           '0.'              MOVE.W     D7,D0
+0000007C: 4CEE 10E0 FFBE 'L.....'          MOVEM.L    -$0042(A6),D5-D7/A4
+00000082: 4E5E           'N^'              UNLK       A6
+00000084: 4E75           'Nu'              RTS        
+
+
+Dictionary:          Flags $00 FirstId 203
+                 203: GETDCTLENTRY
+Pad         
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GETDCTLENTRY"(203)
+                      00000018
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0000 Entry="SHUTDOWNMGRC_2CB90"(202)
+Comment:    
+    
+   SHUTDOWNCALLEE2CB90 ended due to: BRA.L island below, 10 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNCALLEE2CC30 [2CC30, 2CC72)
+   
+   Module started due to: island above, MODGUESS (align, label, BRA.L then padding)
+   
+   Resolved outgoing references:
+      +E (2CC3E): JSR OPENDRIVER ; outside file
+   
+   +0 (2CC30): SHUTDOWNMGRC_2CC30
+
+
+Dictionary:          Flags $00 FirstId 204
+                 204: SHUTDOWNCALLEE2CC30
+                 205: SHUTDOWNMGRC_2CC30
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNCALLEE2CC30"(204) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 66
+
+Content:             Flags $08
+Contents offset $0000 size $0042
+00000000: 4E56 FFCC      'NV..'            LINK.W     A6,#-$0034
+00000004: 558F           'U.'              SUBQ.L     #2,A7
+00000006: 487A 002E      'Hz..'            PEA        *+$0030             ; 00000036
+0000000A: 486E FFFE      'Hn..'            PEA        -$0002(A6)
+0000000E: 4EBA 0000      'N...'            JSR        OPENDRIVER          ; id: 206
+00000012: 4A5F           'J_'              TST.W      (A7)+
+00000014: 661C           'f.'              BNE.S      *+$001E             ; 00000032
+00000016: 3D7C 430A FFE6 '=|C...'          MOVE.W     #$430A,-$001A(A6)
+0000001C: 3D6E FFFE FFE4 '=n....'          MOVE.W     -$0002(A6),-$001C(A6)
+00000022: 7000           'p.'              MOVEQ      #$00,D0
+00000024: 2D40 FFDE      '-@..'            MOVE.L     D0,-$0022(A6)
+00000028: 426E FFE8      'Bn..'            CLR.W      -$0018(A6)
+0000002C: 41EE FFCC      'A...'            LEA        -$0034(A6),A0
+00000030: A204           '..'              _Control   ,Immed              ; A204
+00000032: 4E5E           'N^'              UNLK       A6
+00000034: 4E75           'Nu'              RTS        
+00000036: 0A2E 4261 636B '..Back'          EORI.B     #$61,$636B(A6)      ; 'a'
+0000003C: 6C69           'li'              BGE.S      *+$006B             ; 000000A7
+0000003E: 6768           'gh'              BEQ.S      *+$006A             ; 000000A8
+00000040: 7400           't.'              MOVEQ      #$00,D2
+
+
+Dictionary:          Flags $00 FirstId 206
+                 206: OPENDRIVER
+Pad         
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="OPENDRIVER"(206)
+                      00000010
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0000 Entry="SHUTDOWNMGRC_2CC30"(205)
+Comment:    
+    
+   SHUTDOWNCALLEE2CC30 ended due to: BRA.L island below, 14 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNCALLEE2CC90 [2CC90, 2CCBA)
+   
+   Module started due to: island above, MODGUESS (align, label, BRA.L then padding)
+   
+   +0 (2CC90): SHUTDOWNMGRC_2CC90 
+
+
+Dictionary:          Flags $00 FirstId 207
+                 207: SHUTDOWNCALLEE2CC90
+                 208: SHUTDOWNMGRC_2CC90
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNCALLEE2CC90"(207) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 42
+
+Content:             Flags $08
+Contents offset $0000 size $002A
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000006: 2078 02B6      ' x..'            MOVEA.L    $02B6,A0
+0000000A: 2868 02FC      '(h..'            MOVEA.L    $02FC(A0),A4
+0000000E: 200C           ' .'              MOVE.L     A4,D0
+00000010: 6710           'g.'              BEQ.S      *+$0012             ; 00000022
+00000012: 4AAC 0014      'J...'            TST.L      $0014(A4)
+00000016: 670A           'g.'              BEQ.S      *+$000C             ; 00000022
+00000018: 598F           'Y.'              SUBQ.L     #4,A7
+0000001A: 206C 0014      ' l..'            MOVEA.L    $0014(A4),A0
+0000001E: 4E90           'N.'              JSR        (A0)
+00000020: 584F           'XO'              ADDQ.W     #4,A7
+00000022: 286E FFFC      '(n..'            MOVEA.L    -$0004(A6),A4
+00000026: 4E5E           'N^'              UNLK       A6
+00000028: 4E75           'Nu'              RTS        
+
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0000 Entry="SHUTDOWNMGRC_2CC90"(208)
+Comment:    
+    
+   SHUTDOWNCALLEE2CC90 ended due to: ran into next module, 6 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNMGRC_2CCC0 [2CCC0, 2CD00)
+   
+   Module started due to: MODGUESS (align, label, RTS then padding)
+
+
+Dictionary:          Flags $00 FirstId 209
+                 209: SHUTDOWNMGRC_2CCC0
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNMGRC_2CCC0"(209) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 64
+
+Content:             Flags $08
+Contents offset $0000 size $0040
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 0018      'H...'            MOVEM.L    A3/A4,-(A7)
+00000008: 266E 0010      '&n..'            MOVEA.L    $0010(A6),A3
+0000000C: 286E 0008      '(n..'            MOVEA.L    $0008(A6),A4
+00000010: 7000           'p.'              MOVEQ      #$00,D0
+00000012: 2680           '&.'              MOVE.L     D0,(A3)
+00000014: 220C           '".'              MOVE.L     A4,D1
+00000016: 671C           'g.'              BEQ.S      *+$001E             ; 00000034
+00000018: 4A94           'J.'              TST.L      (A4)
+0000001A: 6718           'g.'              BEQ.S      *+$001A             ; 00000034
+0000001C: 2054           ' T'              MOVEA.L    (A4),A0
+0000001E: 2050           ' P'              MOVEA.L    (A0),A0
+00000020: 4A50           'JP'              TST.W      (A0)
+00000022: 660E           'f.'              BNE.S      *+$0010             ; 00000032
+00000024: 558F           'U.'              SUBQ.L     #2,A7
+00000026: 2F14           '/.'              MOVE.L     (A4),-(A7)
+00000028: 700E           'p.'              MOVEQ      #$0E,D0
+0000002A: 3F00           '?.'              MOVE.W     D0,-(A7)
+0000002C: AA2C           '.,'              _TestDeviceAttribute                      ; AA2C
+0000002E: 4A1F           'J.'              TST.B      (A7)+
+00000030: 6602           'f.'              BNE.S      *+$0004             ; 00000034
+00000032: 2694           '&.'              MOVE.L     (A4),(A3)
+00000034: 4CEE 1800 FFF8 'L.....'          MOVEM.L    -$0008(A6),A3/A4
+0000003A: 4E5E           'N^'              UNLK       A6
+0000003C: 4E74 000C      'Nt..'            RTD        #$000C
+
+Comment:    
+    
+   SHUTDOWNMGRC_2CCC0 ended due to: ran into next module 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNMGRC_2CD00 [2CD00, 2CD1C)
+   
+   Module started due to: MODGUESS (align, label)
+   
+   Resolved outgoing references:
+      +10 (2CD10): JSR SHUTDOWNMGRC_2CF60 
+
+
+Dictionary:          Flags $00 FirstId 210
+                 210: SHUTDOWNMGRC_2CD00
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNMGRC_2CD00"(210) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 28
+
+Content:             Flags $08
+Contents offset $0000 size $001C
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 7002           'p.'              MOVEQ      #$02,D0
+00000006: B06E 000C      '.n..'            CMP.W      $000C(A6),D0
+0000000A: 660A           'f.'              BNE.S      *+$000C             ; 00000016
+0000000C: 7000           'p.'              MOVEQ      #$00,D0
+0000000E: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000010: 4EBA 0000      'N...'            JSR        SHUTDOWNMGRC_2CF60  ; id: 211
+00000014: 584F           'XO'              ADDQ.W     #4,A7
+00000016: 4E5E           'N^'              UNLK       A6
+00000018: 4E74 000A      'Nt..'            RTD        #$000A
+
+
+Dictionary:          Flags $00 FirstId 211
+                 211: SHUTDOWNMGRC_2CF60
+Pad         
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2CF60"(211)
+                      00000012
+Comment:    
+    
+   SHUTDOWNMGRC_2CD00 ended due to: ran into next module, 4 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNMGRC_2CD20 [2CD20, 2CD9E)
+   
+   Module started due to: MODGUESS (align, label, RTD then padding)
+   
+   Resolved outgoing references:
+      +16 (2CD36): JSR SHUTDOWNMGRC_2CF60 
+
+
+Dictionary:          Flags $00 FirstId 212
+                 212: SHUTDOWNMGRC_2CD20
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNMGRC_2CD20"(212) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 126
+
+Content:             Flags $08
+Contents offset $0000 size $007E
+00000000: 4E56 FFF8      'NV..'            LINK.W     A6,#-$0008
+00000004: 48E7 0738      'H..8'            MOVEM.L    D5-D7/A2-A4,-(A7)
+00000008: 3A2E 000A      ':...'            MOVE.W     $000A(A6),D5
+0000000C: 7000           'p.'              MOVEQ      #$00,D0
+0000000E: 2D40 FFFC      '-@..'            MOVE.L     D0,-$0004(A6)
+00000012: 7001           'p.'              MOVEQ      #$01,D0
+00000014: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000016: 4EBA 0000      'N...'            JSR        SHUTDOWNMGRC_2CF60  ; id: 211
+0000001A: 2840           '(@'              MOVEA.L    D0,A4
+0000001C: 200C           ' .'              MOVE.L     A4,D0
+0000001E: 584F           'XO'              ADDQ.W     #4,A7
+00000020: 670C           'g.'              BEQ.S      *+$000E             ; 0000002E
+00000022: 2478 02B6      '$x..'            MOVEA.L    $02B6,A2
+00000026: 266A 0332      '&j.2'            MOVEA.L    $0332(A2),A3
+0000002A: 2C2A 0336      ',*.6'            MOVE.L     $0336(A2),D6
+0000002E: 200C           ' .'              MOVE.L     A4,D0
+00000030: 673E           'g>'              BEQ.S      *+$0040             ; 00000070
+00000032: 200B           ' .'              MOVE.L     A3,D0
+00000034: 673A           'g:'              BEQ.S      *+$003C             ; 00000070
+00000036: 7E00           '~.'              MOVEQ      #$00,D7
+00000038: 6032           '`2'              BRA.S      *+$0034             ; 0000006C
+0000003A: 558F           'U.'              SUBQ.L     #2,A7
+0000003C: 2F0B           '/.'              MOVE.L     A3,-(A7)
+0000003E: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000040: 7000           'p.'              MOVEQ      #$00,D0
+00000042: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000044: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000046: 486E FFFC      'Hn..'            PEA        -$0004(A6)
+0000004A: 303C 0AD5      '0<..'            MOVE.W     #$0AD5,D0
+0000004E: ABEB           '..'              _DisplayDispatch                      ; ABEB
+00000050: 4AAE FFFC      'J...'            TST.L      -$0004(A6)
+00000054: 544F           'TO'              ADDQ.W     #2,A7
+00000056: 670A           'g.'              BEQ.S      *+$000C             ; 00000062
+00000058: 206E FFFC      ' n..'            MOVEA.L    -$0004(A6),A0
+0000005C: 2050           ' P'              MOVEA.L    (A0),A0
+0000005E: BA50           '.P'              CMP.W      (A0),D5
+00000060: 670E           'g.'              BEQ.S      *+$0010             ; 00000070
+00000062: 7000           'p.'              MOVEQ      #$00,D0
+00000064: 2D40 FFFC      '-@..'            MOVE.L     D0,-$0004(A6)
+00000068: 2007           ' .'              MOVE.L     D7,D0
+0000006A: 5287           'R.'              ADDQ.L     #1,D7
+0000006C: BC87           '..'              CMP.L      D7,D6
+0000006E: 62CA           'b.'              BHI.S      *-$0034             ; 0000003A
+00000070: 202E FFFC      ' ...'            MOVE.L     -$0004(A6),D0
+00000074: 4CEE 1CE0 FFE0 'L.....'          MOVEM.L    -$0020(A6),D5-D7/A2-A4
+0000007A: 4E5E           'N^'              UNLK       A6
+0000007C: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2CF60"(211)
+                      00000018
+Comment:    
+    
+   SHUTDOWNMGRC_2CD20 ended due to: ran into next module, 2 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNMGRC_2CDA0 [2CDA0, 2CE16)
+   
+   Module started due to: MODGUESS (align, label, RTS then padding)
+   
+   Resolved outgoing references:
+      +10 (2CDB0): JSR SHUTDOWNMGRC_2CD20 
+
+
+Dictionary:          Flags $00 FirstId 213
+                 213: SHUTDOWNMGRC_2CDA0
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNMGRC_2CDA0"(213) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 118
+
+Content:             Flags $08
+Contents offset $0000 size $0076
+00000000: 4E56 FFF8      'NV..'            LINK.W     A6,#-$0008
+00000004: 48E7 0108      'H...'            MOVEM.L    D7/A4,-(A7)
+00000008: 302E 000A      '0...'            MOVE.W     $000A(A6),D0
+0000000C: 48C0           'H.'              EXT.L      D0
+0000000E: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000010: 4EBA 0000      'N...'            JSR        SHUTDOWNMGRC_2CD20  ; id: 212
+00000014: 2840           '(@'              MOVEA.L    D0,A4
+00000016: 4207           'B.'              CLR.B      D7
+00000018: 200C           ' .'              MOVE.L     A4,D0
+0000001A: 584F           'XO'              ADDQ.W     #4,A7
+0000001C: 674C           'gL'              BEQ.S      *+$004E             ; 0000006A
+0000001E: 7000           'p.'              MOVEQ      #$00,D0
+00000020: 2D40 FFF8      '-@..'            MOVE.L     D0,-$0008(A6)
+00000024: 2D40 FFFC      '-@..'            MOVE.L     D0,-$0004(A6)
+00000028: 558F           'U.'              SUBQ.L     #2,A7
+0000002A: 2F0C           '/.'              MOVE.L     A4,-(A7)
+0000002C: 486E FFF8      'Hn..'            PEA        -$0008(A6)
+00000030: 7000           'p.'              MOVEQ      #$00,D0
+00000032: 1F00           '..'              MOVE.B     D0,-(A7)
+00000034: 303C 051F      '0<..'            MOVE.W     #$051F,D0
+00000038: ABEB           '..'              _DisplayDispatch                      ; ABEB
+0000003A: 4A5F           'J_'              TST.W      (A7)+
+0000003C: 662C           'f,'              BNE.S      *+$002E             ; 0000006A
+0000003E: 558F           'U.'              SUBQ.L     #2,A7
+00000040: 2F2E FFF8      '/...'            MOVE.L     -$0008(A6),-(A7)
+00000044: 2F3C 636F 6D6D '/<comm'          MOVE.L     #$636F6D6D,-(A7)    ; 'comm'
+0000004A: 486E FFFC      'Hn..'            PEA        -$0004(A6)
+0000004E: 303C 06D3      '0<..'            MOVE.W     #$06D3,D0
+00000052: ABEB           '..'              _DisplayDispatch                      ; ABEB
+00000054: 4A5F           'J_'              TST.W      (A7)+
+00000056: 6612           'f.'              BNE.S      *+$0014             ; 0000006A
+00000058: 7001           'p.'              MOVEQ      #$01,D0
+0000005A: C0AE FFFC      '....'            AND.L      -$0004(A6),D0
+0000005E: 660A           'f.'              BNE.S      *+$000C             ; 0000006A
+00000060: 7002           'p.'              MOVEQ      #$02,D0
+00000062: C0AE FFFC      '....'            AND.L      -$0004(A6),D0
+00000066: 6702           'g.'              BEQ.S      *+$0004             ; 0000006A
+00000068: 7E01           '~.'              MOVEQ      #$01,D7
+0000006A: 1007           '..'              MOVE.B     D7,D0
+0000006C: 4CEE 1080 FFF0 'L.....'          MOVEM.L    -$0010(A6),D7/A4
+00000072: 4E5E           'N^'              UNLK       A6
+00000074: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2CD20"(212)
+                      00000012
+Comment:    
+    
+   SHUTDOWNMGRC_2CDA0 ended due to: ran into next module, 10 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNMGRC_2CE20 [2CE20, 2CEDA)
+   
+   Module started due to: MODGUESS (align, label, RTS then padding)
+
+
+Dictionary:          Flags $00 FirstId 214
+                 214: SHUTDOWNMGRC_2CE20
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNMGRC_2CE20"(214) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 186
+
+Content:             Flags $08
+Contents offset $0000 size $00BA
+00000000: 4E56 FF9E      'NV..'            LINK.W     A6,#-$0062
+00000004: 48E7 1308      'H...'            MOVEM.L    D3/D6/D7/A4,-(A7)
+00000008: 286E 000C      '(n..'            MOVEA.L    $000C(A6),A4
+0000000C: 4206           'B.'              CLR.B      D6
+0000000E: 7E00           '~.'              MOVEQ      #$00,D7
+00000010: 42AE FFCC      'B...'            CLR.L      -$0034(A6)
+00000014: 42AE FFC8      'B...'            CLR.L      -$0038(A6)
+00000018: 42AE FFC4      'B...'            CLR.L      -$003C(A6)
+0000001C: 42AE FFC0      'B...'            CLR.L      -$0040(A6)
+00000020: 42AE FFBC      'B...'            CLR.L      -$0044(A6)
+00000024: 42AE FFB8      'B...'            CLR.L      -$0048(A6)
+00000028: 42AE FFB4      'B...'            CLR.L      -$004C(A6)
+0000002C: 7000           'p.'              MOVEQ      #$00,D0
+0000002E: 2D40 FFB0      '-@..'            MOVE.L     D0,-$0050(A6)
+00000032: 426E FFAE      'Bn..'            CLR.W      -$0052(A6)
+00000036: 2D40 FFAA      '-@..'            MOVE.L     D0,-$0056(A6)
+0000003A: 2D40 FFA6      '-@..'            MOVE.L     D0,-$005A(A6)
+0000003E: 42AE FFA2      'B...'            CLR.L      -$005E(A6)
+00000042: 2D40 FF9E      '-@..'            MOVE.L     D0,-$0062(A6)
+00000046: 2D40 FFFC      '-@..'            MOVE.L     D0,-$0004(A6)
+0000004A: 2D40 FFF8      '-@..'            MOVE.L     D0,-$0008(A6)
+0000004E: 2D40 FFF4      '-@..'            MOVE.L     D0,-$000C(A6)
+00000052: 2D40 FFF0      '-@..'            MOVE.L     D0,-$0010(A6)
+00000056: 2D40 FFEC      '-@..'            MOVE.L     D0,-$0014(A6)
+0000005A: 2D40 FFE8      '-@..'            MOVE.L     D0,-$0018(A6)
+0000005E: 2D40 FFE4      '-@..'            MOVE.L     D0,-$001C(A6)
+00000062: 2D40 FFE0      '-@..'            MOVE.L     D0,-$0020(A6)
+00000066: 2D40 FFDC      '-@..'            MOVE.L     D0,-$0024(A6)
+0000006A: 2D40 FFD8      '-@..'            MOVE.L     D0,-$0028(A6)
+0000006E: 2D40 FFD4      '-@..'            MOVE.L     D0,-$002C(A6)
+00000072: 2D40 FFD0      '-@..'            MOVE.L     D0,-$0030(A6)
+00000076: 3D6E 000A FFB6 '=n....'          MOVE.W     $000A(A6),-$004A(A6)
+0000007C: 3D7C 0020 FFB8 '=|. ..'          MOVE.W     #$0020,-$0048(A6)
+00000082: 41EE FFD0      'A...'            LEA        -$0030(A6),A0
+00000086: 2D48 FFBA      '-H..'            MOVE.L     A0,-$0046(A6)
+0000008A: 41EE FF9E      'A...'            LEA        -$0062(A6),A0
+0000008E: A005           '..'              _Status                        ; A005
+00000090: 4A40           'J@'              TST.W      D0
+00000092: 6614           'f.'              BNE.S      *+$0016             ; 000000A8
+00000094: 7007           'p.'              MOVEQ      #$07,D0
+00000096: C0AE FFE0      '....'            AND.L      -$0020(A6),D0
+0000009A: 7207           'r.'              MOVEQ      #$07,D1
+0000009C: B280           '..'              CMP.L      D0,D1
+0000009E: 57C3           'W.'              SEQ        D3
+000000A0: 4403           'D.'              NEG.B      D3
+000000A2: 1C03           '..'              MOVE.B     D3,D6
+000000A4: 2E2E FFE4      '....'            MOVE.L     -$001C(A6),D7
+000000A8: 200C           ' .'              MOVE.L     A4,D0
+000000AA: 6702           'g.'              BEQ.S      *+$0004             ; 000000AE
+000000AC: 2887           '(.'              MOVE.L     D7,(A4)
+000000AE: 1006           '..'              MOVE.B     D6,D0
+000000B0: 4CEE 10C8 FF8E 'L.....'          MOVEM.L    -$0072(A6),D3/D6/D7/A4
+000000B6: 4E5E           'N^'              UNLK       A6
+000000B8: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   SHUTDOWNMGRC_2CE20 ended due to: ran into next module, 6 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNMGRC_2CEE0 [2CEE0, 2CF60)
+   
+   Module started due to: MODGUESS (align, label, RTS then padding)
+   
+   Resolved outgoing references:
+      +40 (2CF20): JSR SHUTDOWNMGRC_2D050 
+
+
+Dictionary:          Flags $00 FirstId 215
+                 215: SHUTDOWNMGRC_2CEE0
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNMGRC_2CEE0"(215) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 128
+
+Content:             Flags $08
+Contents offset $0000 size $0080
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 0308      'H...'            MOVEM.L    D6/D7/A4,-(A7)
+00000008: 286E 0008      '(n..'            MOVEA.L    $0008(A6),A4
+0000000C: 200C           ' .'              MOVE.L     A4,D0
+0000000E: 6764           'gd'              BEQ.S      *+$0066             ; 00000074
+00000010: 4A94           'J.'              TST.L      (A4)
+00000012: 6760           'g`'              BEQ.S      *+$0062             ; 00000074
+00000014: 2054           ' T'              MOVEA.L    (A4),A0
+00000016: 2050           ' P'              MOVEA.L    (A0),A0
+00000018: 3E10           '>.'              MOVE.W     (A0),D7
+0000001A: 660E           'f.'              BNE.S      *+$0010             ; 0000002A
+0000001C: 558F           'U.'              SUBQ.L     #2,A7
+0000001E: 2F14           '/.'              MOVE.L     (A4),-(A7)
+00000020: 700E           'p.'              MOVEQ      #$0E,D0
+00000022: 3F00           '?.'              MOVE.W     D0,-(A7)
+00000024: AA2C           '.,'              _TestDeviceAttribute                      ; AA2C
+00000026: 4A1F           'J.'              TST.B      (A7)+
+00000028: 664A           'fJ'              BNE.S      *+$004C             ; 00000074
+0000002A: 206E 0010      ' n..'            MOVEA.L    $0010(A6),A0
+0000002E: 1C10           '..'              MOVE.B     (A0),D6
+00000030: 48C7           'H.'              EXT.L      D7
+00000032: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000034: 4A06           'J.'              TST.B      D6
+00000036: 6704           'g.'              BEQ.S      *+$0006             ; 0000003C
+00000038: 7001           'p.'              MOVEQ      #$01,D0
+0000003A: 6002           '`.'              BRA.S      *+$0004             ; 0000003E
+0000003C: 7000           'p.'              MOVEQ      #$00,D0
+0000003E: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000040: 4EBA 0000      'N...'            JSR        SHUTDOWNMGRC_2D050  ; id: 216
+00000044: 4A00           'J.'              TST.B      D0
+00000046: 504F           'PO'              ADDQ.W     #8,A7
+00000048: 672A           'g*'              BEQ.S      *+$002C             ; 00000074
+0000004A: 4A06           'J.'              TST.B      D6
+0000004C: 6726           'g&'              BEQ.S      *+$0028             ; 00000074
+0000004E: 2078 02B6      ' x..'            MOVEA.L    $02B6,A0
+00000052: 4A28 0039      'J(.9'            TST.B      $0039(A0)
+00000056: 671C           'g.'              BEQ.S      *+$001E             ; 00000074
+00000058: 2078 02B6      ' x..'            MOVEA.L    $02B6,A0
+0000005C: 7000           'p.'              MOVEQ      #$00,D0
+0000005E: 1028 003F      '.(.?'            MOVE.B     $003F(A0),D0
+00000062: 222E 000C      '"...'            MOVE.L     $000C(A6),D1
+00000066: 7401           't.'              MOVEQ      #$01,D2
+00000068: E3AA           '..'              LSL.L      D1,D2
+0000006A: 8480           '..'              OR.L       D0,D2
+0000006C: 2078 02B6      ' x..'            MOVEA.L    $02B6,A0
+00000070: 1142 003F      '.B.?'            MOVE.B     D2,$003F(A0)
+00000074: 4CEE 10C0 FFF4 'L.....'          MOVEM.L    -$000C(A6),D6/D7/A4
+0000007A: 4E5E           'N^'              UNLK       A6
+0000007C: 4E74 000C      'Nt..'            RTD        #$000C
+
+
+Dictionary:          Flags $00 FirstId 216
+                 216: SHUTDOWNMGRC_2D050
+Pad         
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2D050"(216)
+                      00000042
+Comment:    
+    
+   SHUTDOWNMGRC_2CEE0 ended due to: ran into next module 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNMGRC_2CF60 [2CF60, 2D046)
+   
+   Module started due to: MODGUESS (align, label)
+   
+   Resolved outgoing references:
+      +AC (2D00C): LEA SHUTDOWNMGRC_2CD00, A3
+      +1E (2CF7E): LEA SHUTDOWNMGRC_2CCC0, A4 
+
+
+Dictionary:          Flags $00 FirstId 217
+                 217: SHUTDOWNMGRC_2CF60
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNMGRC_2CF60"(217) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 230
+
+Content:             Flags $08
+Contents offset $0000 size $00E6
+00000000: 4E56 FFF4      'NV..'            LINK.W     A6,#-$000C
+00000004: 48E7 0338      'H..8'            MOVEM.L    D6/D7/A2-A4,-(A7)
+00000008: 1E2E 000B      '....'            MOVE.B     $000B(A6),D7
+0000000C: 7000           'p.'              MOVEQ      #$00,D0
+0000000E: 2840           '(@'              MOVEA.L    D0,A4
+00000010: A11A           '..'              _GetZone                       ; A11A
+00000012: 2448           '$H'              MOVEA.L    A0,A2
+00000014: 598F           'Y.'              SUBQ.L     #4,A7
+00000016: 2EB8 02A6      '....'            MOVE.L     $02A6,(A7)
+0000001A: 205F           ' _'              MOVEA.L    (A7)+,A0
+0000001C: A01B           '..'              _SetZone                       ; A01B
+0000001E: 49FA 0000      'I...'            LEA        SHUTDOWNMGRC_2CCC0,A4 ; id: 209
+00000022: 2078 02B6      ' x..'            MOVEA.L    $02B6,A0
+00000026: 2D68 0332 FFF8 '-h.2..'          MOVE.L     $0332(A0),-$0008(A6)
+0000002C: 672E           'g.'              BEQ.S      *+$0030             ; 0000005C
+0000002E: 7000           'p.'              MOVEQ      #$00,D0
+00000030: 1007           '..'              MOVE.B     D7,D0
+00000032: 4A80           'J.'              TST.L      D0
+00000034: 6626           'f&'              BNE.S      *+$0028             ; 0000005C
+00000036: 558F           'U.'              SUBQ.L     #2,A7
+00000038: 2F2E FFF8      '/...'            MOVE.L     -$0008(A6),-(A7)
+0000003C: 303C 022C      '0<.,'            MOVE.W     #$022C,D0
+00000040: ABEB           '..'              _DisplayDispatch                      ; ABEB
+00000042: 4A5F           'J_'              TST.W      (A7)+
+00000044: 6616           'f.'              BNE.S      *+$0018             ; 0000005C
+00000046: 2078 02B6      ' x..'            MOVEA.L    $02B6,A0
+0000004A: 7000           'p.'              MOVEQ      #$00,D0
+0000004C: 2140 0332      '!@.2'            MOVE.L     D0,$0332(A0)
+00000050: 2078 02B6      ' x..'            MOVEA.L    $02B6,A0
+00000054: 2140 0336      '!@.6'            MOVE.L     D0,$0336(A0)
+00000058: 2D40 FFF8      '-@..'            MOVE.L     D0,-$0008(A6)
+0000005C: 4AAE FFF8      'J...'            TST.L      -$0008(A6)
+00000060: 6632           'f2'              BNE.S      *+$0034             ; 00000094
+00000062: 7C17           '|.'              MOVEQ      #$17,D6
+00000064: 558F           'U.'              SUBQ.L     #2,A7
+00000066: 2F06           '/.'              MOVE.L     D6,-(A7)
+00000068: 7000           'p.'              MOVEQ      #$00,D0
+0000006A: 2F00           '/.'              MOVE.L     D0,-(A7)
+0000006C: 2F00           '/.'              MOVE.L     D0,-(A7)
+0000006E: 486E FFF4      'Hn..'            PEA        -$000C(A6)
+00000072: 486E FFF8      'Hn..'            PEA        -$0008(A6)
+00000076: 303C 0AD6      '0<..'            MOVE.W     #$0AD6,D0
+0000007A: ABEB           '..'              _DisplayDispatch                      ; ABEB
+0000007C: 4A5F           'J_'              TST.W      (A7)+
+0000007E: 6614           'f.'              BNE.S      *+$0016             ; 00000094
+00000080: 2078 02B6      ' x..'            MOVEA.L    $02B6,A0
+00000084: 216E FFF8 0332 '!n...2'          MOVE.L     -$0008(A6),$0332(A0)
+0000008A: 2078 02B6      ' x..'            MOVEA.L    $02B6,A0
+0000008E: 216E FFF4 0336 '!n...6'          MOVE.L     -$000C(A6),$0336(A0)
+00000094: 7000           'p.'              MOVEQ      #$00,D0
+00000096: 1007           '..'              MOVE.B     D7,D0
+00000098: 0C40 0002      '.@..'            CMPI.W     #$0002,D0
+0000009C: 6638           'f8'              BNE.S      *+$003A             ; 000000D6
+0000009E: 2078 02B6      ' x..'            MOVEA.L    $02B6,A0
+000000A2: 7000           'p.'              MOVEQ      #$00,D0
+000000A4: 1028 033A      '.(.:'            MOVE.B     $033A(A0),D0
+000000A8: 4A80           'J.'              TST.L      D0
+000000AA: 662A           'f*'              BNE.S      *+$002C             ; 000000D6
+000000AC: 47FA 0000      'G...'            LEA        SHUTDOWNMGRC_2CD00,A3 ; id: 210
+000000B0: 200B           ' .'              MOVE.L     A3,D0
+000000B2: 6722           'g"'              BEQ.S      *+$0024             ; 000000D6
+000000B4: 558F           'U.'              SUBQ.L     #2,A7
+000000B6: 2F0B           '/.'              MOVE.L     A3,-(A7)
+000000B8: 7000           'p.'              MOVEQ      #$00,D0
+000000BA: 2F00           '/.'              MOVE.L     D0,-(A7)
+000000BC: 7000           'p.'              MOVEQ      #$00,D0
+000000BE: 3F00           '?.'              MOVE.W     D0,-(A7)
+000000C0: 7000           'p.'              MOVEQ      #$00,D0
+000000C2: 2F00           '/.'              MOVE.L     D0,-(A7)
+000000C4: 303C 07EF      '0<..'            MOVE.W     #$07EF,D0
+000000C8: ABEB           '..'              _DisplayDispatch                      ; ABEB
+000000CA: 2078 02B6      ' x..'            MOVEA.L    $02B6,A0
+000000CE: 117C 0001 033A '.|...:'          MOVE.B     #$01,$033A(A0)
+000000D4: 544F           'TO'              ADDQ.W     #2,A7
+000000D6: 204A           ' J'              MOVEA.L    A2,A0
+000000D8: A01B           '..'              _SetZone                       ; A01B
+000000DA: 200C           ' .'              MOVE.L     A4,D0
+000000DC: 4CEE 1CC0 FFE0 'L.....'          MOVEM.L    -$0020(A6),D6/D7/A2-A4
+000000E2: 4E5E           'N^'              UNLK       A6
+000000E4: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2CD00"(210)
+                      000000AE
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2CCC0"(209)
+                      00000020
+Comment:    
+    
+   SHUTDOWNMGRC_2CF60 ended due to: ran into next module, 10 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNMGRC_2D050 [2D050, 2D3AC)
+   
+   Module started due to: MODGUESS (align, label, RTS then padding)
+   
+   Resolved outgoing references:
+      +2F2 (2D342): JSR SHUTDOWNMGRC_2CF60
+      +2E8 (2D338): LEA SHUTDOWNMGRC_2CEE0, A4
+      +34 (2D084): JSR SHUTDOWNMGRC_2CDA0
+      +24 (2D074): JSR SHUTDOWNMGRC_2CE20
+   
+   +2E0 (2D330): SHUTDOWNCALLEE2D330
+   
+   +2E0 (2D330): SHUTDOWNMGRC_2D330
+
+
+Dictionary:          Flags $00 FirstId 218
+                 218: SHUTDOWNMGRC_2D050
+                 219: SHUTDOWNCALLEE2D330
+                 220: SHUTDOWNMGRC_2D330
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNMGRC_2D050"(218) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 860
+
+Content:             Flags $08
+Contents offset $0000 size $035C
+00000000: 4E56 FF42      'NV.B'            LINK.W     A6,#-$00BE
+00000004: 48E7 1F18      'H...'            MOVEM.L    D3-D7/A3/A4,-(A7)
+00000008: 3E2E 000E      '>...'            MOVE.W     $000E(A6),D7
+0000000C: 47EE FFBC      'G...'            LEA        -$0044(A6),A3
+00000010: 49EE FFB4      'I...'            LEA        -$004C(A6),A4
+00000014: 7000           'p.'              MOVEQ      #$00,D0
+00000016: 2D40 FFFC      '-@..'            MOVE.L     D0,-$0004(A6)
+0000001A: 4206           'B.'              CLR.B      D6
+0000001C: 486E FFFC      'Hn..'            PEA        -$0004(A6)
+00000020: 48C7           'H.'              EXT.L      D7
+00000022: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000024: 4EBA 0000      'N...'            JSR        SHUTDOWNMGRC_2CE20  ; id: 214
+00000028: 4A00           'J.'              TST.B      D0
+0000002A: 504F           'PO'              ADDQ.W     #8,A7
+0000002C: 6700 0266      'g..f'            BEQ        *+$0268             ; 00000294
+00000030: 48C7           'H.'              EXT.L      D7
+00000032: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000034: 4EBA 0000      'N...'            JSR        SHUTDOWNMGRC_2CDA0  ; id: 213
+00000038: 4A00           'J.'              TST.B      D0
+0000003A: 584F           'XO'              ADDQ.W     #4,A7
+0000003C: 6700 0256      'g..V'            BEQ        *+$0258             ; 00000294
+00000040: 42AE FF70      'B..p'            CLR.L      -$0090(A6)
+00000044: 42AE FF6C      'B..l'            CLR.L      -$0094(A6)
+00000048: 42AE FF68      'B..h'            CLR.L      -$0098(A6)
+0000004C: 42AE FF64      'B..d'            CLR.L      -$009C(A6)
+00000050: 42AE FF60      'B..`'            CLR.L      -$00A0(A6)
+00000054: 42AE FF5C      'B..\'            CLR.L      -$00A4(A6)
+00000058: 42AE FF58      'B..X'            CLR.L      -$00A8(A6)
+0000005C: 7000           'p.'              MOVEQ      #$00,D0
+0000005E: 2D40 FF54      '-@.T'            MOVE.L     D0,-$00AC(A6)
+00000062: 426E FF52      'Bn.R'            CLR.W      -$00AE(A6)
+00000066: 2D40 FF4E      '-@.N'            MOVE.L     D0,-$00B2(A6)
+0000006A: 2D40 FF4A      '-@.J'            MOVE.L     D0,-$00B6(A6)
+0000006E: 42AE FF46      'B..F'            CLR.L      -$00BA(A6)
+00000072: 2D40 FF42      '-@.B'            MOVE.L     D0,-$00BE(A6)
+00000076: 2D40 FFB0      '-@..'            MOVE.L     D0,-$0050(A6)
+0000007A: 2D40 FFAC      '-@..'            MOVE.L     D0,-$0054(A6)
+0000007E: 2D40 FFA8      '-@..'            MOVE.L     D0,-$0058(A6)
+00000082: 2D40 FFA4      '-@..'            MOVE.L     D0,-$005C(A6)
+00000086: 2D40 FFA0      '-@..'            MOVE.L     D0,-$0060(A6)
+0000008A: 2D40 FF9C      '-@..'            MOVE.L     D0,-$0064(A6)
+0000008E: 2D40 FF98      '-@..'            MOVE.L     D0,-$0068(A6)
+00000092: 2D40 FF94      '-@..'            MOVE.L     D0,-$006C(A6)
+00000096: 2D40 FF90      '-@..'            MOVE.L     D0,-$0070(A6)
+0000009A: 2D40 FF8C      '-@..'            MOVE.L     D0,-$0074(A6)
+0000009E: 2D40 FF88      '-@..'            MOVE.L     D0,-$0078(A6)
+000000A2: 2D40 FF84      '-@..'            MOVE.L     D0,-$007C(A6)
+000000A6: 2D40 FF80      '-@..'            MOVE.L     D0,-$0080(A6)
+000000AA: 2D40 FF7C      '-@.|'            MOVE.L     D0,-$0084(A6)
+000000AE: 2D40 FF78      '-@.x'            MOVE.L     D0,-$0088(A6)
+000000B2: 2D40 FF74      '-@.t'            MOVE.L     D0,-$008C(A6)
+000000B6: 41FA 01E8      'A...'            LEA        *+$01EA,A0          ; 000002A0
+000000BA: 43EB 0001      'C...'            LEA        $0001(A3),A1
+000000BE: 723E           'r>'              MOVEQ      #$3E,D1             ; '>'
+000000C0: 12D8           '..'              MOVE.B     (A0)+,(A1)+
+000000C2: 51C9 FFFC      'Q...'            DBF        D1,*-$0002          ; 000000C0
+000000C6: 4213           'B.'              CLR.B      (A3)
+000000C8: 7A01           'z.'              MOVEQ      #$01,D5
+000000CA: 18BC 0051      '...Q'            MOVE.B     #$51,(A4)           ; 'Q'
+000000CE: 197C 0082 0001 '.|....'          MOVE.B     #$82,$0001(A4)
+000000D4: 197C 0001 0002 '.|....'          MOVE.B     #$01,$0002(A4)
+000000DA: 197C 00D6 0003 '.|....'          MOVE.B     #$D6,$0003(A4)
+000000E0: 1214           '..'              MOVE.B     (A4),D1
+000000E2: 746E           'tn'              MOVEQ      #$6E,D2             ; 'n'
+000000E4: B302           '..'              EOR.B      D1,D2
+000000E6: 122C 0001      '.,..'            MOVE.B     $0001(A4),D1
+000000EA: B302           '..'              EOR.B      D1,D2
+000000EC: 122C 0002      '.,..'            MOVE.B     $0002(A4),D1
+000000F0: B302           '..'              EOR.B      D1,D2
+000000F2: 122C 0003      '.,..'            MOVE.B     $0003(A4),D1
+000000F6: B302           '..'              EOR.B      D1,D2
+000000F8: 1942 0004      '.B..'            MOVE.B     D2,$0004(A4)
+000000FC: 2D40 FF74      '-@.t'            MOVE.L     D0,-$008C(A6)
+00000100: 7201           'r.'              MOVEQ      #$01,D1
+00000102: 2D41 FF88      '-A..'            MOVE.L     D1,-$0078(A6)
+00000106: 706E           'pn'              MOVEQ      #$6E,D0             ; 'n'
+00000108: 2D40 FF84      '-@..'            MOVE.L     D0,-$007C(A6)
+0000010C: 2D4C FF8C      '-L..'            MOVE.L     A4,-$0074(A6)
+00000110: 7007           'p.'              MOVEQ      #$07,D0
+00000112: 2D40 FF90      '-@..'            MOVE.L     D0,-$0070(A6)
+00000116: 7002           'p.'              MOVEQ      #$02,D0
+00000118: 2D40 FF98      '-@..'            MOVE.L     D0,-$0068(A6)
+0000011C: 706F           'po'              MOVEQ      #$6F,D0             ; 'o'
+0000011E: 2D40 FF94      '-@..'            MOVE.L     D0,-$006C(A6)
+00000122: 2D4B FF9C      '-K..'            MOVE.L     A3,-$0064(A6)
+00000126: 7040           'p@'              MOVEQ      #$40,D0             ; '@'
+00000128: 2D40 FFA0      '-@..'            MOVE.L     D0,-$0060(A6)
+0000012C: 242E FFFC      '$...'            MOVE.L     -$0004(A6),D2
+00000130: 0802 0000      '....'            BTST       #$00,D2
+00000134: 6710           'g.'              BEQ.S      *+$0012             ; 00000146
+00000136: 00AE 0000 0001 '......'          ORI.L      #$00000001,-$0088(A6)
+             FF78           
+0000013E: 2D7C 0000 C350 '-|...P'          MOVE.L     #$0000C350,-$0084(A6)
+             FF7C           
+00000146: 3D47 FF5A      '=G.Z'            MOVE.W     D7,-$00A6(A6)
+0000014A: 3D7C 0021 FF5C '=|.!.\'          MOVE.W     #$0021,-$00A4(A6)
+00000150: 41EE FF74      'A..t'            LEA        -$008C(A6),A0
+00000154: 2D48 FF5E      '-H.^'            MOVE.L     A0,-$00A2(A6)
+00000158: 41EE FF42      'A..B'            LEA        -$00BE(A6),A0
+0000015C: A004           '..'              _Control                       ; A004
+0000015E: 4A40           'J@'              TST.W      D0
+00000160: 6672           'fr'              BNE.S      *+$0074             ; 000001D4
+00000162: 7000           'p.'              MOVEQ      #$00,D0
+00000164: 1013           '..'              MOVE.B     (A3),D0
+00000166: 0C40 006E      '.@.n'            CMPI.W     #$006E,D0
+0000016A: 6668           'fh'              BNE.S      *+$006A             ; 000001D4
+0000016C: 7000           'p.'              MOVEQ      #$00,D0
+0000016E: 102B 0001      '.+..'            MOVE.B     $0001(A3),D0
+00000172: 0C40 0088      '.@..'            CMPI.W     #$0088,D0
+00000176: 665C           'f\'              BNE.S      *+$005E             ; 000001D4
+00000178: 7000           'p.'              MOVEQ      #$00,D0
+0000017A: 102B 0002      '.+..'            MOVE.B     $0002(A3),D0
+0000017E: 0C40 0002      '.@..'            CMPI.W     #$0002,D0
+00000182: 6650           'fP'              BNE.S      *+$0052             ; 000001D4
+00000184: 1013           '..'              MOVE.B     (A3),D0
+00000186: 7250           'rP'              MOVEQ      #$50,D1             ; 'P'
+00000188: B101           '..'              EOR.B      D0,D1
+0000018A: 102B 0001      '.+..'            MOVE.B     $0001(A3),D0
+0000018E: B101           '..'              EOR.B      D0,D1
+00000190: 102B 0002      '.+..'            MOVE.B     $0002(A3),D0
+00000194: B101           '..'              EOR.B      D0,D1
+00000196: 102B 0003      '.+..'            MOVE.B     $0003(A3),D0
+0000019A: B101           '..'              EOR.B      D0,D1
+0000019C: 102B 0004      '.+..'            MOVE.B     $0004(A3),D0
+000001A0: B101           '..'              EOR.B      D0,D1
+000001A2: 102B 0005      '.+..'            MOVE.B     $0005(A3),D0
+000001A6: B101           '..'              EOR.B      D0,D1
+000001A8: 102B 0006      '.+..'            MOVE.B     $0006(A3),D0
+000001AC: B101           '..'              EOR.B      D0,D1
+000001AE: 102B 0007      '.+..'            MOVE.B     $0007(A3),D0
+000001B2: B101           '..'              EOR.B      D0,D1
+000001B4: 102B 0008      '.+..'            MOVE.B     $0008(A3),D0
+000001B8: B101           '..'              EOR.B      D0,D1
+000001BA: 102B 0009      '.+..'            MOVE.B     $0009(A3),D0
+000001BE: B101           '..'              EOR.B      D0,D1
+000001C0: 1801           '..'              MOVE.B     D1,D4
+000001C2: B82B 000A      '.+..'            CMP.B      $000A(A3),D4
+000001C6: 660C           'f.'              BNE.S      *+$000E             ; 000001D4
+000001C8: 7000           'p.'              MOVEQ      #$00,D0
+000001CA: 102B 0003      '.+..'            MOVE.B     $0003(A3),D0
+000001CE: 4A80           'J.'              TST.L      D0
+000001D0: 6702           'g.'              BEQ.S      *+$0004             ; 000001D4
+000001D2: 4205           'B.'              CLR.B      D5
+000001D4: 4A05           'J.'              TST.B      D5
+000001D6: 6700 00BC      'g...'            BEQ        *+$00BE             ; 00000294
+000001DA: 18BC 0051      '...Q'            MOVE.B     #$51,(A4)           ; 'Q'
+000001DE: 197C 0084 0001 '.|....'          MOVE.B     #$84,$0001(A4)
+000001E4: 197C 0003 0002 '.|....'          MOVE.B     #$03,$0002(A4)
+000001EA: 197C 00D6 0003 '.|....'          MOVE.B     #$D6,$0003(A4)
+000001F0: 422C 0004      'B,..'            CLR.B      $0004(A4)
+000001F4: 4A2E 000B      'J...'            TST.B      $000B(A6)
+000001F8: 6704           'g.'              BEQ.S      *+$0006             ; 000001FE
+000001FA: 7001           'p.'              MOVEQ      #$01,D0
+000001FC: 6002           '`.'              BRA.S      *+$0004             ; 00000200
+000001FE: 7004           'p.'              MOVEQ      #$04,D0
+00000200: 1940 0005      '.@..'            MOVE.B     D0,$0005(A4)
+00000204: 1014           '..'              MOVE.B     (A4),D0
+00000206: 726E           'rn'              MOVEQ      #$6E,D1             ; 'n'
+00000208: B101           '..'              EOR.B      D0,D1
+0000020A: 102C 0001      '.,..'            MOVE.B     $0001(A4),D0
+0000020E: B101           '..'              EOR.B      D0,D1
+00000210: 102C 0002      '.,..'            MOVE.B     $0002(A4),D0
+00000214: B101           '..'              EOR.B      D0,D1
+00000216: 102C 0003      '.,..'            MOVE.B     $0003(A4),D0
+0000021A: B101           '..'              EOR.B      D0,D1
+0000021C: 102C 0004      '.,..'            MOVE.B     $0004(A4),D0
+00000220: B101           '..'              EOR.B      D0,D1
+00000222: 102C 0005      '.,..'            MOVE.B     $0005(A4),D0
+00000226: B101           '..'              EOR.B      D0,D1
+00000228: 1941 0006      '.A..'            MOVE.B     D1,$0006(A4)
+0000022C: 7000           'p.'              MOVEQ      #$00,D0
+0000022E: 2D40 FF74      '-@.t'            MOVE.L     D0,-$008C(A6)
+00000232: 726E           'rn'              MOVEQ      #$6E,D1             ; 'n'
+00000234: 2D41 FF84      '-A..'            MOVE.L     D1,-$007C(A6)
+00000238: 7001           'p.'              MOVEQ      #$01,D0
+0000023A: 2D40 FF88      '-@..'            MOVE.L     D0,-$0078(A6)
+0000023E: 2D4C FF8C      '-L..'            MOVE.L     A4,-$0074(A6)
+00000242: 7007           'p.'              MOVEQ      #$07,D0
+00000244: 2D40 FF90      '-@..'            MOVE.L     D0,-$0070(A6)
+00000248: 7000           'p.'              MOVEQ      #$00,D0
+0000024A: 2D40 FF98      '-@..'            MOVE.L     D0,-$0068(A6)
+0000024E: 2D40 FF94      '-@..'            MOVE.L     D0,-$006C(A6)
+00000252: 2D40 FF9C      '-@..'            MOVE.L     D0,-$0064(A6)
+00000256: 2D40 FFA0      '-@..'            MOVE.L     D0,-$0060(A6)
+0000025A: 242E FFFC      '$...'            MOVE.L     -$0004(A6),D2
+0000025E: 0802 0000      '....'            BTST       #$00,D2
+00000262: 6710           'g.'              BEQ.S      *+$0012             ; 00000274
+00000264: 00AE 0000 0001 '......'          ORI.L      #$00000001,-$0088(A6)
+             FF78           
+0000026C: 2D7C 0000 C350 '-|...P'          MOVE.L     #$0000C350,-$0084(A6)
+             FF7C           
+00000274: 3D47 FF5A      '=G.Z'            MOVE.W     D7,-$00A6(A6)
+00000278: 3D7C 0021 FF5C '=|.!.\'          MOVE.W     #$0021,-$00A4(A6)
+0000027E: 41EE FF74      'A..t'            LEA        -$008C(A6),A0
+00000282: 2D48 FF5E      '-H.^'            MOVE.L     A0,-$00A2(A6)
+00000286: 41EE FF42      'A..B'            LEA        -$00BE(A6),A0
+0000028A: A004           '..'              _Control                       ; A004
+0000028C: 4A40           'J@'              TST.W      D0
+0000028E: 57C3           'W.'              SEQ        D3
+00000290: 4403           'D.'              NEG.B      D3
+00000292: 1C03           '..'              MOVE.B     D3,D6
+00000294: 1006           '..'              MOVE.B     D6,D0
+00000296: 4CEE 18F8 FF26 'L....&'          MOVEM.L    -$00DA(A6),D3-D7/A3/A4
+0000029C: 4E5E           'N^'              UNLK       A6
+0000029E: 4E75           'Nu'              RTS        
+000002A0: 0000 0000      '....'            ORI.B      #$00,D0
+000002A4: 0000 0000      '....'            ORI.B      #$00,D0
+000002A8: 0000 0000      '....'            ORI.B      #$00,D0
+000002AC: 0000 0000      '....'            ORI.B      #$00,D0
+000002B0: 0000 0000      '....'            ORI.B      #$00,D0
+000002B4: 0000 0000      '....'            ORI.B      #$00,D0
+000002B8: 0000 0000      '....'            ORI.B      #$00,D0
+000002BC: 0000 0000      '....'            ORI.B      #$00,D0
+000002C0: 0000 0000      '....'            ORI.B      #$00,D0
+000002C4: 0000 0000      '....'            ORI.B      #$00,D0
+000002C8: 0000 0000      '....'            ORI.B      #$00,D0
+000002CC: 0000 0000      '....'            ORI.B      #$00,D0
+000002D0: 0000 0000      '....'            ORI.B      #$00,D0
+000002D4: 0000 0000      '....'            ORI.B      #$00,D0
+000002D8: 0000 0000      '....'            ORI.B      #$00,D0
+000002DC: 0000 0000      '....'            ORI.B      #$00,D0
+000002E0: 4E56 FFF8      'NV..'            LINK.W     A6,#-$0008
+000002E4: 48E7 0108      'H...'            MOVEM.L    D7/A4,-(A7)
+000002E8: 49FA 0000      'I...'            LEA        SHUTDOWNMGRC_2CEE0,A4 ; id: 215
+000002EC: 7E17           '~.'              MOVEQ      #$17,D7
+000002EE: 7000           'p.'              MOVEQ      #$00,D0
+000002F0: 2F00           '/.'              MOVE.L     D0,-(A7)
+000002F2: 4EBA 0000      'N...'            JSR        SHUTDOWNMGRC_2CF60  ; id: 217
+000002F6: 200C           ' .'              MOVE.L     A4,D0
+000002F8: 584F           'XO'              ADDQ.W     #4,A7
+000002FA: 6752           'gR'              BEQ.S      *+$0054             ; 0000034E
+000002FC: 558F           'U.'              SUBQ.L     #2,A7
+000002FE: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000300: 7000           'p.'              MOVEQ      #$00,D0
+00000302: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000304: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000306: 486E FFFC      'Hn..'            PEA        -$0004(A6)
+0000030A: 486E FFF8      'Hn..'            PEA        -$0008(A6)
+0000030E: 303C 0AD6      '0<..'            MOVE.W     #$0AD6,D0
+00000312: ABEB           '..'              _DisplayDispatch                      ; ABEB
+00000314: 4A5F           'J_'              TST.W      (A7)+
+00000316: 6636           'f6'              BNE.S      *+$0038             ; 0000034E
+00000318: 7E00           '~.'              MOVEQ      #$00,D7
+0000031A: 601E           '`.'              BRA.S      *+$0020             ; 0000033A
+0000031C: 558F           'U.'              SUBQ.L     #2,A7
+0000031E: 2F2E FFF8      '/...'            MOVE.L     -$0008(A6),-(A7)
+00000322: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000324: 7000           'p.'              MOVEQ      #$00,D0
+00000326: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000328: 2F0C           '/.'              MOVE.L     A4,-(A7)
+0000032A: 486E 0008      'Hn..'            PEA        $0008(A6)
+0000032E: 303C 0AD5      '0<..'            MOVE.W     #$0AD5,D0
+00000332: ABEB           '..'              _DisplayDispatch                      ; ABEB
+00000334: 544F           'TO'              ADDQ.W     #2,A7
+00000336: 2007           ' .'              MOVE.L     D7,D0
+00000338: 5287           'R.'              ADDQ.L     #1,D7
+0000033A: BEAE FFFC      '....'            CMP.L      -$0004(A6),D7
+0000033E: 65DC           'e.'              BCS.S      *-$0022             ; 0000031C
+00000340: 558F           'U.'              SUBQ.L     #2,A7
+00000342: 2F2E FFF8      '/...'            MOVE.L     -$0008(A6),-(A7)
+00000346: 303C 022C      '0<.,'            MOVE.W     #$022C,D0
+0000034A: ABEB           '..'              _DisplayDispatch                      ; ABEB
+0000034C: 544F           'TO'              ADDQ.W     #2,A7
+0000034E: 200C           ' .'              MOVE.L     A4,D0
+00000350: 4CEE 1080 FFF0 'L.....'          MOVEM.L    -$0010(A6),D7/A4
+00000356: 4E5E           'N^'              UNLK       A6
+00000358: 4E74 0002      'Nt..'            RTD        #$0002
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2CF60"(217)
+                      000002F4
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2CEE0"(215)
+                      000002EA
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2CDA0"(213)
+                      00000036
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2CE20"(214)
+                      00000026
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$02E0 Entry="SHUTDOWNCALLEE2D330"(219)
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$02E0 Entry="SHUTDOWNMGRC_2D330"(220)
+Comment:    
+    
+   SHUTDOWNMGRC_2D050 ended due to: ran into next module, 4 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNMGRC_2D3B0 [2D3B0, 2D3D0)
+   
+   Module started due to: MODGUESS (align, label, RTD then padding)
+
+
+Dictionary:          Flags $00 FirstId 221
+                 221: SHUTDOWNMGRC_2D3B0
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNMGRC_2D3B0"(221) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 32
+
+Content:             Flags $08
+Contents offset $0000 size $0020
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 226E 0008      '"n..'            MOVEA.L    $0008(A6),A1
+00000008: 7000           'p.'              MOVEQ      #$00,D0
+0000000A: 2280           '".'              MOVE.L     D0,(A1)
+0000000C: 2340 0004      '#@..'            MOVE.L     D0,$0004(A1)
+00000010: 2340 0008      '#@..'            MOVE.L     D0,$0008(A1)
+00000014: 2340 000C      '#@..'            MOVE.L     D0,$000C(A1)
+00000018: 2340 0010      '#@..'            MOVE.L     D0,$0010(A1)
+0000001C: 4E5E           'N^'              UNLK       A6
+0000001E: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   SHUTDOWNMGRC_2D3B0 ended due to: ran into next module 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNMGRC_2D3D0 [2D3D0, 2D404)
+   
+   Module started due to: MODGUESS (align, label)
+
+
+Dictionary:          Flags $00 FirstId 222
+                 222: SHUTDOWNMGRC_2D3D0
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNMGRC_2D3D0"(222) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 52
+
+Content:             Flags $08
+Contents offset $0000 size $0034
+00000000: 4E56 FFCE      'NV..'            LINK.W     A6,#-$0032
+00000004: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000006: 4247           'BG'              CLR.W      D7
+00000008: 7000           'p.'              MOVEQ      #$00,D0
+0000000A: 2D40 FFE0      '-@..'            MOVE.L     D0,-$0020(A6)
+0000000E: 206E 0008      ' n..'            MOVEA.L    $0008(A6),A0
+00000012: 2050           ' P'              MOVEA.L    (A0),A0
+00000014: 3D50 FFE6      '=P..'            MOVE.W     (A0),-$001A(A6)
+00000018: 3D7C 0026 FFE8 '=|.&..'          MOVE.W     #$0026,-$0018(A6)
+0000001E: 2D6E 000C FFEA '-n....'          MOVE.L     $000C(A6),-$0016(A6)
+00000024: 41EE FFCE      'A...'            LEA        -$0032(A6),A0
+00000028: A005           '..'              _Status                        ; A005
+0000002A: 3E00           '>.'              MOVE.W     D0,D7
+0000002C: 2E2E FFCA      '....'            MOVE.L     -$0036(A6),D7
+00000030: 4E5E           'N^'              UNLK       A6
+00000032: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   SHUTDOWNMGRC_2D3D0 ended due to: ran into next module, 12 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNMGRC_2D410 [2D410, 2D444)
+   
+   Module started due to: MODGUESS (align, label, RTS then padding)
+
+
+Dictionary:          Flags $00 FirstId 223
+                 223: SHUTDOWNMGRC_2D410
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNMGRC_2D410"(223) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 52
+
+Content:             Flags $08
+Contents offset $0000 size $0034
+00000000: 4E56 FFCE      'NV..'            LINK.W     A6,#-$0032
+00000004: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000006: 4247           'BG'              CLR.W      D7
+00000008: 7000           'p.'              MOVEQ      #$00,D0
+0000000A: 2D40 FFE0      '-@..'            MOVE.L     D0,-$0020(A6)
+0000000E: 206E 0008      ' n..'            MOVEA.L    $0008(A6),A0
+00000012: 2050           ' P'              MOVEA.L    (A0),A0
+00000014: 3D50 FFE6      '=P..'            MOVE.W     (A0),-$001A(A6)
+00000018: 3D7C 0026 FFE8 '=|.&..'          MOVE.W     #$0026,-$0018(A6)
+0000001E: 2D6E 000C FFEA '-n....'          MOVE.L     $000C(A6),-$0016(A6)
+00000024: 41EE FFCE      'A...'            LEA        -$0032(A6),A0
+00000028: A004           '..'              _Control                       ; A004
+0000002A: 3E00           '>.'              MOVE.W     D0,D7
+0000002C: 2E2E FFCA      '....'            MOVE.L     -$0036(A6),D7
+00000030: 4E5E           'N^'              UNLK       A6
+00000032: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   SHUTDOWNMGRC_2D410 ended due to: ran into next module, 12 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNMGRC_2D450 [2D450, 2D4F0)
+   
+   Module started due to: MODGUESS (align, label, RTS then padding)
+   
+   Resolved outgoing references:
+      +8E (2D4DE): JSR SHUTDOWNMGRC_2D410
+      +66 (2D4B6): JSR SHUTDOWNMGRC_2D3B0
+      +4C (2D49C): JSR SHUTDOWNMGRC_2D3D0
+      +3A (2D48A): JSR SHUTDOWNMGRC_2D3B0 
+
+
+Dictionary:          Flags $00 FirstId 224
+                 224: SHUTDOWNMGRC_2D450
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNMGRC_2D450"(224) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 160
+
+Content:             Flags $08
+Contents offset $0000 size $00A0
+00000000: 4E56 FFE8      'NV..'            LINK.W     A6,#-$0018
+00000004: 48E7 0118      'H...'            MOVEM.L    D7/A3/A4,-(A7)
+00000008: 266E 0008      '&n..'            MOVEA.L    $0008(A6),A3
+0000000C: 206E 0010      ' n..'            MOVEA.L    $0010(A6),A0
+00000010: 1E10           '..'              MOVE.B     (A0),D7
+00000012: 2853           '(S'              MOVEA.L    (A3),A4
+00000014: 558F           'U.'              SUBQ.L     #2,A7
+00000016: 2F2B 0004      '/+..'            MOVE.L     $0004(A3),-(A7)
+0000001A: 2F3C 6170 7762 '/<apwb'          MOVE.L     #$61707762,-(A7)    ; 'apwb'
+00000020: 486E FFFC      'Hn..'            PEA        -$0004(A6)
+00000024: 303C 06D3      '0<..'            MOVE.W     #$06D3,D0
+00000028: ABEB           '..'              _DisplayDispatch                      ; ABEB
+0000002A: 202E FFFC      ' ...'            MOVE.L     -$0004(A6),D0
+0000002E: 0800 0000      '....'            BTST       #$00,D0
+00000032: 544F           'TO'              ADDQ.W     #2,A7
+00000034: 675E           'g^'              BEQ.S      *+$0060             ; 00000094
+00000036: 486E FFE8      'Hn..'            PEA        -$0018(A6)
+0000003A: 4EBA 0000      'N...'            JSR        SHUTDOWNMGRC_2D3B0  ; id: 221
+0000003E: 00AE 0000 0001 '......'          ORI.L      #$00000001,-$0018(A6)
+             FFE8           
+00000046: 486E FFE8      'Hn..'            PEA        -$0018(A6)
+0000004A: 2F0C           '/.'              MOVE.L     A4,-(A7)
+0000004C: 4EBA 0000      'N...'            JSR        SHUTDOWNMGRC_2D3D0  ; id: 222
+00000050: 4A40           'J@'              TST.W      D0
+00000052: 4FEF 000C      'O...'            LEA        $000C(A7),A7
+00000056: 663C           'f<'              BNE.S      *+$003E             ; 00000094
+00000058: 202E FFEC      ' ...'            MOVE.L     -$0014(A6),D0
+0000005C: 0800 0000      '....'            BTST       #$00,D0
+00000060: 6732           'g2'              BEQ.S      *+$0034             ; 00000094
+00000062: 486E FFE8      'Hn..'            PEA        -$0018(A6)
+00000066: 4EBA 0000      'N...'            JSR        SHUTDOWNMGRC_2D3B0  ; id: 221
+0000006A: 00AE 0000 0001 '......'          ORI.L      #$00000001,-$0018(A6)
+             FFE8           
+00000072: 4A07           'J.'              TST.B      D7
+00000074: 584F           'XO'              ADDQ.W     #4,A7
+00000076: 670A           'g.'              BEQ.S      *+$000C             ; 00000082
+00000078: 00AE 0000 0001 '......'          ORI.L      #$00000001,-$0010(A6)
+             FFF0           
+00000080: 6006           '`.'              BRA.S      *+$0008             ; 00000088
+00000082: 08AE 0000 FFF3 '......'          BCLR       #$00,-$000D(A6)
+00000088: 486E FFE8      'Hn..'            PEA        -$0018(A6)
+0000008C: 2F0C           '/.'              MOVE.L     A4,-(A7)
+0000008E: 4EBA 0000      'N...'            JSR        SHUTDOWNMGRC_2D410  ; id: 223
+00000092: 504F           'PO'              ADDQ.W     #8,A7
+00000094: 4CEE 1880 FFDC 'L.....'          MOVEM.L    -$0024(A6),D7/A3/A4
+0000009A: 4E5E           'N^'              UNLK       A6
+0000009C: 4E74 000C      'Nt..'            RTD        #$000C
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2D410"(223)
+                      00000090
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2D3B0"(221)
+                      00000068
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2D3D0"(222)
+                      0000004E
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2D3B0"(221)
+                      0000003C
+Comment:    
+    
+   SHUTDOWNMGRC_2D450 ended due to: ran into next module 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SHUTDOWNCALLEE2D4F0 [2D4F0, 2D562)
+   
+   Module started due to: MODGUESS (align, label)
+   
+   Resolved outgoing references:
+      +8 (2D4F8): LEA SHUTDOWNMGRC_2D450, A4
+   
+   +0 (2D4F0): SHUTDOWNMGRC_2D4F0 
+
+
+Dictionary:          Flags $00 FirstId 225
+                 225: SHUTDOWNCALLEE2D4F0
+                 226: SHUTDOWNMGRC_2D4F0
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SHUTDOWNCALLEE2D4F0"(225) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 114
+
+Content:             Flags $08
+Contents offset $0000 size $0072
+00000000: 4E56 FFF8      'NV..'            LINK.W     A6,#-$0008
+00000004: 48E7 0108      'H...'            MOVEM.L    D7/A4,-(A7)
+00000008: 49FA 0000      'I...'            LEA        SHUTDOWNMGRC_2D450,A4 ; id: 224
+0000000C: 7E17           '~.'              MOVEQ      #$17,D7
+0000000E: 200C           ' .'              MOVE.L     A4,D0
+00000010: 6752           'gR'              BEQ.S      *+$0054             ; 00000064
+00000012: 558F           'U.'              SUBQ.L     #2,A7
+00000014: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000016: 7000           'p.'              MOVEQ      #$00,D0
+00000018: 2F00           '/.'              MOVE.L     D0,-(A7)
+0000001A: 2F00           '/.'              MOVE.L     D0,-(A7)
+0000001C: 486E FFFC      'Hn..'            PEA        -$0004(A6)
+00000020: 486E FFF8      'Hn..'            PEA        -$0008(A6)
+00000024: 303C 0AD6      '0<..'            MOVE.W     #$0AD6,D0
+00000028: ABEB           '..'              _DisplayDispatch                      ; ABEB
+0000002A: 4A5F           'J_'              TST.W      (A7)+
+0000002C: 6636           'f6'              BNE.S      *+$0038             ; 00000064
+0000002E: 7E00           '~.'              MOVEQ      #$00,D7
+00000030: 601E           '`.'              BRA.S      *+$0020             ; 00000050
+00000032: 558F           'U.'              SUBQ.L     #2,A7
+00000034: 2F2E FFF8      '/...'            MOVE.L     -$0008(A6),-(A7)
+00000038: 2F07           '/.'              MOVE.L     D7,-(A7)
+0000003A: 7000           'p.'              MOVEQ      #$00,D0
+0000003C: 2F00           '/.'              MOVE.L     D0,-(A7)
+0000003E: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000040: 486E 0008      'Hn..'            PEA        $0008(A6)
+00000044: 303C 0AD5      '0<..'            MOVE.W     #$0AD5,D0
+00000048: ABEB           '..'              _DisplayDispatch                      ; ABEB
+0000004A: 544F           'TO'              ADDQ.W     #2,A7
+0000004C: 2007           ' .'              MOVE.L     D7,D0
+0000004E: 5287           'R.'              ADDQ.L     #1,D7
+00000050: BEAE FFFC      '....'            CMP.L      -$0004(A6),D7
+00000054: 65DC           'e.'              BCS.S      *-$0022             ; 00000032
+00000056: 558F           'U.'              SUBQ.L     #2,A7
+00000058: 2F2E FFF8      '/...'            MOVE.L     -$0008(A6),-(A7)
+0000005C: 303C 022C      '0<.,'            MOVE.W     #$022C,D0
+00000060: ABEB           '..'              _DisplayDispatch                      ; ABEB
+00000062: 544F           'TO'              ADDQ.W     #2,A7
+00000064: 200C           ' .'              MOVE.L     A4,D0
+00000066: 4CEE 1080 FFF0 'L.....'          MOVEM.L    -$0010(A6),D7/A4
+0000006C: 4E5E           'N^'              UNLK       A6
+0000006E: 4E74 0002      'Nt..'            RTD        #$0002
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SHUTDOWNMGRC_2D450"(224)
+                      0000000A
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0000 Entry="SHUTDOWNMGRC_2D4F0"(226)
+Comment:    
+    
+   SHUTDOWNCALLEE2D4F0 ended due to: end of FILE directive 
+
+
+Last        
+Record Summary 
+Type Count
+   0 Pad                     20
+   1 First                    1
+   2 Last                     1
+   3 Comment                 33
+   4 Dictionary              21
+   5 Module                  16
+   6 EntryPoint               6
+   7 ModSize                 16
+   8 Content                 16
+   9 Reference               17

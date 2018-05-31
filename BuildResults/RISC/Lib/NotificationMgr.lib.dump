@@ -1,0 +1,2330 @@
+
+First:      Flags=$01 Version=$0002
+Comment:    
+    
+   UNLINKED FROM MAC OS ROM -- ELLIOT WAS HERE
+   [4A7E0, 4B672) 
+
+
+Dictionary:          Flags $00 FirstId 200
+                 200: Main
+Pad         
+Comment:    
+    
+   #####################################################################################
+   
+   Module: AddrInRange [4A7E0, 4A808)
+   
+   Module started due to: vector glue above, FILE directive, MODGUESS (align, label, RTS then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 201
+                 201: AddrInRange
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="AddrInRange"(201) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 40
+
+Content:             Flags $08
+Contents offset $0000 size $0028
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 1008      'H...'            MOVEM.L    D3/A4,-(A7)
+00000008: 286E 0008      '(n..'            MOVEA.L    $0008(A6),A4
+0000000C: 7600           'v.'              MOVEQ      #$00,D3
+0000000E: B9EE 000C      '....'            CMPA.L     $000C(A6),A4
+00000012: 6508           'e.'              BCS.S      *+$000A             ; 0000001C
+00000014: B9EE 0010      '....'            CMPA.L     $0010(A6),A4
+00000018: 6202           'b.'              BHI.S      *+$0004             ; 0000001C
+0000001A: 7601           'v.'              MOVEQ      #$01,D3
+0000001C: 1003           '..'              MOVE.B     D3,D0
+0000001E: 4CEE 1008 FFF8 'L.....'          MOVEM.L    -$0008(A6),D3/A4
+00000024: 4E5E           'N^'              UNLK       A6
+00000026: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   AddrInRange ended due to: vector glue below 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: GetPID [4A820, 4A84E)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 202
+                 202: GetPID
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="GetPID"(202) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 46
+
+Content:             Flags $08
+Contents offset $0000 size $002E
+00000000: 4E56 FFFC      'NV..'            LINK.W     A6,#-$0004
+00000004: 303C A88F      '0<..'            MOVE.W     #$A88F,D0
+00000008: A746           '.F'              _GetToolTrapAddress                      ; A746
+0000000A: 2D48 FFFC      '-H..'            MOVE.L     A0,-$0004(A6)
+0000000E: 303C A89F      '0<..'            MOVE.W     #$A89F,D0
+00000012: A746           '.F'              _GetToolTrapAddress                      ; A746
+00000014: 202E FFFC      ' ...'            MOVE.L     -$0004(A6),D0
+00000018: B1C0           '..'              CMPA.L     D0,A0
+0000001A: 670C           'g.'              BEQ.S      *+$000E             ; 00000028
+0000001C: 558F           'U.'              SUBQ.L     #2,A7
+0000001E: 7013           'p.'              MOVEQ      #$13,D0
+00000020: 3F00           '?.'              MOVE.W     D0,-(A7)
+00000022: A88F           '..'              _OSDispatch                      ; A88F
+00000024: 301F           '0.'              MOVE.W     (A7)+,D0
+00000026: 6002           '`.'              BRA.S      *+$0004             ; 0000002A
+00000028: 70FF           'p.'              MOVEQ      #$FF,D0
+0000002A: 4E5E           'N^'              UNLK       A6
+0000002C: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   GetPID ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: FindItem [4A860, 4A8B2)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +32 (4A892): JSR EQUALSTRING ; outside file
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c
+
+
+Dictionary:          Flags $00 FirstId 203
+                 203: FindItem
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="FindItem"(203) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 82
+
+Content:             Flags $08
+Contents offset $0000 size $0052
+00000000: 4E56 FF00      'NV..'            LINK.W     A6,#-$0100
+00000004: 48E7 0118      'H...'            MOVEM.L    D7/A3/A4,-(A7)
+00000008: 266E 0008      '&n..'            MOVEA.L    $0008(A6),A3
+0000000C: 49EE FF00      'I...'            LEA        -$0100(A6),A4
+00000010: 558F           'U.'              SUBQ.L     #2,A7
+00000012: 2F0B           '/.'              MOVE.L     A3,-(A7)
+00000014: A950           '.P'              _CountMItems                      ; A950
+00000016: 3E1F           '>.'              MOVE.W     (A7)+,D7
+00000018: 6028           '`('              BRA.S      *+$002A             ; 00000042
+0000001A: 2F0B           '/.'              MOVE.L     A3,-(A7)
+0000001C: 3F07           '?.'              MOVE.W     D7,-(A7)
+0000001E: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000020: A946           '.F'              _GetMenuItemText                      ; A946
+00000022: 558F           'U.'              SUBQ.L     #2,A7
+00000024: 2F2E 000C      '/...'            MOVE.L     $000C(A6),-(A7)
+00000028: 2F0C           '/.'              MOVE.L     A4,-(A7)
+0000002A: 7000           'p.'              MOVEQ      #$00,D0
+0000002C: 1F00           '..'              MOVE.B     D0,-(A7)
+0000002E: 7201           'r.'              MOVEQ      #$01,D1
+00000030: 1F01           '..'              MOVE.B     D1,-(A7)
+00000032: 4EBA 0000      'N...'            JSR        EQUALSTRING         ; id: 204
+00000036: 4A1F           'J.'              TST.B      (A7)+
+00000038: 6704           'g.'              BEQ.S      *+$0006             ; 0000003E
+0000003A: 3007           '0.'              MOVE.W     D7,D0
+0000003C: 600A           '`.'              BRA.S      *+$000C             ; 00000048
+0000003E: 3007           '0.'              MOVE.W     D7,D0
+00000040: 5347           'SG'              SUBQ.W     #1,D7
+00000042: 4A47           'JG'              TST.W      D7
+00000044: 6ED4           'n.'              BGT.S      *-$002A             ; 0000001A
+00000046: 7000           'p.'              MOVEQ      #$00,D0
+00000048: 4CEE 1880 FEF4 'L.....'          MOVEM.L    -$010C(A6),D7/A3/A4
+0000004E: 4E5E           'N^'              UNLK       A6
+00000050: 4E75           'Nu'              RTS        
+
+
+Dictionary:          Flags $00 FirstId 204
+                 204: EQUALSTRING
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="EQUALSTRING"(204)
+                      00000034
+Comment:    
+    
+   FindItem ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: GetApplicationMenu [4A8D0, 4A8E8)
+   
+   Module started due to: island above, MODGUESS (align, label, BRA.L then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 205
+                 205: GetApplicationMenu
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="GetApplicationMenu"(205) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 24
+
+Content:             Flags $08
+Contents offset $0000 size $0018
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 598F           'Y.'              SUBQ.L     #4,A7
+00000006: 2F3C 4D45 4E55 '/<MENU'          MOVE.L     #$4D454E55,-(A7)    ; 'MENU'
+0000000C: 3F3C BF97      '?<..'            MOVE.W     #$BF97,-(A7)
+00000010: A9A0           '..'              _GetResource                      ; A9A0
+00000012: 201F           ' .'              MOVE.L     (A7)+,D0
+00000014: 4E5E           'N^'              UNLK       A6
+00000016: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   GetApplicationMenu ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: InApplicationMenu [4A900, 4A9DC)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +C8 (4A9C8): JSR FindItem
+      +88 (4A988): JSR FindItem
+      +64 (4A964): JSR GetPID
+      +58 (4A958): JSR AddrInRange
+      +10 (4A910): JSR GetApplicationMenu
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c
+
+
+Dictionary:          Flags $00 FirstId 206
+                 206: InApplicationMenu
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="InApplicationMenu"(206) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 220
+
+Content:             Flags $08
+Contents offset $0000 size $00DC
+00000000: 4E56 FEAA      'NV..'            LINK.W     A6,#-$0156
+00000004: 48E7 1718      'H...'            MOVEM.L    D3/D5-D7/A3/A4,-(A7)
+00000008: 3A2E 000E      ':...'            MOVE.W     $000E(A6),D5
+0000000C: 3C2E 000A      '<...'            MOVE.W     $000A(A6),D6
+00000010: 4EBA 0000      'N...'            JSR        GetApplicationMenu  ; id: 205
+00000014: 2640           '&@'              MOVEA.L    D0,A3
+00000016: 4A45           'JE'              TST.W      D5
+00000018: 5DC3           '].'              SLT        D3
+0000001A: 4403           'D.'              NEG.B      D3
+0000001C: 670E           'g.'              BEQ.S      *+$0010             ; 0000002C
+0000001E: 3005           '0.'              MOVE.W     D5,D0
+00000020: 4640           'F@'              NOT.W      D0
+00000022: 2078 011C      ' x..'            MOVEA.L    $011C,A0
+00000026: 1030 0000      '.0..'            MOVE.B     $00(A0,D0.W),D0
+0000002A: 6002           '`.'              BRA.S      *+$0004             ; 0000002E
+0000002C: 7000           'p.'              MOVEQ      #$00,D0
+0000002E: 49C0           'I.'              EXTB.L     D0
+00000030: 2840           '(@'              MOVEA.L    D0,A4
+00000032: 4247           'BG'              CLR.W      D7
+00000034: 200B           ' .'              MOVE.L     A3,D0
+00000036: 6700 0098      'g...'            BEQ        *+$009A             ; 000000D0
+0000003A: 0C46 FFFF      '.F..'            CMPI.W     #$FFFF,D6
+0000003E: 6752           'gR'              BEQ.S      *+$0054             ; 00000092
+00000040: 200C           ' .'              MOVE.L     A4,D0
+00000042: 672C           'g,'              BEQ.S      *+$002E             ; 00000070
+00000044: 598F           'Y.'              SUBQ.L     #4,A7
+00000046: 2EB8 02A6      '....'            MOVE.L     $02A6,(A7)
+0000004A: 205F           ' _'              MOVEA.L    (A7)+,A0
+0000004C: 2F10           '/.'              MOVE.L     (A0),-(A7)
+0000004E: 598F           'Y.'              SUBQ.L     #4,A7
+00000050: 2EB8 02A6      '....'            MOVE.L     $02A6,(A7)
+00000054: 2054           ' T'              MOVEA.L    (A4),A0
+00000056: 2F10           '/.'              MOVE.L     (A0),-(A7)
+00000058: 4EBA 0000      'N...'            JSR        AddrInRange         ; id: 201
+0000005C: 4A00           'J.'              TST.B      D0
+0000005E: 4FEF 000C      'O...'            LEA        $000C(A7),A7
+00000062: 660C           'f.'              BNE.S      *+$000E             ; 00000070
+00000064: 4EBA 0000      'N...'            JSR        GetPID              ; id: 202
+00000068: B046           '.F'              CMP.W      D6,D0
+0000006A: 6704           'g.'              BEQ.S      *+$0006             ; 00000070
+0000006C: 7000           'p.'              MOVEQ      #$00,D0
+0000006E: 2840           '(@'              MOVEA.L    D0,A4
+00000070: 200C           ' .'              MOVE.L     A4,D0
+00000072: 661E           'f.'              BNE.S      *+$0020             ; 00000092
+00000074: 598F           'Y.'              SUBQ.L     #4,A7
+00000076: 3F06           '?.'              MOVE.W     D6,-(A7)
+00000078: 486E FEAA      'Hn..'            PEA        -$0156(A6)
+0000007C: 7017           'p.'              MOVEQ      #$17,D0
+0000007E: 3F00           '?.'              MOVE.W     D0,-(A7)
+00000080: A88F           '..'              _OSDispatch                      ; A88F
+00000082: 486E FED8      'Hn..'            PEA        -$0128(A6)
+00000086: 2F0B           '/.'              MOVE.L     A3,-(A7)
+00000088: 4EBA 0000      'N...'            JSR        FindItem            ; id: 203
+0000008C: 3E00           '>.'              MOVE.W     D0,D7
+0000008E: 4FEF 000C      'O...'            LEA        $000C(A7),A7
+00000092: 200C           ' .'              MOVE.L     A4,D0
+00000094: 673A           'g:'              BEQ.S      *+$003C             ; 000000D0
+00000096: 7001           'p.'              MOVEQ      #$01,D0
+00000098: 1F00           '..'              MOVE.B     D0,-(A7)
+0000009A: 70FF           'p.'              MOVEQ      #$FF,D0
+0000009C: 4A1F           'J.'              TST.B      (A7)+
+0000009E: 56C0           'V.'              SNE        D0
+000000A0: 31C0 0B9E      '1...'            MOVE.W     D0,$0B9E
+000000A4: 598F           'Y.'              SUBQ.L     #4,A7
+000000A6: 2F3C 4452 5652 '/<DRVR'          MOVE.L     #$44525652,-(A7)    ; 'DRVR'
+000000AC: 3005           '0.'              MOVE.W     D5,D0
+000000AE: 4640           'F@'              NOT.W      D0
+000000B0: 3F00           '?.'              MOVE.W     D0,-(A7)
+000000B2: A9A0           '..'              _GetResource                      ; A9A0
+000000B4: 486E FEFA      'Hn..'            PEA        -$0106(A6)
+000000B8: 486E FEFC      'Hn..'            PEA        -$0104(A6)
+000000BC: 486E FF00      'Hn..'            PEA        -$0100(A6)
+000000C0: A9A8           '..'              _GetResInfo                      ; A9A8
+000000C2: 486E FF00      'Hn..'            PEA        -$0100(A6)
+000000C6: 2F0B           '/.'              MOVE.L     A3,-(A7)
+000000C8: 4EBA 0000      'N...'            JSR        FindItem            ; id: 203
+000000CC: 3E00           '>.'              MOVE.W     D0,D7
+000000CE: 504F           'PO'              ADDQ.W     #8,A7
+000000D0: 3007           '0.'              MOVE.W     D7,D0
+000000D2: 4CEE 18E8 FE92 'L.....'          MOVEM.L    -$016E(A6),D3/D5-D7/A3/A4
+000000D8: 4E5E           'N^'              UNLK       A6
+000000DA: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="FindItem"(203)
+                      000000CA
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="FindItem"(203)
+                      0000008A
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GetPID"(202)
+                      00000066
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="AddrInRange"(201)
+                      0000005A
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GetApplicationMenu"(205)
+                      00000012
+Comment:    
+    
+   InApplicationMenu ended due to: vector glue below 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: GetFreeAux [4A9F0, 4AA16)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 207
+                 207: GetFreeAux
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="GetFreeAux"(207) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 38
+
+Content:             Flags $08
+Contents offset $0000 size $0026
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000006: 206E 0008      ' n..'            MOVEA.L    $0008(A6),A0
+0000000A: 2868 0006      '(h..'            MOVEA.L    $0006(A0),A4
+0000000E: 200C           ' .'              MOVE.L     A4,D0
+00000010: 670A           'g.'              BEQ.S      *+$000C             ; 0000001C
+00000012: 4A6C 0004      'Jl..'            TST.W      $0004(A4)
+00000016: 6604           'f.'              BNE.S      *+$0006             ; 0000001C
+00000018: 200C           ' .'              MOVE.L     A4,D0
+0000001A: 6002           '`.'              BRA.S      *+$0004             ; 0000001E
+0000001C: 7000           'p.'              MOVEQ      #$00,D0
+0000001E: 286E FFFC      '(n..'            MOVEA.L    -$0004(A6),A4
+00000022: 4E5E           'N^'              UNLK       A6
+00000024: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   GetFreeAux ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: AddAuxRec [4AA20, 4AA50)
+   
+   Module started due to: vector glue above, MODGUESS (align, label)
+   
+   Resolved outgoing references:
+      +E (4AA2E): JSR GetFreeAux
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 208
+                 208: AddAuxRec
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="AddAuxRec"(208) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 48
+
+Content:             Flags $08
+Contents offset $0000 size $0030
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 0018      'H...'            MOVEM.L    A3/A4,-(A7)
+00000008: 266E 000C      '&n..'            MOVEA.L    $000C(A6),A3
+0000000C: 2F0B           '/.'              MOVE.L     A3,-(A7)
+0000000E: 4EBA 0000      'N...'            JSR        GetFreeAux          ; id: 207
+00000012: 4A80           'J.'              TST.L      D0
+00000014: 584F           'XO'              ADDQ.W     #4,A7
+00000016: 660E           'f.'              BNE.S      *+$0010             ; 00000026
+00000018: 202E 0008      ' ...'            MOVE.L     $0008(A6),D0
+0000001C: A71E           '..'              _NewPtrSysClear                      ; A71E
+0000001E: 2848           '(H'              MOVEA.L    A0,A4
+00000020: 204C           ' L'              MOVEA.L    A4,A0
+00000022: 224B           '"K'              MOVEA.L    A3,A1
+00000024: A96F           '.o'              _Enqueue                       ; A96F
+00000026: 4CEE 1800 FFF8 'L.....'          MOVEM.L    -$0008(A6),A3/A4
+0000002C: 4E5E           'N^'              UNLK       A6
+0000002E: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GetFreeAux"(207)
+                      00000010
+Comment:    
+    
+   AddAuxRec ended due to: vector glue below 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: AddIconRec [4AA60, 4AA88)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +20 (4AA80): JSR AddAuxRec
+      +10 (4AA70): JSR AddAuxRec
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c
+
+
+Dictionary:          Flags $00 FirstId 209
+                 209: AddIconRec
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="AddIconRec"(209) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 40
+
+Content:             Flags $08
+Contents offset $0000 size $0028
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+00000008: 4868 0014      'Hh..'            PEA        $0014(A0)
+0000000C: 7012           'p.'              MOVEQ      #$12,D0
+0000000E: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000010: 4EBA 0000      'N...'            JSR        AddAuxRec           ; id: 208
+00000014: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+00000018: 4868 0038      'Hh.8'            PEA        $0038(A0)
+0000001C: 7012           'p.'              MOVEQ      #$12,D0
+0000001E: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000020: 4EBA 0000      'N...'            JSR        AddAuxRec           ; id: 208
+00000024: 4E5E           'N^'              UNLK       A6
+00000026: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="AddAuxRec"(208)
+                      00000022
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="AddAuxRec"(208)
+                      00000012
+Comment:    
+    
+   AddIconRec ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: LinkAuxRec [4AAA0, 4AACA)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 210
+                 210: LinkAuxRec
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="LinkAuxRec"(210) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 42
+
+Content:             Flags $08
+Contents offset $0000 size $002A
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 2F0B           '/.'              MOVE.L     A3,-(A7)
+00000006: 266E 0008      '&n..'            MOVEA.L    $0008(A6),A3
+0000000A: 226E 000C      '"n..'            MOVEA.L    $000C(A6),A1
+0000000E: 337C FFFF 0004 '3|....'          MOVE.W     #$FFFF,$0004(A1)
+00000014: 5269 0006      'Ri..'            ADDQ.W     #1,$0006(A1)
+00000018: 236B 0008 0008 '#k....'          MOVE.L     $0008(A3),$0008(A1)
+0000001E: 2749 0008      ''I..'            MOVE.L     A1,$0008(A3)
+00000022: 266E FFFC      '&n..'            MOVEA.L    -$0004(A6),A3
+00000026: 4E5E           'N^'              UNLK       A6
+00000028: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   LinkAuxRec ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: UnLinkAuxRecs [4AAE0, 4AB0A)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c
+
+
+Dictionary:          Flags $00 FirstId 211
+                 211: UnLinkAuxRecs
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="UnLinkAuxRecs"(211) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 42
+
+Content:             Flags $08
+Contents offset $0000 size $002A
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 2F0B           '/.'              MOVE.L     A3,-(A7)
+00000006: 266E 0008      '&n..'            MOVEA.L    $0008(A6),A3
+0000000A: 226B 0008      '"k..'            MOVEA.L    $0008(A3),A1
+0000000E: 7000           'p.'              MOVEQ      #$00,D0
+00000010: 2740 0008      ''@..'            MOVE.L     D0,$0008(A3)
+00000014: 6008           '`.'              BRA.S      *+$000A             ; 0000001E
+00000016: 5369 0006      'Si..'            SUBQ.W     #1,$0006(A1)
+0000001A: 2269 0008      '"i..'            MOVEA.L    $0008(A1),A1
+0000001E: 2009           ' .'              MOVE.L     A1,D0
+00000020: 66F4           'f.'              BNE.S      *-$000A             ; 00000016
+00000022: 266E FFFC      '&n..'            MOVEA.L    -$0004(A6),A3
+00000026: 4E5E           'N^'              UNLK       A6
+00000028: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   UnLinkAuxRecs ended due to: vector glue below 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: InsertMarkRec [4AB20, 4AB8C)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +5A (4AB7A): JSR LinkAuxRec
+      +42 (4AB62): JSR GetFreeAux
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 212
+                 212: InsertMarkRec
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="InsertMarkRec"(212) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 108
+
+Content:             Flags $08
+Contents offset $0000 size $006C
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 0318      'H...'            MOVEM.L    D6/D7/A3/A4,-(A7)
+00000008: 266E 0008      '&n..'            MOVEA.L    $0008(A6),A3
+0000000C: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+00000010: 2868 000C      '(h..'            MOVEA.L    $000C(A0),A4
+00000014: 3C2B 000C      '<+..'            MOVE.W     $000C(A3),D6
+00000018: 3E2B 000E      '>+..'            MOVE.W     $000E(A3),D7
+0000001C: 6002           '`.'              BRA.S      *+$0004             ; 00000020
+0000001E: 2854           '(T'              MOVEA.L    (A4),A4
+00000020: 200C           ' .'              MOVE.L     A4,D0
+00000022: 6712           'g.'              BEQ.S      *+$0014             ; 00000036
+00000024: BE6C 000E      '.l..'            CMP.W      $000E(A4),D7
+00000028: 6606           'f.'              BNE.S      *+$0008             ; 00000030
+0000002A: BC6C 000C      '.l..'            CMP.W      $000C(A4),D6
+0000002E: 6706           'g.'              BEQ.S      *+$0008             ; 00000036
+00000030: 4A6C 0004      'Jl..'            TST.W      $0004(A4)
+00000034: 66E8           'f.'              BNE.S      *-$0016             ; 0000001E
+00000036: 200C           ' .'              MOVE.L     A4,D0
+00000038: 6610           'f.'              BNE.S      *+$0012             ; 0000004A
+0000003A: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+0000003E: 4868 000A      'Hh..'            PEA        $000A(A0)
+00000042: 4EBA 0000      'N...'            JSR        GetFreeAux          ; id: 207
+00000046: 2840           '(@'              MOVEA.L    D0,A4
+00000048: 584F           'XO'              ADDQ.W     #4,A7
+0000004A: 200C           ' .'              MOVE.L     A4,D0
+0000004C: 6712           'g.'              BEQ.S      *+$0014             ; 00000060
+0000004E: 3946 000C      '9F..'            MOVE.W     D6,$000C(A4)
+00000052: 3947 000E      '9G..'            MOVE.W     D7,$000E(A4)
+00000056: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000058: 2F0B           '/.'              MOVE.L     A3,-(A7)
+0000005A: 4EBA 0000      'N...'            JSR        LinkAuxRec          ; id: 210
+0000005E: 504F           'PO'              ADDQ.W     #8,A7
+00000060: 200C           ' .'              MOVE.L     A4,D0
+00000062: 4CEE 18C0 FFF0 'L.....'          MOVEM.L    -$0010(A6),D6/D7/A3/A4
+00000068: 4E5E           'N^'              UNLK       A6
+0000006A: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="LinkAuxRec"(210)
+                      0000005C
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GetFreeAux"(207)
+                      00000044
+Comment:    
+    
+   InsertMarkRec ended due to: vector glue below 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: InsertIconRec [4ABA0, 4AC52)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +8C (4AC2C): JSR GETHANDLESIZE ; outside file
+      +26 (4ABC6): JSR GETHANDLESIZE ; outside file
+      +16 (4ABB6): JSR GETHANDLESIZE ; outside file
+      +A0 (4AC40): JSR LinkAuxRec
+      +74 (4AC14): JSR GetFreeAux
+      +44 (4ABE4): JSR InApplicationMenu
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c
+
+
+Dictionary:          Flags $00 FirstId 213
+                 213: InsertIconRec
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="InsertIconRec"(213) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 178
+
+Content:             Flags $08
+Contents offset $0000 size $00B2
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 1018      'H...'            MOVEM.L    D3/A3/A4,-(A7)
+00000008: 266E 0008      '&n..'            MOVEA.L    $0008(A6),A3
+0000000C: 7000           'p.'              MOVEQ      #$00,D0
+0000000E: 2840           '(@'              MOVEA.L    D0,A4
+00000010: 598F           'Y.'              SUBQ.L     #4,A7
+00000012: 2F2B 0010      '/+..'            MOVE.L     $0010(A3),-(A7)
+00000016: 4EBA 0000      'N...'            JSR        GETHANDLESIZE       ; id: 214
+0000001A: 704C           'pL'              MOVEQ      #$4C,D0             ; 'L'
+0000001C: B09F           '..'              CMP.L      (A7)+,D0
+0000001E: 6710           'g.'              BEQ.S      *+$0012             ; 00000030
+00000020: 598F           'Y.'              SUBQ.L     #4,A7
+00000022: 2F2B 0010      '/+..'            MOVE.L     $0010(A3),-(A7)
+00000026: 4EBA 0000      'N...'            JSR        GETHANDLESIZE       ; id: 214
+0000002A: 7020           'p '              MOVEQ      #$20,D0             ; ' '
+0000002C: B09F           '..'              CMP.L      (A7)+,D0
+0000002E: 6676           'fv'              BNE.S      *+$0078             ; 000000A6
+00000030: 7600           'v.'              MOVEQ      #$00,D3
+00000032: 2F03           '/.'              MOVE.L     D3,-(A7)
+00000034: 302B 000E      '0+..'            MOVE.W     $000E(A3),D0
+00000038: 48C0           'H.'              EXT.L      D0
+0000003A: 2F00           '/.'              MOVE.L     D0,-(A7)
+0000003C: 302B 000C      '0+..'            MOVE.W     $000C(A3),D0
+00000040: 48C0           'H.'              EXT.L      D0
+00000042: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000044: 4EBA 0000      'N...'            JSR        InApplicationMenu   ; id: 206
+00000048: 508F           'P.'              ADDQ.L     #8,A7
+0000004A: 261F           '&.'              MOVE.L     (A7)+,D3
+0000004C: 4A40           'J@'              TST.W      D0
+0000004E: 6708           'g.'              BEQ.S      *+$000A             ; 00000058
+00000050: 4A6B 000E      'Jk..'            TST.W      $000E(A3)
+00000054: 6702           'g.'              BEQ.S      *+$0004             ; 00000058
+00000056: 7601           'v.'              MOVEQ      #$01,D3
+00000058: 4A03           'J.'              TST.B      D3
+0000005A: 670C           'g.'              BEQ.S      *+$000E             ; 00000068
+0000005C: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+00000060: 41E8 0038      'A..8'            LEA        $0038(A0),A0
+00000064: 2008           ' .'              MOVE.L     A0,D0
+00000066: 600A           '`.'              BRA.S      *+$000C             ; 00000072
+00000068: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+0000006C: 41E8 0014      'A...'            LEA        $0014(A0),A0
+00000070: 2008           ' .'              MOVE.L     A0,D0
+00000072: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000074: 4EBA 0000      'N...'            JSR        GetFreeAux          ; id: 207
+00000078: 2840           '(@'              MOVEA.L    D0,A4
+0000007A: 200C           ' .'              MOVE.L     A4,D0
+0000007C: 584F           'XO'              ADDQ.W     #4,A7
+0000007E: 6726           'g&'              BEQ.S      *+$0028             ; 000000A6
+00000080: 296B 0010 000C ')k....'          MOVE.L     $0010(A3),$000C(A4)
+00000086: 598F           'Y.'              SUBQ.L     #4,A7
+00000088: 2F2B 0010      '/+..'            MOVE.L     $0010(A3),-(A7)
+0000008C: 4EBA 0000      'N...'            JSR        GETHANDLESIZE       ; id: 214
+00000090: 704C           'pL'              MOVEQ      #$4C,D0             ; 'L'
+00000092: B09F           '..'              CMP.L      (A7)+,D0
+00000094: 57C3           'W.'              SEQ        D3
+00000096: 4403           'D.'              NEG.B      D3
+00000098: 1943 0010      '.C..'            MOVE.B     D3,$0010(A4)
+0000009C: 2F0C           '/.'              MOVE.L     A4,-(A7)
+0000009E: 2F0B           '/.'              MOVE.L     A3,-(A7)
+000000A0: 4EBA 0000      'N...'            JSR        LinkAuxRec          ; id: 210
+000000A4: 504F           'PO'              ADDQ.W     #8,A7
+000000A6: 200C           ' .'              MOVE.L     A4,D0
+000000A8: 4CEE 1808 FFF4 'L.....'          MOVEM.L    -$000C(A6),D3/A3/A4
+000000AE: 4E5E           'N^'              UNLK       A6
+000000B0: 4E75           'Nu'              RTS        
+
+
+Dictionary:          Flags $00 FirstId 214
+                 214: GETHANDLESIZE
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GETHANDLESIZE"(214)
+                      0000008E
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GETHANDLESIZE"(214)
+                      00000028
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GETHANDLESIZE"(214)
+                      00000018
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="LinkAuxRec"(210)
+                      000000A2
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GetFreeAux"(207)
+                      00000076
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="InApplicationMenu"(206)
+                      00000046
+Comment:    
+    
+   InsertIconRec ended due to: vector glue below 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: ValidIconRec [4AC70, 4ACB8)
+   
+   Module started due to: island above, MODGUESS (align, label, BRA.L then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 215
+                 215: ValidIconRec
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="ValidIconRec"(215) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 72
+
+Content:             Flags $08
+Contents offset $0000 size $0048
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 0038      'H..8'            MOVEM.L    A2-A4,-(A7)
+00000008: 246E 000C      '$n..'            MOVEA.L    $000C(A6),A2
+0000000C: 266E 0008      '&n..'            MOVEA.L    $0008(A6),A3
+00000010: 200B           ' .'              MOVE.L     A3,D0
+00000012: 6704           'g.'              BEQ.S      *+$0006             ; 00000018
+00000014: 2653           '&S'              MOVEA.L    (A3),A3
+00000016: 601A           '`.'              BRA.S      *+$001C             ; 00000032
+00000018: 266A 0002      '&j..'            MOVEA.L    $0002(A2),A3
+0000001C: 6014           '`.'              BRA.S      *+$0016             ; 00000032
+0000001E: 2853           '(S'              MOVEA.L    (A3),A4
+00000020: 4A6B 0004      'Jk..'            TST.W      $0004(A3)
+00000024: 670A           'g.'              BEQ.S      *+$000C             ; 00000030
+00000026: 204B           ' K'              MOVEA.L    A3,A0
+00000028: 224A           '"J'              MOVEA.L    A2,A1
+0000002A: A96E           '.n'              _Dequeue                       ; A96E
+0000002C: 204B           ' K'              MOVEA.L    A3,A0
+0000002E: A01F           '..'              _DisposePtr                      ; A01F
+00000030: 264C           '&L'              MOVEA.L    A4,A3
+00000032: 200B           ' .'              MOVE.L     A3,D0
+00000034: 6706           'g.'              BEQ.S      *+$0008             ; 0000003C
+00000036: 4A6B 0006      'Jk..'            TST.W      $0006(A3)
+0000003A: 67E2           'g.'              BEQ.S      *-$001C             ; 0000001E
+0000003C: 200B           ' .'              MOVE.L     A3,D0
+0000003E: 4CEE 1C00 FFF4 'L.....'          MOVEM.L    -$000C(A6),A2-A4
+00000044: 4E5E           'N^'              UNLK       A6
+00000046: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   ValidIconRec ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: NMINIT [4ACD0, 4AD00)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 216
+                 216: NMINIT
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="NMINIT"(216) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 48
+
+Content:             Flags $08
+Contents offset $0000 size $0030
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 7044           'pD'              MOVEQ      #$44,D0             ; 'D'
+00000006: A71E           '..'              _NewPtrSysClear                      ; A71E
+00000008: 21C8 0B60      '!..`'            MOVE.L     A0,$0B60
+0000000C: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+00000010: 117C 0001 0032 '.|...2'          MOVE.B     #$01,$0032(A0)
+00000016: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+0000001A: 117C 0001 0042 '.|...B'          MOVE.B     #$01,$0042(A0)
+00000020: 704C           'pL'              MOVEQ      #$4C,D0             ; 'L'
+00000022: A522           '."'              _NewHandle  ,Sys                ; A522
+00000024: 2278 0B60      '"x.`'            MOVEA.L    $0B60,A1
+00000028: 2348 002A      '#H.*'            MOVE.L     A0,$002A(A1)
+0000002C: 4E5E           'N^'              UNLK       A6
+0000002E: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   NMINIT ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: _NMInstall [4AD10, 4AD66)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +3C (4AD4C): JSR GetPID
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c
+
+
+Dictionary:          Flags $00 FirstId 217
+                 217: _NMInstall
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="_NMInstall"(217) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 86
+
+Content:             Flags $08
+Contents offset $0000 size $0056
+00000000: 4E56 FFFC      'NV..'            LINK.W     A6,#-$0004
+00000004: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000006: 286E 0008      '(n..'            MOVEA.L    $0008(A6),A4
+0000000A: 7008           'p.'              MOVEQ      #$08,D0
+0000000C: B06C 0004      '.l..'            CMP.W      $0004(A4),D0
+00000010: 6706           'g.'              BEQ.S      *+$0008             ; 00000018
+00000012: 303C FED5      '0<..'            MOVE.W     #$FED5,D0
+00000016: 6036           '`6'              BRA.S      *+$0038             ; 0000004E
+00000018: 303C A085      '0<..'            MOVE.W     #$A085,D0
+0000001C: A346           '.F'              _GetOSTrapAddress                      ; A346
+0000001E: 2D48 FFFC      '-H..'            MOVE.L     A0,-$0004(A6)
+00000022: 303C A89F      '0<..'            MOVE.W     #$A89F,D0
+00000026: A746           '.F'              _GetToolTrapAddress                      ; A746
+00000028: 202E FFFC      ' ...'            MOVE.L     -$0004(A6),D0
+0000002C: B1C0           '..'              CMPA.L     D0,A0
+0000002E: 6702           'g.'              BEQ.S      *+$0004             ; 00000032
+00000030: A285           '..'              _IdleUpdate                      ; A285
+00000032: 426C 0006      'Bl..'            CLR.W      $0006(A4)
+00000036: 7000           'p.'              MOVEQ      #$00,D0
+00000038: 2940 0008      ')@..'            MOVE.L     D0,$0008(A4)
+0000003C: 4EBA 0000      'N...'            JSR        GetPID              ; id: 202
+00000040: 3940 000C      '9@..'            MOVE.W     D0,$000C(A4)
+00000044: 204C           ' L'              MOVEA.L    A4,A0
+00000046: 2278 0B60      '"x.`'            MOVEA.L    $0B60,A1
+0000004A: A96F           '.o'              _Enqueue                       ; A96F
+0000004C: 7000           'p.'              MOVEQ      #$00,D0
+0000004E: 286E FFF8      '(n..'            MOVEA.L    -$0008(A6),A4
+00000052: 4E5E           'N^'              UNLK       A6
+00000054: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GetPID"(202)
+                      0000003E
+Comment:    
+    
+   _NMInstall ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: _NMRemove [4AD70, 4ADE4)
+   
+   Module started due to: vector glue above, MODGUESS (align, label)
+   
+   Resolved outgoing references:
+      +40 (4ADB0): JSR UnLinkAuxRecs
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 218
+                 218: _NMRemove
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="_NMRemove"(218) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 116
+
+Content:             Flags $08
+Contents offset $0000 size $0074
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 0108      'H...'            MOVEM.L    D7/A4,-(A7)
+00000008: 286E 0008      '(n..'            MOVEA.L    $0008(A6),A4
+0000000C: 7008           'p.'              MOVEQ      #$08,D0
+0000000E: B06C 0004      '.l..'            CMP.W      $0004(A4),D0
+00000012: 6706           'g.'              BEQ.S      *+$0008             ; 0000001A
+00000014: 303C FED5      '0<..'            MOVE.W     #$FED5,D0
+00000018: 6050           '`P'              BRA.S      *+$0052             ; 0000006A
+0000001A: 204C           ' L'              MOVEA.L    A4,A0
+0000001C: 2278 0B60      '"x.`'            MOVEA.L    $0B60,A1
+00000020: A96E           '.n'              _Dequeue                       ; A96E
+00000022: 3E00           '>.'              MOVE.W     D0,D7
+00000024: 6642           'fB'              BNE.S      *+$0044             ; 00000068
+00000026: 7030           'p0'              MOVEQ      #$30,D0             ; '0'
+00000028: C06C 0006      '.l..'            AND.W      $0006(A4),D0
+0000002C: 7200           'r.'              MOVEQ      #$00,D1
+0000002E: 3200           '2.'              MOVE.W     D0,D1
+00000030: 7010           'p.'              MOVEQ      #$10,D0
+00000032: B081           '..'              CMP.L      D1,D0
+00000034: 6608           'f.'              BNE.S      *+$000A             ; 0000003E
+00000036: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+0000003A: 0050 0002      '.P..'            ORI.W      #$0002,(A0)
+0000003E: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000040: 4EBA 0000      'N...'            JSR        UnLinkAuxRecs       ; id: 211
+00000044: 7002           'p.'              MOVEQ      #$02,D0
+00000046: C06C 0006      '.l..'            AND.W      $0006(A4),D0
+0000004A: 584F           'XO'              ADDQ.W     #4,A7
+0000004C: 671A           'g.'              BEQ.S      *+$001C             ; 00000068
+0000004E: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+00000052: 117C 0001 0033 '.|...3'          MOVE.B     #$01,$0033(A0)
+00000058: 4AAC 0010      'J...'            TST.L      $0010(A4)
+0000005C: 670A           'g.'              BEQ.S      *+$000C             ; 00000068
+0000005E: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+00000062: 117C 0001 0043 '.|...C'          MOVE.B     #$01,$0043(A0)
+00000068: 3007           '0.'              MOVE.W     D7,D0
+0000006A: 4CEE 1080 FFF8 'L.....'          MOVEM.L    -$0008(A6),D7/A4
+00000070: 4E5E           'N^'              UNLK       A6
+00000072: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="UnLinkAuxRecs"(211)
+                      00000042
+Comment:    
+    
+   _NMRemove ended due to: vector glue below 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: FLUSHAPPLNM [4ADF0, 4AE70)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +70 (4AE60): JSR spl
+      +58 (4AE48): JSR AddrInRange
+      +1A (4AE0A): JSR disable
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c
+
+
+Dictionary:          Flags $00 FirstId 219
+                 219: FLUSHAPPLNM
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="FLUSHAPPLNM"(219) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 128
+
+Content:             Flags $08
+Contents offset $0000 size $0080
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 1118      'H...'            MOVEM.L    D3/D7/A3/A4,-(A7)
+00000008: 598F           'Y.'              SUBQ.L     #4,A7
+0000000A: 2EB8 02A6      '....'            MOVE.L     $02A6,(A7)
+0000000E: 598F           'Y.'              SUBQ.L     #4,A7
+00000010: 2EB8 02AA      '....'            MOVE.L     $02AA,(A7)
+00000014: 201F           ' .'              MOVE.L     (A7)+,D0
+00000016: B09F           '..'              CMP.L      (A7)+,D0
+00000018: 675C           'g\'              BEQ.S      *+$005E             ; 00000076
+0000001A: 4EBA 0000      'N...'            JSR        disable             ; id: 221
+0000001E: 2E00           '..'              MOVE.L     D0,D7
+00000020: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+00000024: 2868 0002      '(h..'            MOVEA.L    $0002(A0),A4
+00000028: 6040           '`@'              BRA.S      *+$0042             ; 0000006A
+0000002A: 2654           '&T'              MOVEA.L    (A4),A3
+0000002C: 598F           'Y.'              SUBQ.L     #4,A7
+0000002E: 2EB8 02AA      '....'            MOVE.L     $02AA,(A7)
+00000032: 201F           ' .'              MOVE.L     (A7)+,D0
+00000034: B0B8 010C      '....'            CMP.L      $010C,D0
+00000038: 55C3           'U.'              SCS        D3
+0000003A: 4403           'D.'              NEG.B      D3
+0000003C: 670C           'g.'              BEQ.S      *+$000E             ; 0000004A
+0000003E: 598F           'Y.'              SUBQ.L     #4,A7
+00000040: 2EB8 02AA      '....'            MOVE.L     $02AA,(A7)
+00000044: 205F           ' _'              MOVEA.L    (A7)+,A0
+00000046: 2050           ' P'              MOVEA.L    (A0),A0
+00000048: 6004           '`.'              BRA.S      *+$0006             ; 0000004E
+0000004A: 2078 010C      ' x..'            MOVEA.L    $010C,A0
+0000004E: 2F08           '/.'              MOVE.L     A0,-(A7)
+00000050: 598F           'Y.'              SUBQ.L     #4,A7
+00000052: 2EB8 02AA      '....'            MOVE.L     $02AA,(A7)
+00000056: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000058: 4EBA 0000      'N...'            JSR        AddrInRange         ; id: 201
+0000005C: 4A00           'J.'              TST.B      D0
+0000005E: 4FEF 000C      'O...'            LEA        $000C(A7),A7
+00000062: 6704           'g.'              BEQ.S      *+$0006             ; 00000068
+00000064: 204C           ' L'              MOVEA.L    A4,A0
+00000066: A05F           '._'              _NMRemove                      ; A05F
+00000068: 284B           '(K'              MOVEA.L    A3,A4
+0000006A: 200C           ' .'              MOVE.L     A4,D0
+0000006C: 66BC           'f.'              BNE.S      *-$0042             ; 0000002A
+0000006E: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000070: 4EBA 0000      'N...'            JSR        spl                 ; id: 220
+00000074: 584F           'XO'              ADDQ.W     #4,A7
+00000076: 4CEE 1888 FFF0 'L.....'          MOVEM.L    -$0010(A6),D3/D7/A3/A4
+0000007C: 4E5E           'N^'              UNLK       A6
+0000007E: 4E75           'Nu'              RTS        
+
+
+Dictionary:          Flags $00 FirstId 220
+                 220: spl
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="spl"(220)
+                      00000072
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="AddrInRange"(201)
+                      0000005A
+
+Dictionary:          Flags $00 FirstId 221
+                 221: disable
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="disable"(221)
+                      0000001C
+Comment:    
+    
+   FLUSHAPPLNM ended due to: vector glue below 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: NMFILTER [4AE80, 4AEC8)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 222
+                 222: NMFILTER
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="NMFILTER"(222) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 72
+
+Content:             Flags $08
+Contents offset $0000 size $0048
+00000000: 4E56 FFFC      'NV..'            LINK.W     A6,#-$0004
+00000004: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000006: 4207           'B.'              CLR.B      D7
+00000008: 558F           'U.'              SUBQ.L     #2,A7
+0000000A: 486E FFFC      'Hn..'            PEA        -$0004(A6)
+0000000E: 303C 0203      '0<..'            MOVE.W     #$0203,D0
+00000012: AA68           '.h'              _DialogDispatch                      ; AA68
+00000014: 4A5F           'J_'              TST.W      (A7)+
+00000016: 6616           'f.'              BNE.S      *+$0018             ; 0000002E
+00000018: 558F           'U.'              SUBQ.L     #2,A7
+0000001A: 2F2E 0010      '/...'            MOVE.L     $0010(A6),-(A7)
+0000001E: 2F2E 000C      '/...'            MOVE.L     $000C(A6),-(A7)
+00000022: 2F2E 0008      '/...'            MOVE.L     $0008(A6),-(A7)
+00000026: 206E FFFC      ' n..'            MOVEA.L    -$0004(A6),A0
+0000002A: 4E90           'N.'              JSR        (A0)
+0000002C: 1E1F           '..'              MOVE.B     (A7)+,D7
+0000002E: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+00000032: 7002           'p.'              MOVEQ      #$02,D0
+00000034: C050           '.P'              AND.W      (A0),D0
+00000036: 6702           'g.'              BEQ.S      *+$0004             ; 0000003A
+00000038: 7E01           '~.'              MOVEQ      #$01,D7
+0000003A: 1D47 0014      '.G..'            MOVE.B     D7,$0014(A6)
+0000003E: 2E2E FFF8      '....'            MOVE.L     -$0008(A6),D7
+00000042: 4E5E           'N^'              UNLK       A6
+00000044: 4E74 000C      'Nt..'            RTD        #$000C
+
+Comment:    
+    
+   NMFILTER ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: NMCallMBarProc [4AEE0, 4AF5C)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 223
+                 223: NMCallMBarProc
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="NMCallMBarProc"(223) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 124
+
+Content:             Flags $08
+Contents offset $0000 size $007C
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 0718      'H...'            MOVEM.L    D5-D7/A3/A4,-(A7)
+00000008: 2878 0A1C      '(x..'            MOVEA.L    $0A1C,A4
+0000000C: 200C           ' .'              MOVE.L     A4,D0
+0000000E: 670C           'g.'              BEQ.S      *+$000E             ; 0000001C
+00000010: 2654           '&T'              MOVEA.L    (A4),A3
+00000012: 200B           ' .'              MOVE.L     A3,D0
+00000014: 6706           'g.'              BEQ.S      *+$0008             ; 0000001C
+00000016: 3E2B 0004      '>+..'            MOVE.W     $0004(A3),D7
+0000001A: 6004           '`.'              BRA.S      *+$0006             ; 00000020
+0000001C: 7000           'p.'              MOVEQ      #$00,D0
+0000001E: 6052           '`R'              BRA.S      *+$0054             ; 00000072
+00000020: 7001           'p.'              MOVEQ      #$01,D0
+00000022: 1F00           '..'              MOVE.B     D0,-(A7)
+00000024: 70FF           'p.'              MOVEQ      #$FF,D0
+00000026: 4A1F           'J.'              TST.B      (A7)+
+00000028: 56C0           'V.'              SNE        D0
+0000002A: 31C0 0B9E      '1...'            MOVE.W     D0,$0B9E
+0000002E: 598F           'Y.'              SUBQ.L     #4,A7
+00000030: 2F3C 4D42 4446 '/<MBDF'          MOVE.L     #$4D424446,-(A7)    ; 'MBDF'
+00000036: 3F07           '?.'              MOVE.W     D7,-(A7)
+00000038: A9A0           '..'              _GetResource                      ; A9A0
+0000003A: 285F           '(_'              MOVEA.L    (A7)+,A4
+0000003C: 200C           ' .'              MOVE.L     A4,D0
+0000003E: 6730           'g0'              BEQ.S      *+$0032             ; 00000070
+00000040: 204C           ' L'              MOVEA.L    A4,A0
+00000042: A069           '.i'              _HGetState                      ; A069
+00000044: 4880           'H.'              EXT.W      D0
+00000046: 3A00           ':.'              MOVE.W     D0,D5
+00000048: 204C           ' L'              MOVEA.L    A4,A0
+0000004A: A029           '.)'              _HLock                         ; A029
+0000004C: 598F           'Y.'              SUBQ.L     #4,A7
+0000004E: 7007           'p.'              MOVEQ      #$07,D0
+00000050: C047           '.G'              AND.W      D7,D0
+00000052: 3F00           '?.'              MOVE.W     D0,-(A7)
+00000054: 3F2E 000A      '?...'            MOVE.W     $000A(A6),-(A7)
+00000058: 3F2E 000E      '?...'            MOVE.W     $000E(A6),-(A7)
+0000005C: 2F2E 0010      '/...'            MOVE.L     $0010(A6),-(A7)
+00000060: 2054           ' T'              MOVEA.L    (A4),A0
+00000062: 4E90           'N.'              JSR        (A0)
+00000064: 2C1F           ',.'              MOVE.L     (A7)+,D6
+00000066: 204C           ' L'              MOVEA.L    A4,A0
+00000068: 1005           '..'              MOVE.B     D5,D0
+0000006A: A06A           '.j'              _HSetState                      ; A06A
+0000006C: 2006           ' .'              MOVE.L     D6,D0
+0000006E: 6002           '`.'              BRA.S      *+$0004             ; 00000072
+00000070: 7000           'p.'              MOVEQ      #$00,D0
+00000072: 4CEE 18E0 FFEC 'L.....'          MOVEM.L    -$0014(A6),D5-D7/A3/A4
+00000078: 4E5E           'N^'              UNLK       A6
+0000007A: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   NMCallMBarProc ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SWAPITEMMARKS [4AF70, 4AFAA)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c
+
+
+Dictionary:          Flags $00 FirstId 224
+                 224: SWAPITEMMARKS
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SWAPITEMMARKS"(224) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 58
+
+Content:             Flags $08
+Contents offset $0000 size $003A
+00000000: 4E56 FFFE      'NV..'            LINK.W     A6,#-$0002
+00000004: 48E7 0108      'H...'            MOVEM.L    D7/A4,-(A7)
+00000008: 3E2E 000C      '>...'            MOVE.W     $000C(A6),D7
+0000000C: 286E 000E      '(n..'            MOVEA.L    $000E(A6),A4
+00000010: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000012: 3F07           '?.'              MOVE.W     D7,-(A7)
+00000014: 486E FFFE      'Hn..'            PEA        -$0002(A6)
+00000018: A943           '.C'              _GetItmMark                      ; A943
+0000001A: 302E FFFE      '0...'            MOVE.W     -$0002(A6),D0
+0000001E: B06E 000A      '.n..'            CMP.W      $000A(A6),D0
+00000022: 660A           'f.'              BNE.S      *+$000C             ; 0000002E
+00000024: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000026: 3F07           '?.'              MOVE.W     D7,-(A7)
+00000028: 3F2E 0008      '?...'            MOVE.W     $0008(A6),-(A7)
+0000002C: A944           '.D'              _SetItmMark                      ; A944
+0000002E: 4CEE 1080 FFF6 'L.....'          MOVEM.L    -$000A(A6),D7/A4
+00000034: 4E5E           'N^'              UNLK       A6
+00000036: 4E74 000A      'Nt..'            RTD        #$000A
+
+Comment:    
+    
+   SWAPITEMMARKS ended due to: vector glue below 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: ClearMarks [4AFC0, 4AFF8)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +26 (4AFE6): JSR SWAPITEMMARKS
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 225
+                 225: ClearMarks
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="ClearMarks"(225) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 56
+
+Content:             Flags $08
+Contents offset $0000 size $0038
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 0108      'H...'            MOVEM.L    D7/A4,-(A7)
+00000008: 286E 0008      '(n..'            MOVEA.L    $0008(A6),A4
+0000000C: 558F           'U.'              SUBQ.L     #2,A7
+0000000E: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000010: A950           '.P'              _CountMItems                      ; A950
+00000012: 3E1F           '>.'              MOVE.W     (A7)+,D7
+00000014: 6014           '`.'              BRA.S      *+$0016             ; 0000002A
+00000016: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000018: 3007           '0.'              MOVE.W     D7,D0
+0000001A: 5347           'SG'              SUBQ.W     #1,D7
+0000001C: 3F00           '?.'              MOVE.W     D0,-(A7)
+0000001E: 7013           'p.'              MOVEQ      #$13,D0
+00000020: 3F00           '?.'              MOVE.W     D0,-(A7)
+00000022: 7200           'r.'              MOVEQ      #$00,D1
+00000024: 3F01           '?.'              MOVE.W     D1,-(A7)
+00000026: 4EBA 0000      'N...'            JSR        SWAPITEMMARKS       ; id: 224
+0000002A: 4A47           'JG'              TST.W      D7
+0000002C: 6EE8           'n.'              BGT.S      *-$0016             ; 00000016
+0000002E: 4CEE 1080 FFF8 'L.....'          MOVEM.L    -$0008(A6),D7/A4
+00000034: 4E5E           'N^'              UNLK       A6
+00000036: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SWAPITEMMARKS"(224)
+                      00000028
+Comment:    
+    
+   ClearMarks ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: SWAPAPPMARK [4B010, 4B05A)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +3A (4B04A): JSR SWAPITEMMARKS
+      +28 (4B038): JSR InApplicationMenu
+      +C (4B01C): JSR GetApplicationMenu
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c
+
+
+Dictionary:          Flags $00 FirstId 226
+                 226: SWAPAPPMARK
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="SWAPAPPMARK"(226) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 74
+
+Content:             Flags $08
+Contents offset $0000 size $004A
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 0718      'H...'            MOVEM.L    D5-D7/A3/A4,-(A7)
+00000008: 266E 000C      '&n..'            MOVEA.L    $000C(A6),A3
+0000000C: 4EBA 0000      'N...'            JSR        GetApplicationMenu  ; id: 205
+00000010: 2840           '(@'              MOVEA.L    D0,A4
+00000012: 200C           ' .'              MOVE.L     A4,D0
+00000014: 6728           'g('              BEQ.S      *+$002A             ; 0000003E
+00000016: 3A2B 000C      ':+..'            MOVE.W     $000C(A3),D5
+0000001A: 3C2B 000E      '<+..'            MOVE.W     $000E(A3),D6
+0000001E: 4247           'BG'              CLR.W      D7
+00000020: 48C6           'H.'              EXT.L      D6
+00000022: 2F06           '/.'              MOVE.L     D6,-(A7)
+00000024: 48C5           'H.'              EXT.L      D5
+00000026: 2F05           '/.'              MOVE.L     D5,-(A7)
+00000028: 4EBA 0000      'N...'            JSR        InApplicationMenu   ; id: 206
+0000002C: 3E00           '>.'              MOVE.W     D0,D7
+0000002E: 504F           'PO'              ADDQ.W     #8,A7
+00000030: 670C           'g.'              BEQ.S      *+$000E             ; 0000003E
+00000032: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000034: 3F07           '?.'              MOVE.W     D7,-(A7)
+00000036: 2F2E 0008      '/...'            MOVE.L     $0008(A6),-(A7)
+0000003A: 4EBA 0000      'N...'            JSR        SWAPITEMMARKS       ; id: 224
+0000003E: 4CEE 18E0 FFEC 'L.....'          MOVEM.L    -$0014(A6),D5-D7/A3/A4
+00000044: 4E5E           'N^'              UNLK       A6
+00000046: 4E74 0008      'Nt..'            RTD        #$0008
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SWAPITEMMARKS"(224)
+                      0000003C
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="InApplicationMenu"(206)
+                      0000002A
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GetApplicationMenu"(205)
+                      0000000E
+Comment:    
+    
+   SWAPAPPMARK ended due to: vector glue below 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: MarkItem [4B070, 4B0C0)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +38 (4B0A8): JSR SWAPAPPMARK
+      +2A (4B09A): JSR spl
+      +14 (4B084): JSR InsertMarkRec
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 227
+                 227: MarkItem
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="MarkItem"(227) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 80
+
+Content:             Flags $08
+Contents offset $0000 size $0050
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 0018      'H...'            MOVEM.L    A3/A4,-(A7)
+00000008: 266E 0008      '&n..'            MOVEA.L    $0008(A6),A3
+0000000C: 4A6B 000E      'Jk..'            TST.W      $000E(A3)
+00000010: 672E           'g.'              BEQ.S      *+$0030             ; 00000040
+00000012: 2F0B           '/.'              MOVE.L     A3,-(A7)
+00000014: 4EBA 0000      'N...'            JSR        InsertMarkRec       ; id: 212
+00000018: 2840           '(@'              MOVEA.L    D0,A4
+0000001A: 200C           ' .'              MOVE.L     A4,D0
+0000001C: 584F           'XO'              ADDQ.W     #4,A7
+0000001E: 6726           'g&'              BEQ.S      *+$0028             ; 00000046
+00000020: 006B 0001 0006 '.k....'          ORI.W      #$0001,$0006(A3)
+00000026: 2F2E 000C      '/...'            MOVE.L     $000C(A6),-(A7)
+0000002A: 4EBA 0000      'N...'            JSR        spl                 ; id: 220
+0000002E: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000030: 7000           'p.'              MOVEQ      #$00,D0
+00000032: 3F00           '?.'              MOVE.W     D0,-(A7)
+00000034: 7213           'r.'              MOVEQ      #$13,D1
+00000036: 3F01           '?.'              MOVE.W     D1,-(A7)
+00000038: 4EBA 0000      'N...'            JSR        SWAPAPPMARK         ; id: 226
+0000003C: 584F           'XO'              ADDQ.W     #4,A7
+0000003E: 6006           '`.'              BRA.S      *+$0008             ; 00000046
+00000040: 006B 0001 0006 '.k....'          ORI.W      #$0001,$0006(A3)
+00000046: 4CEE 1800 FFF8 'L.....'          MOVEM.L    -$0008(A6),A3/A4
+0000004C: 4E5E           'N^'              UNLK       A6
+0000004E: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SWAPAPPMARK"(226)
+                      0000003A
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="spl"(220)
+                      0000002C
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="InsertMarkRec"(212)
+                      00000016
+Comment:    
+    
+   MarkItem ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: RotateIcon [4B0D0, 4B102)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +12 (4B0E2): JSR InsertIconRec
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 228
+                 228: RotateIcon
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="RotateIcon"(228) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 50
+
+Content:             Flags $08
+Contents offset $0000 size $0032
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000006: 286E 0008      '(n..'            MOVEA.L    $0008(A6),A4
+0000000A: 4AAC 0010      'J...'            TST.L      $0010(A4)
+0000000E: 6714           'g.'              BEQ.S      *+$0016             ; 00000024
+00000010: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000012: 4EBA 0000      'N...'            JSR        InsertIconRec       ; id: 213
+00000016: 4A80           'J.'              TST.L      D0
+00000018: 584F           'XO'              ADDQ.W     #4,A7
+0000001A: 670E           'g.'              BEQ.S      *+$0010             ; 0000002A
+0000001C: 006C 0002 0006 '.l....'          ORI.W      #$0002,$0006(A4)
+00000022: 6006           '`.'              BRA.S      *+$0008             ; 0000002A
+00000024: 006C 0002 0006 '.l....'          ORI.W      #$0002,$0006(A4)
+0000002A: 286E FFFC      '(n..'            MOVEA.L    -$0004(A6),A4
+0000002E: 4E5E           'N^'              UNLK       A6
+00000030: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="InsertIconRec"(213)
+                      00000014
+Comment:    
+    
+   RotateIcon ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: DoSound [4B110, 4B1B0)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +28 (4B138): JSR spl
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c
+
+
+Dictionary:          Flags $00 FirstId 229
+                 229: DoSound
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="DoSound"(229) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 160
+
+Content:             Flags $08
+Contents offset $0000 size $00A0
+00000000: 4E56 FFF0      'NV..'            LINK.W     A6,#-$0010
+00000004: 48E7 0018      'H...'            MOVEM.L    A3/A4,-(A7)
+00000008: 266E 0008      '&n..'            MOVEA.L    $0008(A6),A3
+0000000C: 286B 0014      '(k..'            MOVEA.L    $0014(A3),A4
+00000010: 7000           'p.'              MOVEQ      #$00,D0
+00000012: 2D40 FFF0      '-@..'            MOVE.L     D0,-$0010(A6)
+00000016: 2D40 FFF4      '-@..'            MOVE.L     D0,-$000C(A6)
+0000001A: 006B 0008 0006 '.k....'          ORI.W      #$0008,$0006(A3)
+00000020: 220C           '".'              MOVE.L     A4,D1
+00000022: 6772           'gr'              BEQ.S      *+$0074             ; 00000096
+00000024: 2F2E 000C      '/...'            MOVE.L     $000C(A6),-(A7)
+00000028: 4EBA 0000      'N...'            JSR        spl                 ; id: 220
+0000002C: B9FC FFFF FFFF '......'          CMPA.L     #$FFFFFFFF,A4
+00000032: 584F           'XO'              ADDQ.W     #4,A7
+00000034: 6608           'f.'              BNE.S      *+$000A             ; 0000003E
+00000036: 7003           'p.'              MOVEQ      #$03,D0
+00000038: 3F00           '?.'              MOVE.W     D0,-(A7)
+0000003A: A9C8           '..'              _SysBeep                       ; A9C8
+0000003C: 6058           '`X'              BRA.S      *+$005A             ; 00000096
+0000003E: 558F           'U.'              SUBQ.L     #2,A7
+00000040: 486E FFF0      'Hn..'            PEA        -$0010(A6)
+00000044: 7000           'p.'              MOVEQ      #$00,D0
+00000046: 3F00           '?.'              MOVE.W     D0,-(A7)
+00000048: 7200           'r.'              MOVEQ      #$00,D1
+0000004A: 2F01           '/.'              MOVE.L     D1,-(A7)
+0000004C: 2F01           '/.'              MOVE.L     D1,-(A7)
+0000004E: A807           '..'              _SndNewChannel                      ; A807
+00000050: 4A5F           'J_'              TST.W      (A7)+
+00000052: 6642           'fB'              BNE.S      *+$0044             ; 00000096
+00000054: 558F           'U.'              SUBQ.L     #2,A7
+00000056: 486E FFF4      'Hn..'            PEA        -$000C(A6)
+0000005A: 203C 0224 0018 ' <.$..'          MOVE.L     #$02240018,D0
+00000060: A800           '..'              _SoundDispatch                      ; A800
+00000062: 3D7C 002E FFF8 '=|....'          MOVE.W     #$002E,-$0008(A6)
+00000068: 2D6E FFF4 FFFC '-n....'          MOVE.L     -$000C(A6),-$0004(A6)
+0000006E: 558F           'U.'              SUBQ.L     #2,A7
+00000070: 2F2E FFF0      '/...'            MOVE.L     -$0010(A6),-(A7)
+00000074: 486E FFF8      'Hn..'            PEA        -$0008(A6)
+00000078: A804           '..'              _SndDoImmediate                      ; A804
+0000007A: 558F           'U.'              SUBQ.L     #2,A7
+0000007C: 2F2E FFF0      '/...'            MOVE.L     -$0010(A6),-(A7)
+00000080: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000082: 7000           'p.'              MOVEQ      #$00,D0
+00000084: 1F00           '..'              MOVE.B     D0,-(A7)
+00000086: A805           '..'              _SndPlay                       ; A805
+00000088: 558F           'U.'              SUBQ.L     #2,A7
+0000008A: 2F2E FFF0      '/...'            MOVE.L     -$0010(A6),-(A7)
+0000008E: 7001           'p.'              MOVEQ      #$01,D0
+00000090: 1F00           '..'              MOVE.B     D0,-(A7)
+00000092: A801           '..'              _SndDisposeChannel                      ; A801
+00000094: 504F           'PO'              ADDQ.W     #8,A7
+00000096: 4CEE 1800 FFE8 'L.....'          MOVEM.L    -$0018(A6),A3/A4
+0000009C: 4E5E           'N^'              UNLK       A6
+0000009E: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="spl"(220)
+                      0000002A
+Comment:    
+    
+   DoSound ended due to: vector glue below 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: DoDialog [4B1C0, 4B2FA)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +118 (4B2D8): JSR spl
+      +C2 (4B282): JSR disable
+      +B8 (4B278): PEA NMFILTER
+      +5A (4B21A): JSR spl
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c
+
+
+Dictionary:          Flags $00 FirstId 230
+                 230: DoDialog
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="DoDialog"(230) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 314
+
+Content:             Flags $08
+Contents offset $0000 size $013A
+00000000: 4E56 FEEC      'NV..'            LINK.W     A6,#-$0114
+00000004: 48E7 0338      'H..8'            MOVEM.L    D6/D7/A2-A4,-(A7)
+00000008: 2C2E 000C      ',...'            MOVE.L     $000C(A6),D6
+0000000C: 266E 0008      '&n..'            MOVEA.L    $0008(A6),A3
+00000010: 4AAB 0018      'J...'            TST.L      $0018(A3)
+00000014: 660A           'f.'              BNE.S      *+$000C             ; 00000020
+00000016: 006B 0030 0006 '.k.0..'          ORI.W      #$0030,$0006(A3)
+0000001C: 6000 0112      '`...'            BRA        *+$0114             ; 00000130
+00000020: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+00000024: 3010           '0.'              MOVE.W     (A0),D0
+00000026: 0800 0000      '....'            BTST       #$00,D0
+0000002A: 670A           'g.'              BEQ.S      *+$000C             ; 00000036
+0000002C: 006B 0080 0006 '.k....'          ORI.W      #$0080,$0006(A3)
+00000032: 6000 00FC      '`...'            BRA        *+$00FE             ; 00000130
+00000036: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+0000003A: 0050 0001      '.P..'            ORI.W      #$0001,(A0)
+0000003E: 006B 0090 0006 '.k....'          ORI.W      #$0090,$0006(A3)
+00000044: 206B 0018      ' k..'            MOVEA.L    $0018(A3),A0
+00000048: 43EE FEF0      'C...'            LEA        -$0110(A6),A1
+0000004C: 2448           '$H'              MOVEA.L    A0,A2
+0000004E: 7000           'p.'              MOVEQ      #$00,D0
+00000050: 1012           '..'              MOVE.B     (A2),D0
+00000052: 5240           'R@'              ADDQ.W     #1,D0
+00000054: 48C0           'H.'              EXT.L      D0
+00000056: A22E           '..'              _BlockMoveData                      ; A22E
+00000058: 2F06           '/.'              MOVE.L     D6,-(A7)
+0000005A: 4EBA 0000      'N...'            JSR        spl                 ; id: 220
+0000005E: A850           '.P'              _InitCursor                      ; A850
+00000060: 486E FEEC      'Hn..'            PEA        -$0114(A6)
+00000064: A874           '.t'              _GetPort                       ; A874
+00000066: 558F           'U.'              SUBQ.L     #2,A7
+00000068: A994           '..'              _CurResFile                      ; A994
+0000006A: 3E1F           '>.'              MOVE.W     (A7)+,D7
+0000006C: 7000           'p.'              MOVEQ      #$00,D0
+0000006E: 3F00           '?.'              MOVE.W     D0,-(A7)
+00000070: A998           '..'              _UseResFile                      ; A998
+00000072: 598F           'Y.'              SUBQ.L     #4,A7
+00000074: 7001           'p.'              MOVEQ      #$01,D0
+00000076: 3F00           '?.'              MOVE.W     D0,-(A7)
+00000078: 7200           'r.'              MOVEQ      #$00,D1
+0000007A: 2F01           '/.'              MOVE.L     D1,-(A7)
+0000007C: 70FF           'p.'              MOVEQ      #$FF,D0
+0000007E: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000080: A97C           '.|'              _GetNewDialog                      ; A97C
+00000082: 285F           '(_'              MOVEA.L    (A7)+,A4
+00000084: 3F07           '?.'              MOVE.W     D7,-(A7)
+00000086: A998           '..'              _UseResFile                      ; A998
+00000088: 558F           'U.'              SUBQ.L     #2,A7
+0000008A: 2F0C           '/.'              MOVE.L     A4,-(A7)
+0000008C: 7001           'p.'              MOVEQ      #$01,D0
+0000008E: 3F00           '?.'              MOVE.W     D0,-(A7)
+00000090: 303C 0304      '0<..'            MOVE.W     #$0304,D0
+00000094: AA68           '.h'              _DialogDispatch                      ; AA68
+00000096: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000098: 7003           'p.'              MOVEQ      #$03,D0
+0000009A: 3F00           '?.'              MOVE.W     D0,-(A7)
+0000009C: 486E FFF0      'Hn..'            PEA        -$0010(A6)
+000000A0: 486E FFF4      'Hn..'            PEA        -$000C(A6)
+000000A4: 486E FFF8      'Hn..'            PEA        -$0008(A6)
+000000A8: A98D           '..'              _GetDialogItem                      ; A98D
+000000AA: 2F2E FFF4      '/...'            MOVE.L     -$000C(A6),-(A7)
+000000AE: 486E FEF0      'Hn..'            PEA        -$0110(A6)
+000000B2: A98F           '..'              _SetDialogItemText                      ; A98F
+000000B4: 2F0C           '/.'              MOVE.L     A4,-(A7)
+000000B6: A915           '..'              _ShowWindow                      ; A915
+000000B8: 487A 0000      'Hz..'            PEA        NMFILTER            ; id: 222
+000000BC: 486E FFF2      'Hn..'            PEA        -$000E(A6)
+000000C0: A991           '..'              _ModalDialog                      ; A991
+000000C2: 4EBA 0000      'N...'            JSR        disable             ; id: 221
+000000C6: 2C00           ',.'              MOVE.L     D0,D6
+000000C8: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+000000CC: 7002           'p.'              MOVEQ      #$02,D0
+000000CE: C050           '.P'              AND.W      (A0),D0
+000000D0: 5C4F           '\O'              ADDQ.W     #6,A7
+000000D2: 660E           'f.'              BNE.S      *+$0010             ; 000000E2
+000000D4: 006B 0020 0006 '.k. ..'          ORI.W      #$0020,$0006(A3)
+000000DA: 026B FF7F 0006 '.k....'          ANDI.W     #$FF7F,$0006(A3)
+000000E0: 6008           '`.'              BRA.S      *+$000A             ; 000000EA
+000000E2: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+000000E6: 0250 FFFD      '.P..'            ANDI.W     #$FFFD,(A0)
+000000EA: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+000000EE: 2668 0002      '&h..'            MOVEA.L    $0002(A0),A3
+000000F2: 601E           '`.'              BRA.S      *+$0020             ; 00000112
+000000F4: 303C 0090      '0<..'            MOVE.W     #$0090,D0
+000000F8: C06B 0006      '.k..'            AND.W      $0006(A3),D0
+000000FC: 7200           'r.'              MOVEQ      #$00,D1
+000000FE: 3200           '2.'              MOVE.W     D0,D1
+00000100: 0C81 0000 0080 '......'          CMPI.L     #$00000080,D1
+00000106: 6608           'f.'              BNE.S      *+$000A             ; 00000110
+00000108: 026B FF7F 0006 '.k....'          ANDI.W     #$FF7F,$0006(A3)
+0000010E: 6006           '`.'              BRA.S      *+$0008             ; 00000116
+00000110: 2653           '&S'              MOVEA.L    (A3),A3
+00000112: 200B           ' .'              MOVE.L     A3,D0
+00000114: 66DE           'f.'              BNE.S      *-$0020             ; 000000F4
+00000116: 2F06           '/.'              MOVE.L     D6,-(A7)
+00000118: 4EBA 0000      'N...'            JSR        spl                 ; id: 220
+0000011C: 2F0C           '/.'              MOVE.L     A4,-(A7)
+0000011E: A983           '..'              _DisposeDialog                      ; A983
+00000120: 2F2E FEEC      '/...'            MOVE.L     -$0114(A6),-(A7)
+00000124: A873           '.s'              _SetPort                       ; A873
+00000126: 2078 0B60      ' x.`'            MOVEA.L    $0B60,A0
+0000012A: 0250 FFFE      '.P..'            ANDI.W     #$FFFE,(A0)
+0000012E: 584F           'XO'              ADDQ.W     #4,A7
+00000130: 4CEE 1CC0 FED8 'L.....'          MOVEM.L    -$0128(A6),D6/D7/A2-A4
+00000136: 4E5E           'N^'              UNLK       A6
+00000138: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="spl"(220)
+                      0000011A
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="disable"(221)
+                      000000C4
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="NMFILTER"(222)
+                      000000BA
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="spl"(220)
+                      0000005C
+Comment:    
+    
+   DoDialog ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: DoRespProc [4B310, 4B352)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +2C (4B33C): JSR spl
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 231
+                 231: DoRespProc
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="DoRespProc"(231) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 66
+
+Content:             Flags $08
+Contents offset $0000 size $0042
+00000000: 4E56 0000      'NV..'            LINK.W     A6,#$0000
+00000004: 48E7 0018      'H...'            MOVEM.L    A3/A4,-(A7)
+00000008: 266E 0008      '&n..'            MOVEA.L    $0008(A6),A3
+0000000C: 286B 001C      '(k..'            MOVEA.L    $001C(A3),A4
+00000010: 006B 0040 0006 '.k.@..'          ORI.W      #$0040,$0006(A3)
+00000016: 200C           ' .'              MOVE.L     A4,D0
+00000018: 671E           'g.'              BEQ.S      *+$0020             ; 00000038
+0000001A: B9FC FFFF FFFF '......'          CMPA.L     #$FFFFFFFF,A4
+00000020: 6606           'f.'              BNE.S      *+$0008             ; 00000028
+00000022: 204B           ' K'              MOVEA.L    A3,A0
+00000024: A05F           '._'              _NMRemove                      ; A05F
+00000026: 6010           '`.'              BRA.S      *+$0012             ; 00000038
+00000028: 2F2E 000C      '/...'            MOVE.L     $000C(A6),-(A7)
+0000002C: 4EBA 0000      'N...'            JSR        spl                 ; id: 220
+00000030: 2F0B           '/.'              MOVE.L     A3,-(A7)
+00000032: 204C           ' L'              MOVEA.L    A4,A0
+00000034: 4E90           'N.'              JSR        (A0)
+00000036: 584F           'XO'              ADDQ.W     #4,A7
+00000038: 4CEE 1800 FFF8 'L.....'          MOVEM.L    -$0008(A6),A3/A4
+0000003E: 4E5E           'N^'              UNLK       A6
+00000040: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="spl"(220)
+                      0000002E
+Comment:    
+    
+   DoRespProc ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: NMTASK [4B360, 4B600)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +27E (4B5DE): JSR NMCallMBarProc
+      +1E6 (4B546): JSR ValidIconRec
+      +156 (4B4B6): JSR SWAPAPPMARK
+      +13C (4B49C): JSR GetApplicationMenu
+      +12A (4B48A): JSR SWAPAPPMARK
+      +F6 (4B456): JSR NMCallMBarProc
+      +E2 (4B442): JSR ClearMarks
+      +D0 (4B430): JSR GetApplicationMenu
+      +BE (4B41E): JSR AddAuxRec
+      +B2 (4B412): JSR AddAuxRec
+      +A6 (4B406): JSR AddAuxRec
+      +98 (4B3F8): JSR spl
+      +88 (4B3E8): JSR DoRespProc
+      +76 (4B3D6): JSR DoDialog
+      +64 (4B3C4): JSR DoSound
+      +52 (4B3B2): JSR RotateIcon
+      +40 (4B3A0): JSR MarkItem
+      +16 (4B376): JSR disable
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:NotificationMgr.c 
+
+
+Dictionary:          Flags $00 FirstId 232
+                 232: NMTASK
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="NMTASK"(232) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 672
+
+Content:             Flags $08
+Contents offset $0000 size $02A0
+00000000: 4E56 FFF4      'NV..'            LINK.W     A6,#-$000C
+00000004: 48E7 1738      'H..8'            MOVEM.L    D3/D5-D7/A2-A4,-(A7)
+00000008: 2678 0B60      '&x.`'            MOVEA.L    $0B60,A3
+0000000C: 286B 0002      '(k..'            MOVEA.L    $0002(A3),A4
+00000010: 200C           ' .'              MOVE.L     A4,D0
+00000012: 6700 008A      'g...'            BEQ        *+$008C             ; 0000009E
+00000016: 4EBA 0000      'N...'            JSR        disable             ; id: 221
+0000001A: 2E00           '..'              MOVE.L     D0,D7
+0000001C: 6002           '`.'              BRA.S      *+$0004             ; 00000020
+0000001E: 2854           '(T'              MOVEA.L    (A4),A4
+00000020: 200C           ' .'              MOVE.L     A4,D0
+00000022: 670A           'g.'              BEQ.S      *+$000C             ; 0000002E
+00000024: 303C 0080      '0<..'            MOVE.W     #$0080,D0
+00000028: C06C 0006      '.l..'            AND.W      $0006(A4),D0
+0000002C: 66F0           'f.'              BNE.S      *-$000E             ; 0000001E
+0000002E: 200C           ' .'              MOVE.L     A4,D0
+00000030: 6764           'gd'              BEQ.S      *+$0066             ; 00000096
+00000032: 3C2C 0006      '<,..'            MOVE.W     $0006(A4),D6
+00000036: 7001           'p.'              MOVEQ      #$01,D0
+00000038: C046           '.F'              AND.W      D6,D0
+0000003A: 660C           'f.'              BNE.S      *+$000E             ; 00000048
+0000003C: 2F07           '/.'              MOVE.L     D7,-(A7)
+0000003E: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000040: 4EBA 0000      'N...'            JSR        MarkItem            ; id: 227
+00000044: 504F           'PO'              ADDQ.W     #8,A7
+00000046: 604E           '`N'              BRA.S      *+$0050             ; 00000096
+00000048: 7002           'p.'              MOVEQ      #$02,D0
+0000004A: C046           '.F'              AND.W      D6,D0
+0000004C: 660C           'f.'              BNE.S      *+$000E             ; 0000005A
+0000004E: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000050: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000052: 4EBA 0000      'N...'            JSR        RotateIcon          ; id: 228
+00000056: 504F           'PO'              ADDQ.W     #8,A7
+00000058: 603C           '`<'              BRA.S      *+$003E             ; 00000096
+0000005A: 7008           'p.'              MOVEQ      #$08,D0
+0000005C: C046           '.F'              AND.W      D6,D0
+0000005E: 660C           'f.'              BNE.S      *+$000E             ; 0000006C
+00000060: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000062: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000064: 4EBA 0000      'N...'            JSR        DoSound             ; id: 229
+00000068: 504F           'PO'              ADDQ.W     #8,A7
+0000006A: 602A           '`*'              BRA.S      *+$002C             ; 00000096
+0000006C: 7010           'p.'              MOVEQ      #$10,D0
+0000006E: C046           '.F'              AND.W      D6,D0
+00000070: 660C           'f.'              BNE.S      *+$000E             ; 0000007E
+00000072: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000074: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000076: 4EBA 0000      'N...'            JSR        DoDialog            ; id: 230
+0000007A: 504F           'PO'              ADDQ.W     #8,A7
+0000007C: 6018           '`.'              BRA.S      *+$001A             ; 00000096
+0000007E: 7040           'p@'              MOVEQ      #$40,D0             ; '@'
+00000080: C046           '.F'              AND.W      D6,D0
+00000082: 660C           'f.'              BNE.S      *+$000E             ; 00000090
+00000084: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000086: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000088: 4EBA 0000      'N...'            JSR        DoRespProc          ; id: 231
+0000008C: 504F           'PO'              ADDQ.W     #8,A7
+0000008E: 6006           '`.'              BRA.S      *+$0008             ; 00000096
+00000090: 006C 8080 0006 '.l....'          ORI.W      #$8080,$0006(A4)
+00000096: 2F07           '/.'              MOVE.L     D7,-(A7)
+00000098: 4EBA 0000      'N...'            JSR        spl                 ; id: 220
+0000009C: 584F           'XO'              ADDQ.W     #4,A7
+0000009E: 486B 000A      'Hk..'            PEA        $000A(A3)
+000000A2: 7010           'p.'              MOVEQ      #$10,D0
+000000A4: 2F00           '/.'              MOVE.L     D0,-(A7)
+000000A6: 4EBA 0000      'N...'            JSR        AddAuxRec           ; id: 208
+000000AA: 486B 0014      'Hk..'            PEA        $0014(A3)
+000000AE: 7012           'p.'              MOVEQ      #$12,D0
+000000B0: 2F00           '/.'              MOVE.L     D0,-(A7)
+000000B2: 4EBA 0000      'N...'            JSR        AddAuxRec           ; id: 208
+000000B6: 486B 0038      'Hk.8'            PEA        $0038(A3)
+000000BA: 7012           'p.'              MOVEQ      #$12,D0
+000000BC: 2F00           '/.'              MOVE.L     D0,-(A7)
+000000BE: 4EBA 0000      'N...'            JSR        AddAuxRec           ; id: 208
+000000C2: 7000           'p.'              MOVEQ      #$00,D0
+000000C4: 2440           '$@'              MOVEA.L    D0,A2
+000000C6: 4A2B 0033      'J+.3'            TST.B      $0033(A3)
+000000CA: 4FEF 0018      'O...'            LEA        $0018(A7),A7
+000000CE: 6736           'g6'              BEQ.S      *+$0038             ; 00000106
+000000D0: 4EBA 0000      'N...'            JSR        GetApplicationMenu  ; id: 205
+000000D4: 2440           '$@'              MOVEA.L    D0,A2
+000000D6: 200A           ' .'              MOVE.L     A2,D0
+000000D8: 670E           'g.'              BEQ.S      *+$0010             ; 000000E8
+000000DA: B5EB 0022      '..."'            CMPA.L     $0022(A3),A2
+000000DE: 6708           'g.'              BEQ.S      *+$000A             ; 000000E8
+000000E0: 2F0A           '/.'              MOVE.L     A2,-(A7)
+000000E2: 4EBA 0000      'N...'            JSR        ClearMarks          ; id: 225
+000000E6: 584F           'XO'              ADDQ.W     #4,A7
+000000E8: 4A2B 0043      'J+.C'            TST.B      $0043(A3)
+000000EC: 6714           'g.'              BEQ.S      *+$0016             ; 00000102
+000000EE: 7000           'p.'              MOVEQ      #$00,D0
+000000F0: 2F00           '/.'              MOVE.L     D0,-(A7)
+000000F2: 2F00           '/.'              MOVE.L     D0,-(A7)
+000000F4: 2F00           '/.'              MOVE.L     D0,-(A7)
+000000F6: 4EBA 0000      'N...'            JSR        NMCallMBarProc      ; id: 223
+000000FA: 422B 0043      'B+.C'            CLR.B      $0043(A3)
+000000FE: 4FEF 000C      'O...'            LEA        $000C(A7),A7
+00000102: 422B 0033      'B+.3'            CLR.B      $0033(A3)
+00000106: 286B 000C      '(k..'            MOVEA.L    $000C(A3),A4
+0000010A: 200C           ' .'              MOVE.L     A4,D0
+0000010C: 6754           'gT'              BEQ.S      *+$0056             ; 00000162
+0000010E: 604E           '`N'              BRA.S      *+$0050             ; 0000015E
+00000110: 2D54 FFF8      '-T..'            MOVE.L     (A4),-$0008(A6)
+00000114: 4A6C 0004      'Jl..'            TST.W      $0004(A4)
+00000118: 6740           'g@'              BEQ.S      *+$0042             ; 0000015A
+0000011A: 4A6C 0006      'Jl..'            TST.W      $0006(A4)
+0000011E: 661C           'f.'              BNE.S      *+$001E             ; 0000013C
+00000120: 2F0C           '/.'              MOVE.L     A4,-(A7)
+00000122: 7013           'p.'              MOVEQ      #$13,D0
+00000124: 3F00           '?.'              MOVE.W     D0,-(A7)
+00000126: 7200           'r.'              MOVEQ      #$00,D1
+00000128: 3F01           '?.'              MOVE.W     D1,-(A7)
+0000012A: 4EBA 0000      'N...'            JSR        SWAPAPPMARK         ; id: 226
+0000012E: 204C           ' L'              MOVEA.L    A4,A0
+00000130: 43EB 000A      'C...'            LEA        $000A(A3),A1
+00000134: A96E           '.n'              _Dequeue                       ; A96E
+00000136: 204C           ' L'              MOVEA.L    A4,A0
+00000138: A01F           '..'              _DisposePtr                      ; A01F
+0000013A: 601E           '`.'              BRA.S      *+$0020             ; 0000015A
+0000013C: 4EBA 0000      'N...'            JSR        GetApplicationMenu  ; id: 205
+00000140: 2440           '$@'              MOVEA.L    D0,A2
+00000142: 200A           ' .'              MOVE.L     A2,D0
+00000144: 6714           'g.'              BEQ.S      *+$0016             ; 0000015A
+00000146: B5EB 0022      '..."'            CMPA.L     $0022(A3),A2
+0000014A: 670E           'g.'              BEQ.S      *+$0010             ; 0000015A
+0000014C: 2F0C           '/.'              MOVE.L     A4,-(A7)
+0000014E: 7000           'p.'              MOVEQ      #$00,D0
+00000150: 3F00           '?.'              MOVE.W     D0,-(A7)
+00000152: 7213           'r.'              MOVEQ      #$13,D1
+00000154: 3F01           '?.'              MOVE.W     D1,-(A7)
+00000156: 4EBA 0000      'N...'            JSR        SWAPAPPMARK         ; id: 226
+0000015A: 286E FFF8      '(n..'            MOVEA.L    -$0008(A6),A4
+0000015E: 200C           ' .'              MOVE.L     A4,D0
+00000160: 66AE           'f.'              BNE.S      *-$0050             ; 00000110
+00000162: 274A 0022      ''J."'            MOVE.L     A2,$0022(A3)
+00000166: 4AAB 0002      'J...'            TST.L      $0002(A3)
+0000016A: 6700 012A      'g..*'            BEQ        *+$012C             ; 00000296
+0000016E: 598F           'Y.'              SUBQ.L     #4,A7
+00000170: A975           '.u'              _TickCount                      ; A975
+00000172: 2A1F           '*.'              MOVE.L     (A7)+,D5
+00000174: 2C05           ',.'              MOVE.L     D5,D6
+00000176: 9CAB 002E      '....'            SUB.L      $002E(A3),D6
+0000017A: 4A2B 0042      'J+.B'            TST.B      $0042(A3)
+0000017E: 6708           'g.'              BEQ.S      *+$000A             ; 00000188
+00000180: 41EB 0026      'A..&'            LEA        $0026(A3),A0
+00000184: 2008           ' .'              MOVE.L     A0,D0
+00000186: 6006           '`.'              BRA.S      *+$0008             ; 0000018E
+00000188: 41EB 0034      'A..4'            LEA        $0034(A3),A0
+0000018C: 2008           ' .'              MOVE.L     A0,D0
+0000018E: 2D40 FFFC      '-@..'            MOVE.L     D0,-$0004(A6)
+00000192: 7001           'p.'              MOVEQ      #$01,D0
+00000194: B086           '..'              CMP.L      D6,D0
+00000196: 6E00 00FE      'n...'            BGT        *+$0100             ; 00000296
+0000019A: 206E FFFC      ' n..'            MOVEA.L    -$0004(A6),A0
+0000019E: 2850           '(P'              MOVEA.L    (A0),A4
+000001A0: 4A2B 0032      'J+.2'            TST.B      $0032(A3)
+000001A4: 6700 0082      'g...'            BEQ        *+$0084             ; 00000228
+000001A8: 7600           'v.'              MOVEQ      #$00,D3
+000001AA: 206B 0016      ' k..'            MOVEA.L    $0016(A3),A0
+000001AE: 4A90           'J.'              TST.L      (A0)
+000001B0: 670A           'g.'              BEQ.S      *+$000C             ; 000001BC
+000001B2: 206B 003A      ' k.:'            MOVEA.L    $003A(A3),A0
+000001B6: 4A90           'J.'              TST.L      (A0)
+000001B8: 6702           'g.'              BEQ.S      *+$0004             ; 000001BC
+000001BA: 7601           'v.'              MOVEQ      #$01,D3
+000001BC: 4A03           'J.'              TST.B      D3
+000001BE: 6704           'g.'              BEQ.S      *+$0006             ; 000001C4
+000001C0: 701E           'p.'              MOVEQ      #$1E,D0
+000001C2: 6002           '`.'              BRA.S      *+$0004             ; 000001C6
+000001C4: 703C           'p<'              MOVEQ      #$3C,D0             ; '<'
+000001C6: 49C0           'I.'              EXTB.L     D0
+000001C8: B086           '..'              CMP.L      D6,D0
+000001CA: 6E00 00CA      'n...'            BGT        *+$00CC             ; 00000296
+000001CE: 4A2B 0042      'J+.B'            TST.B      $0042(A3)
+000001D2: 6708           'g.'              BEQ.S      *+$000A             ; 000001DC
+000001D4: 41EB 0014      'A...'            LEA        $0014(A3),A0
+000001D8: 2008           ' .'              MOVE.L     A0,D0
+000001DA: 6006           '`.'              BRA.S      *+$0008             ; 000001E2
+000001DC: 41EB 0038      'A..8'            LEA        $0038(A3),A0
+000001E0: 2008           ' .'              MOVE.L     A0,D0
+000001E2: 2F00           '/.'              MOVE.L     D0,-(A7)
+000001E4: 2F0C           '/.'              MOVE.L     A4,-(A7)
+000001E6: 4EBA 0000      'N...'            JSR        ValidIconRec        ; id: 215
+000001EA: 2440           '$@'              MOVEA.L    D0,A2
+000001EC: B9CA           '..'              CMPA.L     A2,A4
+000001EE: 504F           'PO'              ADDQ.W     #8,A7
+000001F0: 6610           'f.'              BNE.S      *+$0012             ; 00000202
+000001F2: 4A2B 0042      'J+.B'            TST.B      $0042(A3)
+000001F6: 57C3           'W.'              SEQ        D3
+000001F8: 4403           'D.'              NEG.B      D3
+000001FA: 1743 0042      '.C.B'            MOVE.B     D3,$0042(A3)
+000001FE: 6000 0096      '`...'            BRA        *+$0098             ; 00000296
+00000202: 284A           '(J'              MOVEA.L    A2,A4
+00000204: 206E FFFC      ' n..'            MOVEA.L    -$0004(A6),A0
+00000208: 208C           ' .'              MOVE.L     A4,(A0)
+0000020A: 200C           ' .'              MOVE.L     A4,D0
+0000020C: 671A           'g.'              BEQ.S      *+$001C             ; 00000228
+0000020E: 206C 000C      ' l..'            MOVEA.L    $000C(A4),A0
+00000212: 2050           ' P'              MOVEA.L    (A0),A0
+00000214: 226B 002A      '"k.*'            MOVEA.L    $002A(A3),A1
+00000218: 2251           '"Q'              MOVEA.L    (A1),A1
+0000021A: 4A2C 0010      'J,..'            TST.B      $0010(A4)
+0000021E: 6704           'g.'              BEQ.S      *+$0006             ; 00000224
+00000220: 704C           'pL'              MOVEQ      #$4C,D0             ; 'L'
+00000222: 6002           '`.'              BRA.S      *+$0004             ; 00000226
+00000224: 7020           'p '              MOVEQ      #$20,D0             ; ' '
+00000226: A22E           '..'              _BlockMoveData                      ; A22E
+00000228: 7000           'p.'              MOVEQ      #$00,D0
+0000022A: 102B 0042      '.+.B'            MOVE.B     $0042(A3),D0
+0000022E: E388           '..'              LSL.L      #1,D0
+00000230: 220C           '".'              MOVE.L     A4,D1
+00000232: 670A           'g.'              BEQ.S      *+$000C             ; 0000023E
+00000234: 7200           'r.'              MOVEQ      #$00,D1
+00000236: 122C 0010      '.,..'            MOVE.B     $0010(A4),D1
+0000023A: 4A81           'J.'              TST.L      D1
+0000023C: 6002           '`.'              BRA.S      *+$0004             ; 00000240
+0000023E: 7200           'r.'              MOVEQ      #$00,D1
+00000240: 7400           't.'              MOVEQ      #$00,D2
+00000242: 1401           '..'              MOVE.B     D1,D2
+00000244: 2E02           '..'              MOVE.L     D2,D7
+00000246: DE80           '..'              ADD.L      D0,D7
+00000248: 4A87           'J.'              TST.L      D7
+0000024A: 6604           'f.'              BNE.S      *+$0006             ; 00000250
+0000024C: 7E12           '~.'              MOVEQ      #$12,D7
+0000024E: 6016           '`.'              BRA.S      *+$0018             ; 00000266
+00000250: 7001           'p.'              MOVEQ      #$01,D0
+00000252: B087           '..'              CMP.L      D7,D0
+00000254: 6604           'f.'              BNE.S      *+$0006             ; 0000025A
+00000256: 7E10           '~.'              MOVEQ      #$10,D7
+00000258: 600C           '`.'              BRA.S      *+$000E             ; 00000266
+0000025A: 7002           'p.'              MOVEQ      #$02,D0
+0000025C: B087           '..'              CMP.L      D7,D0
+0000025E: 6604           'f.'              BNE.S      *+$0006             ; 00000264
+00000260: 7E0D           '~.'              MOVEQ      #$0D,D7
+00000262: 6002           '`.'              BRA.S      *+$0004             ; 00000266
+00000264: 7E11           '~.'              MOVEQ      #$11,D7
+00000266: 2745 002E      ''E..'            MOVE.L     D5,$002E(A3)
+0000026A: 200C           ' .'              MOVE.L     A4,D0
+0000026C: 6706           'g.'              BEQ.S      *+$0008             ; 00000274
+0000026E: 202B 002A      ' +.*'            MOVE.L     $002A(A3),D0
+00000272: 6002           '`.'              BRA.S      *+$0004             ; 00000276
+00000274: 7000           'p.'              MOVEQ      #$00,D0
+00000276: 2F00           '/.'              MOVE.L     D0,-(A7)
+00000278: 7000           'p.'              MOVEQ      #$00,D0
+0000027A: 2F00           '/.'              MOVE.L     D0,-(A7)
+0000027C: 2F07           '/.'              MOVE.L     D7,-(A7)
+0000027E: 4EBA 0000      'N...'            JSR        NMCallMBarProc      ; id: 223
+00000282: 1740 0032      '.@.2'            MOVE.B     D0,$0032(A3)
+00000286: 4A2B 0042      'J+.B'            TST.B      $0042(A3)
+0000028A: 57C3           'W.'              SEQ        D3
+0000028C: 4403           'D.'              NEG.B      D3
+0000028E: 1743 0042      '.C.B'            MOVE.B     D3,$0042(A3)
+00000292: 4FEF 000C      'O...'            LEA        $000C(A7),A7
+00000296: 4CEE 1CE8 FFD8 'L.....'          MOVEM.L    -$0028(A6),D3/D5-D7/A2-A4
+0000029C: 4E5E           'N^'              UNLK       A6
+0000029E: 4E75           'Nu'              RTS        
+
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="NMCallMBarProc"(223)
+                      00000280
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="ValidIconRec"(215)
+                      000001E8
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SWAPAPPMARK"(226)
+                      00000158
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GetApplicationMenu"(205)
+                      0000013E
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="SWAPAPPMARK"(226)
+                      0000012C
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="NMCallMBarProc"(223)
+                      000000F8
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="ClearMarks"(225)
+                      000000E4
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="GetApplicationMenu"(205)
+                      000000D2
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="AddAuxRec"(208)
+                      000000C0
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="AddAuxRec"(208)
+                      000000B4
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="AddAuxRec"(208)
+                      000000A8
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="spl"(220)
+                      0000009A
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="DoRespProc"(231)
+                      0000008A
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="DoDialog"(230)
+                      00000078
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="DoSound"(229)
+                      00000066
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="RotateIcon"(228)
+                      00000054
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="MarkItem"(227)
+                      00000042
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="disable"(221)
+                      00000018
+Comment:    
+    
+   NMTASK ended due to: vector glue below
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: __NMINSTALL [4B610, 4B61A)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, JMP (A1) then padding)
+   
+   Resolved outgoing references:
+      +2 (4B612): BSR _NMInstall
+   
+   Trap A05E
+
+
+Dictionary:          Flags $00 FirstId 233
+                 233: __NMINSTALL
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="__NMINSTALL"(233) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 10
+
+Content:             Flags $08
+Contents offset $0000 size $000A
+00000000: 2F08           '/.'              MOVE.L     A0,-(A7)
+00000002: 6100 FFFC      'a...'            BSR        _NMInstall-__NMINSTALL+$FFFC ; ids: 217, 233
+00000006: 588F           'X.'              ADDQ.L     #4,A7
+00000008: 4E75           'Nu'              RTS        
+
+
+ComputedRef:         Flags=$90=(Difference 16BitPatch 16BitOffsets FromCode) 
+                     Ref1="_NMInstall"(217) Ref2="__NMINSTALL"(233)
+                      0004
+Comment:    
+    
+   __NMINSTALL ended due to: ran into next module, 6 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: __NMREMOVE [4B620, 4B63A)
+   
+   Module started due to: MODGUESS (align, label, RTS then padding)
+   
+   Resolved outgoing references:
+      +12 (4B632): BSR _NMRemove
+   
+   Trap A05F 
+
+
+Dictionary:          Flags $00 FirstId 234
+                 234: __NMREMOVE
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="__NMREMOVE"(234) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 26
+
+Content:             Flags $08
+Contents offset $0000 size $001A
+00000000: 2F08           '/.'              MOVE.L     A0,-(A7)
+00000002: 0838 0000 0DD5 '.8....'          BTST       #$00,$0DD5
+00000008: 6708           'g.'              BEQ.S      *+$000A             ; 00000012
+0000000A: 2F00           '/.'              MOVE.L     D0,-(A7)
+0000000C: 7001           'p.'              MOVEQ      #$01,D0
+0000000E: A09F           '..'              _PowerDispatch                      ; A09F
+00000010: 201F           ' .'              MOVE.L     (A7)+,D0
+00000012: 6100 FFEC      'a...'            BSR        _NMRemove-__NMREMOVE+$FFEC ; ids: 218, 234
+00000016: 588F           'X.'              ADDQ.L     #4,A7
+00000018: 4E75           'Nu'              RTS        
+
+
+ComputedRef:         Flags=$90=(Difference 16BitPatch 16BitOffsets FromCode) 
+                     Ref1="_NMRemove"(218) Ref2="__NMREMOVE"(234)
+                      0014
+Comment:    
+    
+   __NMREMOVE ended due to: ran into next module, 6 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: disable [4B640, 4B650)
+   
+   Module started due to: MODGUESS (align, label, RTS then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:SetProcessorLevel.a
+
+
+Dictionary:          Flags $00 FirstId 235
+                 235: disable
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="disable"(235) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 16
+
+Content:             Flags $08
+Contents offset $0000 size $0010
+00000000: 7000           'p.'              MOVEQ      #$00,D0
+00000002: 40C0           '@.'              MOVE       SR,D0
+00000004: E048           '.H'              LSR.W      #8,D0
+00000006: 0240 0007      '.@..'            ANDI.W     #$0007,D0
+0000000A: 007C 0700      '.|..'            ORI.W      #$0700,SR
+0000000E: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   disable ended due to: vector glue below 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: spl [4B660, 4B672)
+   
+   Module started due to: vector glue above, MODGUESS (align, label, RTS then padding)
+   
+   VectorTable comment: {sources}Toolbox:NotificationMgr:SetProcessorLevel.a 
+
+
+Dictionary:          Flags $00 FirstId 236
+                 236: spl
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="spl"(236) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 18
+
+Content:             Flags $08
+Contents offset $0000 size $0012
+00000000: 40C0           '@.'              MOVE       SR,D0
+00000002: 322F 0006      '2/..'            MOVE.W     $0006(A7),D1
+00000006: E149           '.I'              LSL.W      #8,D1
+00000008: 0240 F8FF      '.@..'            ANDI.W     #$F8FF,D0
+0000000C: 8041           '.A'              OR.W       D1,D0
+0000000E: 46C0           'F.'              MOVE       D0,SR
+00000010: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   spl ended due to: vector glue below 
+
+
+Last        
+Record Summary 
+Type Count
+   0 Pad                     19
+   1 First                    1
+   2 Last                     1
+   3 Comment                 65
+   4 Dictionary              37
+   5 Module                  32
+   7 ModSize                 32
+   8 Content                 32
+   9 Reference               54
+  10 ComputedRef              2

@@ -1,0 +1,313 @@
+
+First:      Flags=$01 Version=$0002
+Comment:    
+    
+   UNLINKED FROM MAC OS ROM -- ELLIOT WAS HERE
+   [E340, E506) 
+
+
+Dictionary:          Flags $00 FirstId 200
+                 200: Main
+Pad         
+Comment:    
+    
+   #####################################################################################
+   
+   Module: NKEventGroupRelated [E340, E36E)
+   
+   Module started due to: FILE directive
+   
+   Unresolved outgoing references:
+      +1A (E35A): LEA $E388, A0 
+
+
+Dictionary:          Flags $00 FirstId 201
+                 201: NKEventGroupRelated
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="NKEventGroupRelated"(201) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 46
+
+Content:             Flags $08
+Contents offset $0000 size $002E
+00000000: 203C 0000 0224 ' <...$'          MOVE.L     #$00000224,D0
+00000006: A71E           '..'              _NewPtrSysClear                      ; A71E
+00000008: 6600 001C      'f...'            BNE        *+$001E             ; 00000026
+0000000C: 2188 81E2 02B6 '!.....'          MOVE.L     A0,([$02B6],$0310)
+             0310           
+00000014: 20BC 0000 0002 ' .....'          MOVE.L     #$00000002,(A0)
+0000001A: 41FA 002C      'A..,'            LEA        *+$002E,A0          ; 00000048
+0000001E: 303C AA6B      '0<.k'            MOVE.W     #$AA6B,D0
+00000022: A647           '.G'              _SetToolTrapAddress                      ; A647
+00000024: 6006           '`.'              BRA.S      *+$0008             ; 0000002C
+00000026: 303C 000D      '0<..'            MOVE.W     #$000D,D0
+0000002A: A9C9           '..'              _SysError                      ; A9C9
+0000002C: 4E75           'Nu'              RTS        
+
+Comment:    
+    
+   NKEventGroupRelated ended due to: ran into next module, 2 nulls trimmed 
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: AUTOMOD_E370 [E370, E39A)
+   
+   Module started due to: MODGUESS (align, RTS then padding)
+   
+   Resolved outgoing references:
+      +4 (E374): BRA NKEG_UNKNOWN
+
+
+Dictionary:          Flags $00 FirstId 202
+                 202: AUTOMOD_E370
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="AUTOMOD_E370"(202) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 42
+
+Content:             Flags $08
+Contents offset $0000 size $002A
+00000000: 48E7 F0F0      'H...'            MOVEM.L    D0-D3/A0-A3,-(A7)
+00000004: 6000 FFFA      '`...'            BRA        NKEG_UNKNOWN-AUTOMOD_E370+$FFFA ; ids: 203, 202
+00000008: 0000 0000      '....'            ORI.B      #$00,D0
+0000000C: 0000 0000      '....'            ORI.B      #$00,D0
+00000010: 005C 0000      '.\..'            ORI.W      #$0000,(A4)+
+00000014: 0000 0000      '....'            ORI.B      #$00,D0
+00000018: 0C40 0001      '.@..'            CMPI.W     #$0001,D0
+0000001C: 6408           'd.'              BCC.S      *+$000A             ; 00000026
+0000001E: 303B 02F0      '0;..'            MOVE.W     *-$000E(D0.W*2),D0  ; 00000010
+00000022: 4EFB 00EC      'N...'            JMP        *-$0012(D0.W)       ; 00000010
+00000026: 70CE           'p.'              MOVEQ      #$CE,D0
+00000028: 4E75           'Nu'              RTS        
+
+
+Dictionary:          Flags $00 FirstId 203
+                 203: NKEG_UNKNOWN
+Pad         
+
+ComputedRef:         Flags=$90=(Difference 16BitPatch 16BitOffsets FromCode) 
+                     Ref1="NKEG_UNKNOWN"(203) Ref2="AUTOMOD_E370"(202)
+                      0006
+Comment:    
+    
+   AUTOMOD_E370 ended due to: ran into next module, 6 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: AUTOMOD_E3A0 [E3A0, E49E)
+   
+   Module started due to: MODGUESS (align, RTS then padding)
+   
+   Resolved outgoing references:
+      +AC (E44C): JSR NKSETSWIEVENT ; outside file
+      +9C (E43C): JSR NKCREATEEVENT ; outside file
+
+
+Dictionary:          Flags $00 FirstId 204
+                 204: AUTOMOD_E3A0
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="AUTOMOD_E3A0"(204) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 254
+
+Content:             Flags $08
+Contents offset $0000 size $00FE
+00000000: 0000 0001      '....'            ORI.B      #$01,D0
+00000004: 0000 0001      '....'            ORI.B      #$01,D0
+00000008: 0000 0008      '....'            ORI.B      #$08,D0
+0000000C: 0000 0003      '....'            ORI.B      #$03,D0
+00000010: 0000 0001      '....'            ORI.B      #$01,D0
+00000014: 0000 0004      '....'            ORI.B      #$04,D0
+00000018: 0000 0004      '....'            ORI.B      #$04,D0
+0000001C: 0000 0001      '....'            ORI.B      #$01,D0
+00000020: 0000 0002      '....'            ORI.B      #$02,D0
+00000024: 0000 0005      '....'            ORI.B      #$05,D0
+00000028: 0000 0004      '....'            ORI.B      #$04,D0
+0000002C: 0000 8000      '....'            ORI.B      #$00,D0
+00000030: 0000 0002      '....'            ORI.B      #$02,D0
+00000034: 0000 0007      '....'            ORI.B      #$07,D0
+00000038: 8000           '..'              OR.B       D0,D0
+0000003A: 0000 4E56      '..NV'            ORI.B      #$56,D0             ; 'V'
+0000003E: 0000 48E7      '..H.'            ORI.B      #$E7,D0
+00000042: 0030 42AE 001C '.0B...'          ORI.B      #$AE,$1C(A0,D0.W)
+00000048: 303C AA7F      '0<..'            MOVE.W     #$AA7F,D0
+0000004C: A746           '.F'              _GetToolTrapAddress                      ; A746
+0000004E: 2F08           '/.'              MOVE.L     A0,-(A7)
+00000050: 303C 009F      '0<..'            MOVE.W     #$009F,D0
+00000054: A746           '.F'              _GetToolTrapAddress                      ; A746
+00000056: B1DF           '..'              CMPA.L     (A7)+,A0
+00000058: 6608           'f.'              BNE.S      *+$000A             ; 00000062
+0000005A: 203C FFFF 8D8E ' <....'          MOVE.L     #$FFFF8D8E,D0
+00000060: 6020           '` '              BRA.S      *+$0022             ; 00000082
+00000062: 2070 81E2 02B6 ' p....'          MOVEA.L    ([$02B6],$0310),A0
+             0310           
+0000006A: 7004           'p.'              MOVEQ      #$04,D0
+0000006C: 222E 0018      '"...'            MOVE.L     $0018(A6),D1
+00000070: 45FA FF8E      'E...'            LEA        *-$0070,A2          ; 00000000
+00000074: B292           '..'              CMP.L      (A2),D1
+00000076: 6710           'g.'              BEQ.S      *+$0012             ; 00000088
+00000078: D4FC 000C      '....'            ADDA.W     #$000C,A2
+0000007C: 51C8 FFF6      'Q...'            DBF        D0,*-$0008          ; 00000074
+00000080: 70CE           'p.'              MOVEQ      #$CE,D0
+00000082: 2D40 001C      '-@..'            MOVE.L     D0,$001C(A6)
+00000086: 6068           '`h'              BRA.S      *+$006A             ; 000000F0
+00000088: 202A 0004      ' *..'            MOVE.L     $0004(A2),D0
+0000008C: 5380           'S.'              SUBQ.L     #1,D0
+0000008E: E588           '..'              LSL.L      #2,D0
+00000090: 47F0 0804      'G...'            LEA        $04(A0,D0.L),A3
+00000094: 4A93           'J.'              TST.L      (A3)
+00000096: 661C           'f.'              BNE.S      *+$001E             ; 000000B4
+00000098: 42A7           'B.'              CLR.L      -(A7)
+0000009A: 4853           'HS'              PEA        (A3)
+0000009C: 4EBA 0000      'N...'            JSR        NKCREATEEVENT       ; id: 206
+000000A0: 201F           ' .'              MOVE.L     (A7)+,D0
+000000A2: 66DE           'f.'              BNE.S      *-$0020             ; 00000082
+000000A4: 42A7           'B.'              CLR.L      -(A7)
+000000A6: 2F13           '/.'              MOVE.L     (A3),-(A7)
+000000A8: 2F2A 0004      '/*..'            MOVE.L     $0004(A2),-(A7)
+000000AC: 4EBA 0000      'N...'            JSR        NKSETSWIEVENT       ; id: 205
+000000B0: 201F           ' .'              MOVE.L     (A7)+,D0
+000000B2: 66CE           'f.'              BNE.S      *-$0030             ; 00000082
+000000B4: 2070 81E2 02B6 ' p....'          MOVEA.L    ([$02B6],$0310),A0
+             0310           
+000000BC: 202A 0008      ' *..'            MOVE.L     $0008(A2),D0
+000000C0: EDC0 1000      '....'            BFFFO      D0{$00:$00},D1
+000000C4: 67BC           'g.'              BEQ.S      *-$0042             ; 00000082
+000000C6: 701F           'p.'              MOVEQ      #$1F,D0
+000000C8: 9081           '..'              SUB.L      D1,D0
+000000CA: E988           '..'              LSL.L      #4,D0
+000000CC: 43F0 0824      'C..$'            LEA        $24(A0,D0.L),A1
+000000D0: 22AE 0014      '"...'            MOVE.L     $0014(A6),(A1)
+000000D4: 236E 0010 0004 '#n....'          MOVE.L     $0010(A6),$0004(A1)
+000000DA: 42A9 0008      'B...'            CLR.L      $0008(A1)
+000000DE: 42A9 000C      'B...'            CLR.L      $000C(A1)
+000000E2: 226E 000C      '"n..'            MOVEA.L    $000C(A6),A1
+000000E6: 2293           '".'              MOVE.L     (A3),(A1)
+000000E8: 226E 0008      '"n..'            MOVEA.L    $0008(A6),A1
+000000EC: 22AA 0008      '"...'            MOVE.L     $0008(A2),(A1)
+000000F0: 4CDF 0C00      'L...'            MOVEM.L    (A7)+,A2/A3
+000000F4: 4E5E           'N^'              UNLK       A6
+000000F6: 205F           ' _'              MOVEA.L    (A7)+,A0
+000000F8: DEFC 0014      '....'            ADDA.W     #$0014,A7
+000000FC: 4ED0           'N.'              JMP        (A0)
+
+
+Dictionary:          Flags $00 FirstId 205
+                 205: NKSETSWIEVENT
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="NKSETSWIEVENT"(205)
+                      000000AE
+
+Dictionary:          Flags $00 FirstId 206
+                 206: NKCREATEEVENT
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="NKCREATEEVENT"(206)
+                      0000009E
+Comment:    
+    
+   AUTOMOD_E3A0 ended due to: ran into next module, 2 nulls trimmed
+
+Comment:    
+    
+   #####################################################################################
+   
+   Module: NKEG_UNKNOWN [E4A0, E506)
+   
+   Module started due to: MOD directive, MODGUESS (align, label, JMP (A0) then padding)
+   
+   Resolved outgoing references:
+      +62 (E502): BRA INTHAND_CALLED_BY_NKEG ; outside file
+      +18 (E4B8): JSR NKWAITFOREVENT ; outside file 
+
+
+Dictionary:          Flags $00 FirstId 207
+                 207: NKEG_UNKNOWN
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="NKEG_UNKNOWN"(207) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 102
+
+Content:             Flags $08
+Contents offset $0000 size $0066
+00000000: 52B0 81E2 02B6 'R.....'          ADDQ.L     #1,([$02B6],$031C)
+             031C           
+00000008: 4E56 FFFC      'NV..'            LINK.W     A6,#-$0004
+0000000C: 42A7           'B.'              CLR.L      -(A7)
+0000000E: 2F2E 002C      '/..,'            MOVE.L     $002C(A6),-(A7)
+00000012: 486E FFFC      'Hn..'            PEA        -$0004(A6)
+00000016: 42A7           'B.'              CLR.L      -(A7)
+00000018: 4EBA 0000      'N...'            JSR        NKWAITFOREVENT      ; id: 209
+0000001C: 201F           ' .'              MOVE.L     (A7)+,D0
+0000001E: 6638           'f8'              BNE.S      *+$003A             ; 00000058
+00000020: 2670 81E2 02B6 '&p....'          MOVEA.L    ([$02B6],$0310),A3
+             0310           
+00000028: 202E FFFC      ' ...'            MOVE.L     -$0004(A6),D0
+0000002C: EDC0 1000      '....'            BFFFO      D0{$00:$00},D1
+00000030: 672E           'g.'              BEQ.S      *+$0030             ; 00000060
+00000032: 741F           't.'              MOVEQ      #$1F,D2
+00000034: 9481           '..'              SUB.L      D1,D2
+00000036: 0580           '..'              BCLR       D2,D0
+00000038: 48E7 8010      'H...'            MOVEM.L    D0/A3,-(A7)
+0000003C: E98A           '..'              LSL.L      #4,D2
+0000003E: 43F3 2824      'C.($'            LEA        $24(A3,D2.L),A1
+00000042: 2011           ' .'              MOVE.L     (A1),D0
+00000044: 6712           'g.'              BEQ.S      *+$0014             ; 00000058
+00000046: 52A9 0008      'R...'            ADDQ.L     #1,$0008(A1)
+0000004A: 2F29 0004      '/)..'            MOVE.L     $0004(A1),-(A7)
+0000004E: 2040           ' @'              MOVEA.L    D0,A0
+00000050: 4E90           'N.'              JSR        (A0)
+00000052: 4CDF 0801      'L...'            MOVEM.L    (A7)+,D0/A3
+00000056: 60D4           '`.'              BRA.S      *-$002A             ; 0000002C
+00000058: 2200           '".'              MOVE.L     D0,D1
+0000005A: 303C 000D      '0<..'            MOVE.W     #$000D,D0
+0000005E: A9C9           '..'              _SysError                      ; A9C9
+00000060: 4E5E           'N^'              UNLK       A6
+00000062: 6000 FF9C      '`...'            BRA        INTHAND_CALLED_BY_NKEG-NKEG_UNKNOWN+$FF9C ; ids: 208, 207
+
+
+Dictionary:          Flags $00 FirstId 208
+                 208: INTHAND_CALLED_BY_NKEG
+Pad         
+
+ComputedRef:         Flags=$90=(Difference 16BitPatch 16BitOffsets FromCode) 
+                     Ref1="INTHAND_CALLED_BY_NKEG"(208) Ref2="NKEG_UNKNOWN"(207)
+                      0064
+
+Dictionary:          Flags $00 FirstId 209
+                 209: NKWAITFOREVENT
+Pad         
+
+Reference:           Flags=$18=(16BitPatch 32BitOffsets FromCode) 
+                     Ref="NKWAITFOREVENT"(209)
+                      0000001A
+Comment:    
+    
+   NKEG_UNKNOWN ended due to: end of FILE directive, 10 nulls trimmed
+
+
+Last        
+Record Summary 
+Type Count
+   0 Pad                      7
+   1 First                    1
+   2 Last                     1
+   3 Comment                  9
+   4 Dictionary              10
+   5 Module                   4
+   7 ModSize                  4
+   8 Content                  4
+   9 Reference                3
+  10 ComputedRef              2

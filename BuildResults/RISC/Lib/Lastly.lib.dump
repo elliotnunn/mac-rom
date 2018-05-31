@@ -1,0 +1,185 @@
+
+First:      Flags=$01 Version=$0002
+Comment:    
+    
+   UNLINKED FROM MAC OS ROM -- ELLIOT WAS HERE
+   [A8FE0, A9146) 
+
+
+Dictionary:          Flags $00 FirstId 200
+                 200: Main
+Pad         
+Comment:    
+    
+   #####################################################################################
+   
+   Module: LASTLY_A8FE0 [A8FE0, A9146)
+   
+   Module started due to: MOD directive, FILE directive, MODGUESS (align, label)
+   
+   Resolved outgoing references:
+      +BA (A909A): BRA.L GETHARDWAREINFO ; outside file
+      +10 (A8FF0): BRA.L GETHARDWAREINFO ; outside file
+   
+   +162 (A9142): SIZESOUNDBUFFER 
+
+
+Dictionary:          Flags $00 FirstId 201
+                 201: LASTLY_A8FE0
+                 202: SIZESOUNDBUFFER
+Pad         
+
+
+
+Module:              Flags=$88=(ForcedActive Extern Code)  Module="LASTLY_A8FE0"(201) Segment="Main"(200)
+Size:                Flags $00 ModuleSize 358
+
+Content:             Flags $08
+Contents offset $0000 size $0166
+00000000: 244E           '$N'              MOVEA.L    A6,A2
+00000002: 6000 0004      '`...'            BRA        *+$0006             ; 00000008
+00000006: 0000 7A00      '..z.'            ORI.B      #$00,D0
+0000000A: 260A           '&.'              MOVE.L     A2,D3
+0000000C: 4DFA 0008      'M...'            LEA        *+$000A,A6          ; 00000016
+00000010: 60FF FFFF FFEE '`.....'          BRA.L      GETHARDWAREINFO-LASTLY_A8FE0+$FFEE ; ids: 203, 201
+00000016: E04A           '.J'              LSR.W      #8,D2
+00000018: 1E02           '..'              MOVE.B     D2,D7
+0000001A: 7800           'x.'              MOVEQ      #$00,D4
+0000001C: 7801           'x.'              MOVEQ      #$01,D4
+0000001E: 2479 68FF EFF0 '$yh...'          MOVEA.L    $68FFEFF0,A2
+00000024: 122A 0128      '.*.('            MOVE.B     $0128(A2),D1
+00000028: 2443           '$C'              MOVEA.L    D3,A2
+0000002A: 7600           'v.'              MOVEQ      #$00,D3
+0000002C: 2030 81F2 68FF ' 0..h.'          MOVE.L     ([$68FFEFD8],$0010),D0
+             EFD8 0010      
+00000036: EDC0 33CF      '..3.'            BFFFO      D0{$0F:$0F},D3
+0000003A: 4603           'F.'              NOT.B      D3
+0000003C: 0603 0020      '... '            ADDI.B     #$20,D3             ; ' '
+00000040: 2A79 68FF EFF0 '*yh...'          MOVEA.L    $68FFEFF0,A5
+00000046: 0281 0000 00FF '......'          ANDI.L     #$000000FF,D1
+0000004C: 674E           'gN'              BEQ.S      *+$0050             ; 0000009C
+0000004E: 2415           '$.'              MOVE.L     (A5),D2
+00000050: E08A           '..'              LSR.L      #8,D2
+00000052: 4C01 2002      'L. .'            MULU.L     D1,D2
+00000056: 0682 0000 7FFF '......'          ADDI.L     #$00007FFF,D2
+0000005C: 0242 8000      '.B..'            ANDI.W     #$8000,D2
+00000060: 0C82 0006 8000 '......'          CMPI.L     #$00068000,D2
+00000066: 6406           'd.'              BCC.S      *+$0008             ; 0000006E
+00000068: 243C 0006 8000 '$<....'          MOVE.L     #$00068000,D2
+0000006E: 0C82 0FF0 0000 '......'          CMPI.L     #$0FF00000,D2
+00000074: 6226           'b&'              BHI.S      *+$0028             ; 0000009C
+00000076: 2215           '".'              MOVE.L     (A5),D1
+00000078: 0481 0060 0000 '...`..'          SUBI.L     #$00600000,D1
+0000007E: B481           '..'              CMP.L      D1,D2
+00000080: 6302           'c.'              BLS.S      *+$0004             ; 00000084
+00000082: 2401           '$.'              MOVE.L     D1,D2
+00000084: 2A02           '*.'              MOVE.L     D2,D5
+00000086: DE82           '..'              ADD.L      D2,D7
+00000088: 203C 7000 0000 ' <p...'          MOVE.L     #$70000000,D0
+0000008E: E6A8           '..'              LSR.L      D3,D0
+00000090: 2040           ' @'              MOVEA.L    D0,A0
+00000092: E6AA           '..'              LSR.L      D3,D2
+00000094: 2242           '"B'              MOVEA.L    D2,A1
+00000096: 7200           'r.'              MOVEQ      #$00,D1
+00000098: 7019           'p.'              MOVEQ      #$19,D0
+0000009A: FE0A           '..'              FLINE      $FE0A
+0000009C: 7013           'p.'              MOVEQ      #$13,D0
+0000009E: FE04           '..'              FLINE      $FE04
+000000A0: 6600 0084      'f...'            BNE        *+$0086             ; 00000126
+000000A4: 2008           ' .'              MOVE.L     A0,D0
+000000A6: 0240 0003      '.@..'            ANDI.W     #$0003,D0
+000000AA: 0C40 0001      '.@..'            CMPI.W     #$0001,D0
+000000AE: 6600 0076      'f..v'            BNE        *+$0078             ; 00000126
+000000B2: 260A           '&.'              MOVE.L     A2,D3
+000000B4: 7400           't.'              MOVEQ      #$00,D2
+000000B6: 4DFA 0008      'M...'            LEA        *+$000A,A6          ; 000000C0
+000000BA: 60FF FFFF FF44 '`....D'          BRA.L      GETHARDWAREINFO-LASTLY_A8FE0+$FF44 ; ids: 203, 201
+000000C0: 2479 68FF EFF0 '$yh...'          MOVEA.L    $68FFEFF0,A2
+000000C6: 122A 0129      '.*.)'            MOVE.B     $0129(A2),D1
+000000CA: 2443           '$C'              MOVEA.L    D3,A2
+000000CC: 2A79 68FF EFF0 '*yh...'          MOVEA.L    $68FFEFF0,A5
+000000D2: 7600           'v.'              MOVEQ      #$00,D3
+000000D4: 2030 81F2 68FF ' 0..h.'          MOVE.L     ([$68FFEFD8],$0010),D0
+             EFD8 0010      
+000000DE: EDC0 33CF      '..3.'            BFFFO      D0{$0F:$0F},D3
+000000E2: 4603           'F.'              NOT.B      D3
+000000E4: 0603 0020      '... '            ADDI.B     #$20,D3             ; ' '
+000000E8: E849           '.I'              LSR.W      #4,D1
+000000EA: 0241 000F      '.A..'            ANDI.W     #$000F,D1
+000000EE: 6736           'g6'              BEQ.S      *+$0038             ; 00000126
+000000F0: 5241           'RA'              ADDQ.W     #1,D1
+000000F2: 4841           'HA'              SWAP       D1
+000000F4: 4241           'BA'              CLR.W      D1
+000000F6: DE81           '..'              ADD.L      D1,D7
+000000F8: 2041           ' A'              MOVEA.L    D1,A0
+000000FA: 7016           'p.'              MOVEQ      #$16,D0
+000000FC: FE05           '..'              FLINE      $FE05
+000000FE: 207C 6900 0000 ' |i...'          MOVEA.L    #$69000000,A0
+00000104: 7015           'p.'              MOVEQ      #$15,D0
+00000106: FE05           '..'              FLINE      $FE05
+00000108: 2008           ' .'              MOVE.L     A0,D0
+0000010A: E6A8           '..'              LSR.L      D3,D0
+0000010C: 2040           ' @'              MOVEA.L    D0,A0
+0000010E: E6A9           '..'              LSR.L      D3,D1
+00000110: 2241           '"A'              MOVEA.L    D1,A1
+00000112: 7200           'r.'              MOVEQ      #$00,D1
+00000114: 7019           'p.'              MOVEQ      #$19,D0
+00000116: FE0A           '..'              FLINE      $FE0A
+00000118: 7013           'p.'              MOVEQ      #$13,D0
+0000011A: FE04           '..'              FLINE      $FE04
+0000011C: 2208           '".'              MOVE.L     A0,D1
+0000011E: 08C1 0001      '....'            BSET       #$01,D1
+00000122: 2041           ' A'              MOVEA.L    D1,A0
+00000124: FE05           '..'              FLINE      $FE05
+00000126: 222D 0004      '"-..'            MOVE.L     $0004(A5),D1
+0000012A: 2A41           '*A'              MOVEA.L    D1,A5
+0000012C: 2B07           '+.'              MOVE.L     D7,-(A5)
+0000012E: 2B05           '+.'              MOVE.L     D5,-(A5)
+00000130: 2B3C 4567 6773 '+<Eggs'          MOVE.L     #$45676773,-(A5)    ; 'Eggs'
+00000136: 2B3C 616E 6420 '+<and '          MOVE.L     #$616E6420,-(A5)    ; 'and '
+0000013C: 2B3C 5361 6D20 '+<Sam '          MOVE.L     #$53616D20,-(A5)    ; 'Sam '
+00000142: 2B3C FFFF FFFF '+<....'          MOVE.L     #$FFFFFFFF,-(A5)
+00000148: 2B01           '+.'              MOVE.L     D1,-(A5)
+0000014A: 42A5           'B.'              CLR.L      -(A5)
+0000014C: 224D           '"M'              MOVEA.L    A5,A1
+0000014E: 7C00           '|.'              MOVEQ      #$00,D6
+00000150: 6000 0002      '`...'            BRA        *+$0004             ; 00000154
+00000154: 2E51           '.Q'              MOVEA.L    (A1),A7
+00000156: DFFC 0000 8000 '......'          ADDA.L     #$00008000,A7
+0000015C: 2F0D           '/.'              MOVE.L     A5,-(A7)
+0000015E: 7C00           '|.'              MOVEQ      #$00,D6
+00000160: 4ED2           'N.'              JMP        (A2)
+00000162: 7000           'p.'              MOVEQ      #$00,D0
+00000164: 4ED2           'N.'              JMP        (A2)
+
+
+Dictionary:          Flags $00 FirstId 203
+                 203: GETHARDWAREINFO
+
+ComputedRef:         Flags=$80=(Difference 32BitPatch 16BitOffsets FromCode) 
+                     Ref1="GETHARDWAREINFO"(203) Ref2="LASTLY_A8FE0"(201)
+                      00BC
+
+ComputedRef:         Flags=$80=(Difference 32BitPatch 16BitOffsets FromCode) 
+                     Ref1="GETHARDWAREINFO"(203) Ref2="LASTLY_A8FE0"(201)
+                      0012
+
+EntryPoint:          Flags=$08=(Extern Code)  Offset=$0162 Entry="SIZESOUNDBUFFER"(202)
+Comment:    
+    
+   LASTLY_A8FE0 ended due to: end of FILE directive, 10 nulls trimmed
+
+
+Last        
+Record Summary 
+Type Count
+   0 Pad                      2
+   1 First                    1
+   2 Last                     1
+   3 Comment                  3
+   4 Dictionary               3
+   5 Module                   1
+   6 EntryPoint               1
+   7 ModSize                  1
+   8 Content                  1
+  10 ComputedRef              2
